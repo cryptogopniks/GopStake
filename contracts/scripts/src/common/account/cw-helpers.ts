@@ -20,6 +20,7 @@ import {
   OfflineSigner,
   OfflineDirectSigner,
   Coin,
+  coin,
 } from "@cosmjs/proto-signing";
 import {
   SetMetadataMsg,
@@ -129,7 +130,9 @@ async function getCwExecHelpers(
     return tx;
   }
 
-  // TODO: add NFT approve and send with CW20
+  // TODO: add NFT approve and revoke
+
+  // staking-platform
 
   async function cwStake(
     collectionsToStake: StakedCollectionInfoForString[],
@@ -197,31 +200,62 @@ async function getCwExecHelpers(
     );
   }
 
-  // RejectProposal {
-  //     id: Uint128,
-  // },
+  async function cwRejectProposal(id: number, gasPrice: string) {
+    return await _msgWrapperWithGasPrice(
+      stakingPlatformMsgComposer.rejectProposal({ id: `${id}` }),
+      gasPrice
+    );
+  }
 
-  // // projects
-  // AcceptProposal {
-  //     id: Uint128,
-  // },
-
-  // DepositTokens {
-  //     collection_address: String,
-  // },
-
-  // WithdrawTokens {
-  //     collection_address: String,
-  //     amount: Uint128,
-  // },
-
-  async function cwCreateDenom(
-    subdenom: string,
-    funds: Coin,
+  // TODO: add CW20
+  async function cwAcceptProposal(
+    id: number,
+    amount: number,
+    denom_or_contract: string,
     gasPrice: string
   ) {
     return await _msgWrapperWithGasPrice(
-      minterMsgComposer.createDenom({ subdenom }, [funds]),
+      stakingPlatformMsgComposer.acceptProposal({ id: `${id}` }, [
+        coin(amount, denom_or_contract),
+      ]),
+      gasPrice
+    );
+  }
+
+  // TODO: add CW20
+  async function cwDepositTokens(collectionAddress: string, gasPrice: string) {
+    return await _msgWrapperWithGasPrice(
+      stakingPlatformMsgComposer.depositTokens({ collectionAddress }),
+      gasPrice
+    );
+  }
+
+  async function cwWithdrawTokens(
+    collectionAddress: string,
+    amount: number,
+    gasPrice: string
+  ) {
+    return await _msgWrapperWithGasPrice(
+      stakingPlatformMsgComposer.withdrawTokens({
+        collectionAddress,
+        amount: `${amount}`,
+      }),
+      gasPrice
+    );
+  }
+
+  // minter
+
+  async function cwCreateDenom(
+    subdenom: string,
+    paymentAmount: number,
+    paymentDenom: string,
+    gasPrice: string
+  ) {
+    return await _msgWrapperWithGasPrice(
+      minterMsgComposer.createDenom({ subdenom }, [
+        coin(paymentAmount, paymentDenom),
+      ]),
       gasPrice
     );
   }
@@ -297,12 +331,23 @@ async function getCwExecHelpers(
 
   return {
     // frontend
-
-    // backend
+    cwStake,
+    cwUnstake,
+    cwClaimStakingRewards,
+    cwDistributeFunds,
+    cwRemoveCollection,
+    cwCreateProposal,
+    cwRejectProposal,
+    cwAcceptProposal,
+    cwDepositTokens,
+    cwWithdrawTokens,
     cwCreateDenom,
     cwMintTokens,
     cwBurnTokens,
     cwSetMetadata,
+
+    // backend
+    cwUpdateStakingPlatformConfig,
     cwUpdateMinterConfig,
   };
 }
@@ -316,26 +361,102 @@ async function getCwQueryHelpers(
   if (!cwClient) throw new Error("cwClient is not found!");
 
   const cosmwasmQueryClient: CosmWasmClient = cwClient.client;
-  const queryClient = new MinterQueryClient(
+  const stakingPlatformQueryClient = new StakingPlatformQueryClient(
+    cosmwasmQueryClient,
+    stakingPlatformContractAddress
+  );
+  const minterQueryClient = new MinterQueryClient(
     cosmwasmQueryClient,
     minterContractAddress
   );
 
-  async function cwQueryDenomsByCreator(creator: string) {
-    const res = await queryClient.denomsByCreator({ creator });
+  // TODO: add query approvals
+
+  // staking platform
+
+  async function cwQueryStakingPlatformConfig() {
+    const res = await stakingPlatformQueryClient.queryConfig();
     l("\n", res, "\n");
     return res;
   }
 
-  async function cwQueryConfig() {
-    const res = await queryClient.queryConfig();
+  async function cwQueryFunds() {
+    const res = await stakingPlatformQueryClient.queryFunds();
+    l("\n", res, "\n");
+    return res;
+  }
+
+  async function cwQueryStakers(addresses?: string[]) {
+    const res = await stakingPlatformQueryClient.queryStakers({ addresses });
+    l("\n", res, "\n");
+    return res;
+  }
+
+  async function cwQueryStakingRewards(address: string) {
+    const res = await stakingPlatformQueryClient.queryStakingRewards({
+      address,
+    });
+    l("\n", res, "\n");
+    return res;
+  }
+
+  async function cwQueryAssociatedBalances(address: string) {
+    const res = await stakingPlatformQueryClient.queryAssociatedBalances({
+      address,
+    });
+    l("\n", res, "\n");
+    return res;
+  }
+
+  async function cwQueryProposals(lastAmount?: number) {
+    const res = await stakingPlatformQueryClient.queryProposals({
+      lastAmount: lastAmount ? `${lastAmount}` : undefined,
+    });
+    l("\n", res, "\n");
+    return res;
+  }
+
+  async function cwQueryCollections(addresses?: string[]) {
+    const res = await stakingPlatformQueryClient.queryCollections({
+      addresses,
+    });
+    l("\n", res, "\n");
+    return res;
+  }
+
+  async function cwQueryCollectionsBalances(addresses?: string[]) {
+    const res = await stakingPlatformQueryClient.queryCollectionsBalances({
+      addresses,
+    });
+    l("\n", res, "\n");
+    return res;
+  }
+
+  // minter
+
+  async function cwQueryDenomsByCreator(creator: string) {
+    const res = await minterQueryClient.denomsByCreator({ creator });
+    l("\n", res, "\n");
+    return res;
+  }
+
+  async function cwQueryMinterConfig() {
+    const res = await minterQueryClient.queryConfig();
     l("\n", res, "\n");
     return res;
   }
 
   return {
+    cwQueryStakingPlatformConfig,
+    cwQueryFunds,
+    cwQueryStakers,
+    cwQueryStakingRewards,
+    cwQueryAssociatedBalances,
+    cwQueryProposals,
+    cwQueryCollections,
+    cwQueryCollectionsBalances,
     cwQueryDenomsByCreator,
-    cwQueryConfig,
+    cwQueryMinterConfig,
   };
 }
 
