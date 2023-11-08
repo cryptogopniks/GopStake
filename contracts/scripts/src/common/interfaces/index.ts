@@ -1,10 +1,11 @@
+import { Timestamp } from "cosmjs-types/google/protobuf/timestamp";
+
 interface UpdateStakingPlatformConfigStruct {
   owner?: string;
   minter?: string;
 }
 
 interface UpdateMinterConfigStruct {
-  owner?: string;
   staking_platform?: string;
 }
 
@@ -33,6 +34,33 @@ interface SetMetadataMsg {
   set_metadata: {
     metadata: Metadata;
   };
+}
+
+interface ApproveCollectionMsg {
+  approve_all: { operator: string };
+  expires?: Expiration;
+}
+
+interface RevokeCollectionMsg {
+  revoke_all: { operator: string };
+}
+
+interface QueryApprovalsMsg {
+  token_id: string;
+}
+
+interface Approval {
+  spender: string;
+  expires: Expiration;
+}
+
+type Expiration =
+  | { at_height: number }
+  | { at_time: Timestamp }
+  | { never: {} };
+
+interface ApprovalsResponse {
+  approvals: Approval[];
 }
 
 interface ChainResponse {
@@ -127,4 +155,8 @@ export {
   Metadata,
   UpdateMinterConfigStruct,
   UpdateStakingPlatformConfigStruct,
+  ApproveCollectionMsg,
+  RevokeCollectionMsg,
+  QueryApprovalsMsg,
+  ApprovalsResponse,
 };

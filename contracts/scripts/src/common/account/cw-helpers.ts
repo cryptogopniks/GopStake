@@ -27,10 +27,14 @@ import {
   Metadata,
   UpdateMinterConfigStruct,
   UpdateStakingPlatformConfigStruct,
+  ApproveCollectionMsg,
+  RevokeCollectionMsg,
+  QueryApprovalsMsg,
+  ApprovalsResponse,
 } from "../interfaces";
 
 function getExecuteContractMsg(
-  minterContractAddress: string,
+  contractAddress: string,
   senderAddress: string,
   msg: any,
   funds: Coin[]
@@ -39,11 +43,45 @@ function getExecuteContractMsg(
     typeUrl: "/cosmwasm.wasm.v1.MsgExecuteContract",
     value: MsgExecuteContract.fromPartial({
       sender: senderAddress,
-      contract: minterContractAddress,
+      contract: contractAddress,
       msg: toUtf8(JSON.stringify(msg)),
       funds,
     }),
   };
+}
+
+function getApproveCollectionMsg(
+  collectionAddress: string,
+  senderAddress: string,
+  operator: string
+): MsgExecuteContractEncodeObject {
+  const approveCollectionMsg: ApproveCollectionMsg = {
+    approve_all: { operator },
+  };
+
+  return getExecuteContractMsg(
+    collectionAddress,
+    senderAddress,
+    approveCollectionMsg,
+    []
+  );
+}
+
+function getRevokeCollectionMsg(
+  collectionAddress: string,
+  senderAddress: string,
+  operator: string
+): MsgExecuteContractEncodeObject {
+  const revokeCollectionMsg: RevokeCollectionMsg = {
+    revoke_all: { operator },
+  };
+
+  return getExecuteContractMsg(
+    collectionAddress,
+    senderAddress,
+    revokeCollectionMsg,
+    []
+  );
 }
 
 function getSetMetadataMsg(
@@ -130,10 +168,33 @@ async function getCwExecHelpers(
     return tx;
   }
 
-  // TODO: add NFT approve and revoke
-
   // staking-platform
 
+  async function cwApproveCollection(
+    collectionAddress: string,
+    senderAddress: string,
+    operator: string,
+    gasPrice: string
+  ) {
+    return await _msgWrapperWithGasPrice(
+      getApproveCollectionMsg(collectionAddress, senderAddress, operator),
+      gasPrice
+    );
+  }
+
+  async function cwRevokeCollection(
+    collectionAddress: string,
+    senderAddress: string,
+    operator: string,
+    gasPrice: string
+  ) {
+    return await _msgWrapperWithGasPrice(
+      getRevokeCollectionMsg(collectionAddress, senderAddress, operator),
+      gasPrice
+    );
+  }
+
+  // TODO: try single tx Approve + Stake
   async function cwStake(
     collectionsToStake: StakedCollectionInfoForString[],
     gasPrice: string
@@ -318,12 +379,14 @@ async function getCwExecHelpers(
   }
 
   async function cwUpdateMinterConfig(
-    stakingPlatform: string,
+    updateMinterConfigStruct: UpdateMinterConfigStruct,
     gasPrice: string
   ) {
+    const { staking_platform } = updateMinterConfigStruct;
+
     return await _msgWrapperWithGasPrice(
       minterMsgComposer.updateConfig({
-        stakingPlatform,
+        stakingPlatform: staking_platform,
       }),
       gasPrice
     );
@@ -331,6 +394,8 @@ async function getCwExecHelpers(
 
   return {
     // frontend
+    cwApproveCollection,
+    cwRevokeCollection,
     cwStake,
     cwUnstake,
     cwClaimStakingRewards,
@@ -370,9 +435,19 @@ async function getCwQueryHelpers(
     minterContractAddress
   );
 
-  // TODO: add query approvals
-
   // staking platform
+
+  async function cwQueryApprovals(collectionAddress: string, tokenId: number) {
+    const queryApprovalsMsg: QueryApprovalsMsg = {
+      token_id: `${tokenId}`,
+    };
+    const res: ApprovalsResponse = await cosmwasmQueryClient.queryContractSmart(
+      collectionAddress,
+      queryApprovalsMsg
+    );
+    l("\n", res, "\n");
+    return res;
+  }
 
   async function cwQueryStakingPlatformConfig() {
     const res = await stakingPlatformQueryClient.queryConfig();
@@ -447,6 +522,7 @@ async function getCwQueryHelpers(
   }
 
   return {
+    cwQueryApprovals,
     cwQueryStakingPlatformConfig,
     cwQueryFunds,
     cwQueryStakers,
