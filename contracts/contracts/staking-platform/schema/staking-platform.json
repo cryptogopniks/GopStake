@@ -1,0 +1,1818 @@
+{
+  "contract_name": "staking-platform",
+  "contract_version": "1.0.0",
+  "idl_version": "1.0.0",
+  "instantiate": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "InstantiateMsg",
+    "type": "object",
+    "properties": {
+      "minter": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "owner": {
+        "type": [
+          "string",
+          "null"
+        ]
+      }
+    },
+    "additionalProperties": false
+  },
+  "execute": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "ExecuteMsg",
+    "oneOf": [
+      {
+        "type": "object",
+        "required": [
+          "stake"
+        ],
+        "properties": {
+          "stake": {
+            "type": "object",
+            "required": [
+              "collections_to_stake"
+            ],
+            "properties": {
+              "collections_to_stake": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/definitions/StakedCollectionInfo_for_String"
+                }
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": [
+          "unstake"
+        ],
+        "properties": {
+          "unstake": {
+            "type": "object",
+            "required": [
+              "collections_to_unstake"
+            ],
+            "properties": {
+              "collections_to_unstake": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/definitions/StakedCollectionInfo_for_String"
+                }
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": [
+          "claim_staking_rewards"
+        ],
+        "properties": {
+          "claim_staking_rewards": {
+            "type": "object",
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": [
+          "update_config"
+        ],
+        "properties": {
+          "update_config": {
+            "type": "object",
+            "properties": {
+              "minter": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "owner": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": [
+          "distribute_funds"
+        ],
+        "properties": {
+          "distribute_funds": {
+            "type": "object",
+            "required": [
+              "address_and_weight_list"
+            ],
+            "properties": {
+              "address_and_weight_list": {
+                "type": "array",
+                "items": {
+                  "type": "array",
+                  "items": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "$ref": "#/definitions/Decimal"
+                    }
+                  ],
+                  "maxItems": 2,
+                  "minItems": 2
+                }
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": [
+          "remove_collection"
+        ],
+        "properties": {
+          "remove_collection": {
+            "type": "object",
+            "required": [
+              "address"
+            ],
+            "properties": {
+              "address": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": [
+          "create_proposal"
+        ],
+        "properties": {
+          "create_proposal": {
+            "type": "object",
+            "required": [
+              "proposal"
+            ],
+            "properties": {
+              "proposal": {
+                "$ref": "#/definitions/Proposal_for_String_and_TokenUnverified"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": [
+          "reject_proposal"
+        ],
+        "properties": {
+          "reject_proposal": {
+            "type": "object",
+            "required": [
+              "id"
+            ],
+            "properties": {
+              "id": {
+                "$ref": "#/definitions/Uint128"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": [
+          "accept_proposal"
+        ],
+        "properties": {
+          "accept_proposal": {
+            "type": "object",
+            "required": [
+              "id"
+            ],
+            "properties": {
+              "id": {
+                "$ref": "#/definitions/Uint128"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": [
+          "deposit_tokens"
+        ],
+        "properties": {
+          "deposit_tokens": {
+            "type": "object",
+            "required": [
+              "collection_address"
+            ],
+            "properties": {
+              "collection_address": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": [
+          "withdraw_tokens"
+        ],
+        "properties": {
+          "withdraw_tokens": {
+            "type": "object",
+            "required": [
+              "amount",
+              "collection_address"
+            ],
+            "properties": {
+              "amount": {
+                "$ref": "#/definitions/Uint128"
+              },
+              "collection_address": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": [
+          "receive"
+        ],
+        "properties": {
+          "receive": {
+            "$ref": "#/definitions/Cw20ReceiveMsg"
+          }
+        },
+        "additionalProperties": false
+      }
+    ],
+    "definitions": {
+      "Binary": {
+        "description": "Binary is a wrapper around Vec<u8> to add base64 de/serialization with serde. It also adds some helper methods to help encode inline.\n\nThis is only needed as serde-json-{core,wasm} has a horrible encoding for Vec<u8>. See also <https://github.com/CosmWasm/cosmwasm/blob/main/docs/MESSAGE_TYPES.md>.",
+        "type": "string"
+      },
+      "Collection_for_String_and_TokenUnverified": {
+        "type": "object",
+        "required": [
+          "daily_rewards",
+          "emission_type",
+          "name",
+          "owner",
+          "staking_currency"
+        ],
+        "properties": {
+          "daily_rewards": {
+            "description": "Amount of tokens per 24 h for single staked NFT",
+            "allOf": [
+              {
+                "$ref": "#/definitions/Decimal"
+              }
+            ]
+          },
+          "emission_type": {
+            "description": "Staking token can be taken from funds deposited to Collection balance (Spending) or minted by Minter contract (Minting)",
+            "allOf": [
+              {
+                "$ref": "#/definitions/EmissionType"
+              }
+            ]
+          },
+          "name": {
+            "type": "string"
+          },
+          "owner": {
+            "description": "Need to specify owner address to prevent accepting proposals with wrong parameters by bad actors",
+            "type": "string"
+          },
+          "staking_currency": {
+            "description": "In case of minting distribution the token must be created with Minter before creating proposal",
+            "allOf": [
+              {
+                "$ref": "#/definitions/Currency_for_TokenUnverified"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "Currency_for_TokenUnverified": {
+        "type": "object",
+        "required": [
+          "decimals",
+          "token"
+        ],
+        "properties": {
+          "decimals": {
+            "type": "integer",
+            "format": "uint8",
+            "minimum": 0.0
+          },
+          "token": {
+            "$ref": "#/definitions/TokenUnverified"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Cw20ReceiveMsg": {
+        "description": "Cw20ReceiveMsg should be de/serialized under `Receive()` variant in a ExecuteMsg",
+        "type": "object",
+        "required": [
+          "amount",
+          "msg",
+          "sender"
+        ],
+        "properties": {
+          "amount": {
+            "$ref": "#/definitions/Uint128"
+          },
+          "msg": {
+            "$ref": "#/definitions/Binary"
+          },
+          "sender": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Decimal": {
+        "description": "A fixed-point decimal value with 18 fractional digits, i.e. Decimal(1_000_000_000_000_000_000) == 1.0\n\nThe greatest possible value that can be represented is 340282366920938463463.374607431768211455 (which is (2^128 - 1) / 10^18)",
+        "type": "string"
+      },
+      "EmissionType": {
+        "type": "string",
+        "enum": [
+          "spending",
+          "minting"
+        ]
+      },
+      "Funds_for_TokenUnverified": {
+        "type": "object",
+        "required": [
+          "amount",
+          "currency"
+        ],
+        "properties": {
+          "amount": {
+            "$ref": "#/definitions/Uint128"
+          },
+          "currency": {
+            "$ref": "#/definitions/Currency_for_TokenUnverified"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ProposalStatus": {
+        "type": "string",
+        "enum": [
+          "active",
+          "accepted",
+          "rejected"
+        ]
+      },
+      "ProposalType_for_String_and_TokenUnverified": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": [
+              "add_collection"
+            ],
+            "properties": {
+              "add_collection": {
+                "type": "object",
+                "required": [
+                  "collection",
+                  "collection_address"
+                ],
+                "properties": {
+                  "collection": {
+                    "$ref": "#/definitions/Collection_for_String_and_TokenUnverified"
+                  },
+                  "collection_address": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "required": [
+              "update_collection"
+            ],
+            "properties": {
+              "update_collection": {
+                "type": "object",
+                "required": [
+                  "collection_address",
+                  "new_collection"
+                ],
+                "properties": {
+                  "collection_address": {
+                    "type": "string"
+                  },
+                  "new_collection": {
+                    "$ref": "#/definitions/Collection_for_String_and_TokenUnverified"
+                  },
+                  "new_collection_address": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "additionalProperties": false
+          }
+        ]
+      },
+      "Proposal_for_String_and_TokenUnverified": {
+        "type": "object",
+        "required": [
+          "price",
+          "proposal_type"
+        ],
+        "properties": {
+          "price": {
+            "description": "Such logic of adding collections allows to propose listing price for each collection",
+            "allOf": [
+              {
+                "$ref": "#/definitions/Funds_for_TokenUnverified"
+              }
+            ]
+          },
+          "proposal_status": {
+            "anyOf": [
+              {
+                "$ref": "#/definitions/ProposalStatus"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "proposal_type": {
+            "$ref": "#/definitions/ProposalType_for_String_and_TokenUnverified"
+          }
+        },
+        "additionalProperties": false
+      },
+      "StakedCollectionInfo_for_String": {
+        "type": "object",
+        "required": [
+          "collection_address",
+          "staked_token_info_list"
+        ],
+        "properties": {
+          "collection_address": {
+            "type": "string"
+          },
+          "staked_token_info_list": {
+            "type": "array",
+            "items": {
+              "$ref": "#/definitions/StakedTokenInfo"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "StakedTokenInfo": {
+        "type": "object",
+        "required": [
+          "token_id"
+        ],
+        "properties": {
+          "last_claim_date": {
+            "anyOf": [
+              {
+                "$ref": "#/definitions/Timestamp"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "staking_start_date": {
+            "description": "It's possible to make a snapshot thanks to this field",
+            "anyOf": [
+              {
+                "$ref": "#/definitions/Timestamp"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "token_id": {
+            "$ref": "#/definitions/Uint128"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Timestamp": {
+        "description": "A point in time in nanosecond precision.\n\nThis type can represent times from 1970-01-01T00:00:00Z to 2554-07-21T23:34:33Z.\n\n## Examples\n\n``` # use cosmwasm_std::Timestamp; let ts = Timestamp::from_nanos(1_000_000_202); assert_eq!(ts.nanos(), 1_000_000_202); assert_eq!(ts.seconds(), 1); assert_eq!(ts.subsec_nanos(), 202);\n\nlet ts = ts.plus_seconds(2); assert_eq!(ts.nanos(), 3_000_000_202); assert_eq!(ts.seconds(), 3); assert_eq!(ts.subsec_nanos(), 202); ```",
+        "allOf": [
+          {
+            "$ref": "#/definitions/Uint64"
+          }
+        ]
+      },
+      "TokenUnverified": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": [
+              "native"
+            ],
+            "properties": {
+              "native": {
+                "type": "object",
+                "required": [
+                  "denom"
+                ],
+                "properties": {
+                  "denom": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "required": [
+              "cw20"
+            ],
+            "properties": {
+              "cw20": {
+                "type": "object",
+                "required": [
+                  "address"
+                ],
+                "properties": {
+                  "address": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "additionalProperties": false
+          }
+        ]
+      },
+      "Uint128": {
+        "description": "A thin wrapper around u128 that is using strings for JSON encoding/decoding, such that the full u128 range can be used for clients that convert JSON numbers to floats, like JavaScript and jq.\n\n# Examples\n\nUse `from` to create instances of this and `u128` to get the value out:\n\n``` # use cosmwasm_std::Uint128; let a = Uint128::from(123u128); assert_eq!(a.u128(), 123);\n\nlet b = Uint128::from(42u64); assert_eq!(b.u128(), 42);\n\nlet c = Uint128::from(70u32); assert_eq!(c.u128(), 70); ```",
+        "type": "string"
+      },
+      "Uint64": {
+        "description": "A thin wrapper around u64 that is using strings for JSON encoding/decoding, such that the full u64 range can be used for clients that convert JSON numbers to floats, like JavaScript and jq.\n\n# Examples\n\nUse `from` to create instances of this and `u64` to get the value out:\n\n``` # use cosmwasm_std::Uint64; let a = Uint64::from(42u64); assert_eq!(a.u64(), 42);\n\nlet b = Uint64::from(70u32); assert_eq!(b.u64(), 70); ```",
+        "type": "string"
+      }
+    }
+  },
+  "query": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "QueryMsg",
+    "oneOf": [
+      {
+        "type": "object",
+        "required": [
+          "query_config"
+        ],
+        "properties": {
+          "query_config": {
+            "type": "object",
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": [
+          "query_funds"
+        ],
+        "properties": {
+          "query_funds": {
+            "type": "object",
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": [
+          "query_stakers"
+        ],
+        "properties": {
+          "query_stakers": {
+            "type": "object",
+            "properties": {
+              "addresses": {
+                "type": [
+                  "array",
+                  "null"
+                ],
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": [
+          "query_staking_rewards"
+        ],
+        "properties": {
+          "query_staking_rewards": {
+            "type": "object",
+            "required": [
+              "address"
+            ],
+            "properties": {
+              "address": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": [
+          "query_associated_balances"
+        ],
+        "properties": {
+          "query_associated_balances": {
+            "type": "object",
+            "required": [
+              "address"
+            ],
+            "properties": {
+              "address": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": [
+          "query_proposals"
+        ],
+        "properties": {
+          "query_proposals": {
+            "type": "object",
+            "properties": {
+              "last_amount": {
+                "anyOf": [
+                  {
+                    "$ref": "#/definitions/Uint128"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": [
+          "query_collections"
+        ],
+        "properties": {
+          "query_collections": {
+            "type": "object",
+            "properties": {
+              "addresses": {
+                "type": [
+                  "array",
+                  "null"
+                ],
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": [
+          "query_collections_balances"
+        ],
+        "properties": {
+          "query_collections_balances": {
+            "type": "object",
+            "properties": {
+              "addresses": {
+                "type": [
+                  "array",
+                  "null"
+                ],
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      }
+    ],
+    "definitions": {
+      "Uint128": {
+        "description": "A thin wrapper around u128 that is using strings for JSON encoding/decoding, such that the full u128 range can be used for clients that convert JSON numbers to floats, like JavaScript and jq.\n\n# Examples\n\nUse `from` to create instances of this and `u128` to get the value out:\n\n``` # use cosmwasm_std::Uint128; let a = Uint128::from(123u128); assert_eq!(a.u128(), 123);\n\nlet b = Uint128::from(42u64); assert_eq!(b.u128(), 42);\n\nlet c = Uint128::from(70u32); assert_eq!(c.u128(), 70); ```",
+        "type": "string"
+      }
+    }
+  },
+  "migrate": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "MigrateMsg",
+    "type": "string",
+    "enum": []
+  },
+  "sudo": null,
+  "responses": {
+    "query_associated_balances": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "BalancesResponseItem",
+      "type": "object",
+      "required": [
+        "funds_list",
+        "staker_address"
+      ],
+      "properties": {
+        "funds_list": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Funds_for_Token"
+          }
+        },
+        "staker_address": {
+          "$ref": "#/definitions/Addr"
+        }
+      },
+      "additionalProperties": false,
+      "definitions": {
+        "Addr": {
+          "description": "A human readable address.\n\nIn Cosmos, this is typically bech32 encoded. But for multi-chain smart contracts no assumptions should be made other than being UTF-8 encoded and of reasonable length.\n\nThis type represents a validated address. It can be created in the following ways 1. Use `Addr::unchecked(input)` 2. Use `let checked: Addr = deps.api.addr_validate(input)?` 3. Use `let checked: Addr = deps.api.addr_humanize(canonical_addr)?` 4. Deserialize from JSON. This must only be done from JSON that was validated before such as a contract's state. `Addr` must not be used in messages sent by the user because this would result in unvalidated instances.\n\nThis type is immutable. If you really need to mutate it (Really? Are you sure?), create a mutable copy using `let mut mutable = Addr::to_string()` and operate on that `String` instance.",
+          "type": "string"
+        },
+        "Currency_for_Token": {
+          "type": "object",
+          "required": [
+            "decimals",
+            "token"
+          ],
+          "properties": {
+            "decimals": {
+              "type": "integer",
+              "format": "uint8",
+              "minimum": 0.0
+            },
+            "token": {
+              "$ref": "#/definitions/Token"
+            }
+          },
+          "additionalProperties": false
+        },
+        "Funds_for_Token": {
+          "type": "object",
+          "required": [
+            "amount",
+            "currency"
+          ],
+          "properties": {
+            "amount": {
+              "$ref": "#/definitions/Uint128"
+            },
+            "currency": {
+              "$ref": "#/definitions/Currency_for_Token"
+            }
+          },
+          "additionalProperties": false
+        },
+        "Token": {
+          "oneOf": [
+            {
+              "type": "object",
+              "required": [
+                "native"
+              ],
+              "properties": {
+                "native": {
+                  "type": "object",
+                  "required": [
+                    "denom"
+                  ],
+                  "properties": {
+                    "denom": {
+                      "type": "string"
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "required": [
+                "cw20"
+              ],
+              "properties": {
+                "cw20": {
+                  "type": "object",
+                  "required": [
+                    "address"
+                  ],
+                  "properties": {
+                    "address": {
+                      "$ref": "#/definitions/Addr"
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "additionalProperties": false
+            }
+          ]
+        },
+        "Uint128": {
+          "description": "A thin wrapper around u128 that is using strings for JSON encoding/decoding, such that the full u128 range can be used for clients that convert JSON numbers to floats, like JavaScript and jq.\n\n# Examples\n\nUse `from` to create instances of this and `u128` to get the value out:\n\n``` # use cosmwasm_std::Uint128; let a = Uint128::from(123u128); assert_eq!(a.u128(), 123);\n\nlet b = Uint128::from(42u64); assert_eq!(b.u128(), 42);\n\nlet c = Uint128::from(70u32); assert_eq!(c.u128(), 70); ```",
+          "type": "string"
+        }
+      }
+    },
+    "query_collections": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Array_of_QueryCollectionsResponseItem",
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/QueryCollectionsResponseItem"
+      },
+      "definitions": {
+        "Addr": {
+          "description": "A human readable address.\n\nIn Cosmos, this is typically bech32 encoded. But for multi-chain smart contracts no assumptions should be made other than being UTF-8 encoded and of reasonable length.\n\nThis type represents a validated address. It can be created in the following ways 1. Use `Addr::unchecked(input)` 2. Use `let checked: Addr = deps.api.addr_validate(input)?` 3. Use `let checked: Addr = deps.api.addr_humanize(canonical_addr)?` 4. Deserialize from JSON. This must only be done from JSON that was validated before such as a contract's state. `Addr` must not be used in messages sent by the user because this would result in unvalidated instances.\n\nThis type is immutable. If you really need to mutate it (Really? Are you sure?), create a mutable copy using `let mut mutable = Addr::to_string()` and operate on that `String` instance.",
+          "type": "string"
+        },
+        "Collection_for_Addr_and_Token": {
+          "type": "object",
+          "required": [
+            "daily_rewards",
+            "emission_type",
+            "name",
+            "owner",
+            "staking_currency"
+          ],
+          "properties": {
+            "daily_rewards": {
+              "description": "Amount of tokens per 24 h for single staked NFT",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/Decimal"
+                }
+              ]
+            },
+            "emission_type": {
+              "description": "Staking token can be taken from funds deposited to Collection balance (Spending) or minted by Minter contract (Minting)",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/EmissionType"
+                }
+              ]
+            },
+            "name": {
+              "type": "string"
+            },
+            "owner": {
+              "description": "Need to specify owner address to prevent accepting proposals with wrong parameters by bad actors",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/Addr"
+                }
+              ]
+            },
+            "staking_currency": {
+              "description": "In case of minting distribution the token must be created with Minter before creating proposal",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/Currency_for_Token"
+                }
+              ]
+            }
+          },
+          "additionalProperties": false
+        },
+        "Currency_for_Token": {
+          "type": "object",
+          "required": [
+            "decimals",
+            "token"
+          ],
+          "properties": {
+            "decimals": {
+              "type": "integer",
+              "format": "uint8",
+              "minimum": 0.0
+            },
+            "token": {
+              "$ref": "#/definitions/Token"
+            }
+          },
+          "additionalProperties": false
+        },
+        "Decimal": {
+          "description": "A fixed-point decimal value with 18 fractional digits, i.e. Decimal(1_000_000_000_000_000_000) == 1.0\n\nThe greatest possible value that can be represented is 340282366920938463463.374607431768211455 (which is (2^128 - 1) / 10^18)",
+          "type": "string"
+        },
+        "EmissionType": {
+          "type": "string",
+          "enum": [
+            "spending",
+            "minting"
+          ]
+        },
+        "QueryCollectionsResponseItem": {
+          "type": "object",
+          "required": [
+            "address",
+            "collection"
+          ],
+          "properties": {
+            "address": {
+              "$ref": "#/definitions/Addr"
+            },
+            "collection": {
+              "$ref": "#/definitions/Collection_for_Addr_and_Token"
+            }
+          },
+          "additionalProperties": false
+        },
+        "Token": {
+          "oneOf": [
+            {
+              "type": "object",
+              "required": [
+                "native"
+              ],
+              "properties": {
+                "native": {
+                  "type": "object",
+                  "required": [
+                    "denom"
+                  ],
+                  "properties": {
+                    "denom": {
+                      "type": "string"
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "required": [
+                "cw20"
+              ],
+              "properties": {
+                "cw20": {
+                  "type": "object",
+                  "required": [
+                    "address"
+                  ],
+                  "properties": {
+                    "address": {
+                      "$ref": "#/definitions/Addr"
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "additionalProperties": false
+            }
+          ]
+        }
+      }
+    },
+    "query_collections_balances": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Array_of_QueryCollectionsBalancesResponseItem",
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/QueryCollectionsBalancesResponseItem"
+      },
+      "definitions": {
+        "Addr": {
+          "description": "A human readable address.\n\nIn Cosmos, this is typically bech32 encoded. But for multi-chain smart contracts no assumptions should be made other than being UTF-8 encoded and of reasonable length.\n\nThis type represents a validated address. It can be created in the following ways 1. Use `Addr::unchecked(input)` 2. Use `let checked: Addr = deps.api.addr_validate(input)?` 3. Use `let checked: Addr = deps.api.addr_humanize(canonical_addr)?` 4. Deserialize from JSON. This must only be done from JSON that was validated before such as a contract's state. `Addr` must not be used in messages sent by the user because this would result in unvalidated instances.\n\nThis type is immutable. If you really need to mutate it (Really? Are you sure?), create a mutable copy using `let mut mutable = Addr::to_string()` and operate on that `String` instance.",
+          "type": "string"
+        },
+        "Currency_for_Token": {
+          "type": "object",
+          "required": [
+            "decimals",
+            "token"
+          ],
+          "properties": {
+            "decimals": {
+              "type": "integer",
+              "format": "uint8",
+              "minimum": 0.0
+            },
+            "token": {
+              "$ref": "#/definitions/Token"
+            }
+          },
+          "additionalProperties": false
+        },
+        "Funds_for_Token": {
+          "type": "object",
+          "required": [
+            "amount",
+            "currency"
+          ],
+          "properties": {
+            "amount": {
+              "$ref": "#/definitions/Uint128"
+            },
+            "currency": {
+              "$ref": "#/definitions/Currency_for_Token"
+            }
+          },
+          "additionalProperties": false
+        },
+        "QueryCollectionsBalancesResponseItem": {
+          "type": "object",
+          "required": [
+            "address",
+            "funds"
+          ],
+          "properties": {
+            "address": {
+              "$ref": "#/definitions/Addr"
+            },
+            "funds": {
+              "$ref": "#/definitions/Funds_for_Token"
+            }
+          },
+          "additionalProperties": false
+        },
+        "Token": {
+          "oneOf": [
+            {
+              "type": "object",
+              "required": [
+                "native"
+              ],
+              "properties": {
+                "native": {
+                  "type": "object",
+                  "required": [
+                    "denom"
+                  ],
+                  "properties": {
+                    "denom": {
+                      "type": "string"
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "required": [
+                "cw20"
+              ],
+              "properties": {
+                "cw20": {
+                  "type": "object",
+                  "required": [
+                    "address"
+                  ],
+                  "properties": {
+                    "address": {
+                      "$ref": "#/definitions/Addr"
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "additionalProperties": false
+            }
+          ]
+        },
+        "Uint128": {
+          "description": "A thin wrapper around u128 that is using strings for JSON encoding/decoding, such that the full u128 range can be used for clients that convert JSON numbers to floats, like JavaScript and jq.\n\n# Examples\n\nUse `from` to create instances of this and `u128` to get the value out:\n\n``` # use cosmwasm_std::Uint128; let a = Uint128::from(123u128); assert_eq!(a.u128(), 123);\n\nlet b = Uint128::from(42u64); assert_eq!(b.u128(), 42);\n\nlet c = Uint128::from(70u32); assert_eq!(c.u128(), 70); ```",
+          "type": "string"
+        }
+      }
+    },
+    "query_config": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Config",
+      "type": "object",
+      "required": [
+        "admin",
+        "chain_id_dev"
+      ],
+      "properties": {
+        "admin": {
+          "$ref": "#/definitions/Addr"
+        },
+        "chain_id_dev": {
+          "type": "string"
+        },
+        "minter": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/Addr"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "owner": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/Addr"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "definitions": {
+        "Addr": {
+          "description": "A human readable address.\n\nIn Cosmos, this is typically bech32 encoded. But for multi-chain smart contracts no assumptions should be made other than being UTF-8 encoded and of reasonable length.\n\nThis type represents a validated address. It can be created in the following ways 1. Use `Addr::unchecked(input)` 2. Use `let checked: Addr = deps.api.addr_validate(input)?` 3. Use `let checked: Addr = deps.api.addr_humanize(canonical_addr)?` 4. Deserialize from JSON. This must only be done from JSON that was validated before such as a contract's state. `Addr` must not be used in messages sent by the user because this would result in unvalidated instances.\n\nThis type is immutable. If you really need to mutate it (Really? Are you sure?), create a mutable copy using `let mut mutable = Addr::to_string()` and operate on that `String` instance.",
+          "type": "string"
+        }
+      }
+    },
+    "query_funds": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Array_of_Funds_for_Token",
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Funds_for_Token"
+      },
+      "definitions": {
+        "Addr": {
+          "description": "A human readable address.\n\nIn Cosmos, this is typically bech32 encoded. But for multi-chain smart contracts no assumptions should be made other than being UTF-8 encoded and of reasonable length.\n\nThis type represents a validated address. It can be created in the following ways 1. Use `Addr::unchecked(input)` 2. Use `let checked: Addr = deps.api.addr_validate(input)?` 3. Use `let checked: Addr = deps.api.addr_humanize(canonical_addr)?` 4. Deserialize from JSON. This must only be done from JSON that was validated before such as a contract's state. `Addr` must not be used in messages sent by the user because this would result in unvalidated instances.\n\nThis type is immutable. If you really need to mutate it (Really? Are you sure?), create a mutable copy using `let mut mutable = Addr::to_string()` and operate on that `String` instance.",
+          "type": "string"
+        },
+        "Currency_for_Token": {
+          "type": "object",
+          "required": [
+            "decimals",
+            "token"
+          ],
+          "properties": {
+            "decimals": {
+              "type": "integer",
+              "format": "uint8",
+              "minimum": 0.0
+            },
+            "token": {
+              "$ref": "#/definitions/Token"
+            }
+          },
+          "additionalProperties": false
+        },
+        "Funds_for_Token": {
+          "type": "object",
+          "required": [
+            "amount",
+            "currency"
+          ],
+          "properties": {
+            "amount": {
+              "$ref": "#/definitions/Uint128"
+            },
+            "currency": {
+              "$ref": "#/definitions/Currency_for_Token"
+            }
+          },
+          "additionalProperties": false
+        },
+        "Token": {
+          "oneOf": [
+            {
+              "type": "object",
+              "required": [
+                "native"
+              ],
+              "properties": {
+                "native": {
+                  "type": "object",
+                  "required": [
+                    "denom"
+                  ],
+                  "properties": {
+                    "denom": {
+                      "type": "string"
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "required": [
+                "cw20"
+              ],
+              "properties": {
+                "cw20": {
+                  "type": "object",
+                  "required": [
+                    "address"
+                  ],
+                  "properties": {
+                    "address": {
+                      "$ref": "#/definitions/Addr"
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "additionalProperties": false
+            }
+          ]
+        },
+        "Uint128": {
+          "description": "A thin wrapper around u128 that is using strings for JSON encoding/decoding, such that the full u128 range can be used for clients that convert JSON numbers to floats, like JavaScript and jq.\n\n# Examples\n\nUse `from` to create instances of this and `u128` to get the value out:\n\n``` # use cosmwasm_std::Uint128; let a = Uint128::from(123u128); assert_eq!(a.u128(), 123);\n\nlet b = Uint128::from(42u64); assert_eq!(b.u128(), 42);\n\nlet c = Uint128::from(70u32); assert_eq!(c.u128(), 70); ```",
+          "type": "string"
+        }
+      }
+    },
+    "query_proposals": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Array_of_QueryProposalsResponseItem",
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/QueryProposalsResponseItem"
+      },
+      "definitions": {
+        "Addr": {
+          "description": "A human readable address.\n\nIn Cosmos, this is typically bech32 encoded. But for multi-chain smart contracts no assumptions should be made other than being UTF-8 encoded and of reasonable length.\n\nThis type represents a validated address. It can be created in the following ways 1. Use `Addr::unchecked(input)` 2. Use `let checked: Addr = deps.api.addr_validate(input)?` 3. Use `let checked: Addr = deps.api.addr_humanize(canonical_addr)?` 4. Deserialize from JSON. This must only be done from JSON that was validated before such as a contract's state. `Addr` must not be used in messages sent by the user because this would result in unvalidated instances.\n\nThis type is immutable. If you really need to mutate it (Really? Are you sure?), create a mutable copy using `let mut mutable = Addr::to_string()` and operate on that `String` instance.",
+          "type": "string"
+        },
+        "Collection_for_Addr_and_Token": {
+          "type": "object",
+          "required": [
+            "daily_rewards",
+            "emission_type",
+            "name",
+            "owner",
+            "staking_currency"
+          ],
+          "properties": {
+            "daily_rewards": {
+              "description": "Amount of tokens per 24 h for single staked NFT",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/Decimal"
+                }
+              ]
+            },
+            "emission_type": {
+              "description": "Staking token can be taken from funds deposited to Collection balance (Spending) or minted by Minter contract (Minting)",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/EmissionType"
+                }
+              ]
+            },
+            "name": {
+              "type": "string"
+            },
+            "owner": {
+              "description": "Need to specify owner address to prevent accepting proposals with wrong parameters by bad actors",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/Addr"
+                }
+              ]
+            },
+            "staking_currency": {
+              "description": "In case of minting distribution the token must be created with Minter before creating proposal",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/Currency_for_Token"
+                }
+              ]
+            }
+          },
+          "additionalProperties": false
+        },
+        "Currency_for_Token": {
+          "type": "object",
+          "required": [
+            "decimals",
+            "token"
+          ],
+          "properties": {
+            "decimals": {
+              "type": "integer",
+              "format": "uint8",
+              "minimum": 0.0
+            },
+            "token": {
+              "$ref": "#/definitions/Token"
+            }
+          },
+          "additionalProperties": false
+        },
+        "Decimal": {
+          "description": "A fixed-point decimal value with 18 fractional digits, i.e. Decimal(1_000_000_000_000_000_000) == 1.0\n\nThe greatest possible value that can be represented is 340282366920938463463.374607431768211455 (which is (2^128 - 1) / 10^18)",
+          "type": "string"
+        },
+        "EmissionType": {
+          "type": "string",
+          "enum": [
+            "spending",
+            "minting"
+          ]
+        },
+        "Funds_for_Token": {
+          "type": "object",
+          "required": [
+            "amount",
+            "currency"
+          ],
+          "properties": {
+            "amount": {
+              "$ref": "#/definitions/Uint128"
+            },
+            "currency": {
+              "$ref": "#/definitions/Currency_for_Token"
+            }
+          },
+          "additionalProperties": false
+        },
+        "ProposalStatus": {
+          "type": "string",
+          "enum": [
+            "active",
+            "accepted",
+            "rejected"
+          ]
+        },
+        "ProposalType_for_Addr_and_Token": {
+          "oneOf": [
+            {
+              "type": "object",
+              "required": [
+                "add_collection"
+              ],
+              "properties": {
+                "add_collection": {
+                  "type": "object",
+                  "required": [
+                    "collection",
+                    "collection_address"
+                  ],
+                  "properties": {
+                    "collection": {
+                      "$ref": "#/definitions/Collection_for_Addr_and_Token"
+                    },
+                    "collection_address": {
+                      "$ref": "#/definitions/Addr"
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "required": [
+                "update_collection"
+              ],
+              "properties": {
+                "update_collection": {
+                  "type": "object",
+                  "required": [
+                    "collection_address",
+                    "new_collection"
+                  ],
+                  "properties": {
+                    "collection_address": {
+                      "$ref": "#/definitions/Addr"
+                    },
+                    "new_collection": {
+                      "$ref": "#/definitions/Collection_for_Addr_and_Token"
+                    },
+                    "new_collection_address": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/definitions/Addr"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "additionalProperties": false
+            }
+          ]
+        },
+        "Proposal_for_Addr_and_Token": {
+          "type": "object",
+          "required": [
+            "price",
+            "proposal_type"
+          ],
+          "properties": {
+            "price": {
+              "description": "Such logic of adding collections allows to propose listing price for each collection",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/Funds_for_Token"
+                }
+              ]
+            },
+            "proposal_status": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/ProposalStatus"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "proposal_type": {
+              "$ref": "#/definitions/ProposalType_for_Addr_and_Token"
+            }
+          },
+          "additionalProperties": false
+        },
+        "QueryProposalsResponseItem": {
+          "type": "object",
+          "required": [
+            "id",
+            "proposal"
+          ],
+          "properties": {
+            "id": {
+              "$ref": "#/definitions/Uint128"
+            },
+            "proposal": {
+              "$ref": "#/definitions/Proposal_for_Addr_and_Token"
+            }
+          },
+          "additionalProperties": false
+        },
+        "Token": {
+          "oneOf": [
+            {
+              "type": "object",
+              "required": [
+                "native"
+              ],
+              "properties": {
+                "native": {
+                  "type": "object",
+                  "required": [
+                    "denom"
+                  ],
+                  "properties": {
+                    "denom": {
+                      "type": "string"
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "required": [
+                "cw20"
+              ],
+              "properties": {
+                "cw20": {
+                  "type": "object",
+                  "required": [
+                    "address"
+                  ],
+                  "properties": {
+                    "address": {
+                      "$ref": "#/definitions/Addr"
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "additionalProperties": false
+            }
+          ]
+        },
+        "Uint128": {
+          "description": "A thin wrapper around u128 that is using strings for JSON encoding/decoding, such that the full u128 range can be used for clients that convert JSON numbers to floats, like JavaScript and jq.\n\n# Examples\n\nUse `from` to create instances of this and `u128` to get the value out:\n\n``` # use cosmwasm_std::Uint128; let a = Uint128::from(123u128); assert_eq!(a.u128(), 123);\n\nlet b = Uint128::from(42u64); assert_eq!(b.u128(), 42);\n\nlet c = Uint128::from(70u32); assert_eq!(c.u128(), 70); ```",
+          "type": "string"
+        }
+      }
+    },
+    "query_stakers": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Array_of_QueryStakersResponseItem",
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/QueryStakersResponseItem"
+      },
+      "definitions": {
+        "Addr": {
+          "description": "A human readable address.\n\nIn Cosmos, this is typically bech32 encoded. But for multi-chain smart contracts no assumptions should be made other than being UTF-8 encoded and of reasonable length.\n\nThis type represents a validated address. It can be created in the following ways 1. Use `Addr::unchecked(input)` 2. Use `let checked: Addr = deps.api.addr_validate(input)?` 3. Use `let checked: Addr = deps.api.addr_humanize(canonical_addr)?` 4. Deserialize from JSON. This must only be done from JSON that was validated before such as a contract's state. `Addr` must not be used in messages sent by the user because this would result in unvalidated instances.\n\nThis type is immutable. If you really need to mutate it (Really? Are you sure?), create a mutable copy using `let mut mutable = Addr::to_string()` and operate on that `String` instance.",
+          "type": "string"
+        },
+        "QueryStakersResponseItem": {
+          "type": "object",
+          "required": [
+            "staked_collection_info_list",
+            "staker_address"
+          ],
+          "properties": {
+            "staked_collection_info_list": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/StakedCollectionInfo_for_Addr"
+              }
+            },
+            "staker_address": {
+              "$ref": "#/definitions/Addr"
+            }
+          },
+          "additionalProperties": false
+        },
+        "StakedCollectionInfo_for_Addr": {
+          "type": "object",
+          "required": [
+            "collection_address",
+            "staked_token_info_list"
+          ],
+          "properties": {
+            "collection_address": {
+              "$ref": "#/definitions/Addr"
+            },
+            "staked_token_info_list": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/StakedTokenInfo"
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "StakedTokenInfo": {
+          "type": "object",
+          "required": [
+            "token_id"
+          ],
+          "properties": {
+            "last_claim_date": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/Timestamp"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "staking_start_date": {
+              "description": "It's possible to make a snapshot thanks to this field",
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/Timestamp"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "token_id": {
+              "$ref": "#/definitions/Uint128"
+            }
+          },
+          "additionalProperties": false
+        },
+        "Timestamp": {
+          "description": "A point in time in nanosecond precision.\n\nThis type can represent times from 1970-01-01T00:00:00Z to 2554-07-21T23:34:33Z.\n\n## Examples\n\n``` # use cosmwasm_std::Timestamp; let ts = Timestamp::from_nanos(1_000_000_202); assert_eq!(ts.nanos(), 1_000_000_202); assert_eq!(ts.seconds(), 1); assert_eq!(ts.subsec_nanos(), 202);\n\nlet ts = ts.plus_seconds(2); assert_eq!(ts.nanos(), 3_000_000_202); assert_eq!(ts.seconds(), 3); assert_eq!(ts.subsec_nanos(), 202); ```",
+          "allOf": [
+            {
+              "$ref": "#/definitions/Uint64"
+            }
+          ]
+        },
+        "Uint128": {
+          "description": "A thin wrapper around u128 that is using strings for JSON encoding/decoding, such that the full u128 range can be used for clients that convert JSON numbers to floats, like JavaScript and jq.\n\n# Examples\n\nUse `from` to create instances of this and `u128` to get the value out:\n\n``` # use cosmwasm_std::Uint128; let a = Uint128::from(123u128); assert_eq!(a.u128(), 123);\n\nlet b = Uint128::from(42u64); assert_eq!(b.u128(), 42);\n\nlet c = Uint128::from(70u32); assert_eq!(c.u128(), 70); ```",
+          "type": "string"
+        },
+        "Uint64": {
+          "description": "A thin wrapper around u64 that is using strings for JSON encoding/decoding, such that the full u64 range can be used for clients that convert JSON numbers to floats, like JavaScript and jq.\n\n# Examples\n\nUse `from` to create instances of this and `u64` to get the value out:\n\n``` # use cosmwasm_std::Uint64; let a = Uint64::from(42u64); assert_eq!(a.u64(), 42);\n\nlet b = Uint64::from(70u32); assert_eq!(b.u64(), 70); ```",
+          "type": "string"
+        }
+      }
+    },
+    "query_staking_rewards": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "BalancesResponseItem",
+      "type": "object",
+      "required": [
+        "funds_list",
+        "staker_address"
+      ],
+      "properties": {
+        "funds_list": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Funds_for_Token"
+          }
+        },
+        "staker_address": {
+          "$ref": "#/definitions/Addr"
+        }
+      },
+      "additionalProperties": false,
+      "definitions": {
+        "Addr": {
+          "description": "A human readable address.\n\nIn Cosmos, this is typically bech32 encoded. But for multi-chain smart contracts no assumptions should be made other than being UTF-8 encoded and of reasonable length.\n\nThis type represents a validated address. It can be created in the following ways 1. Use `Addr::unchecked(input)` 2. Use `let checked: Addr = deps.api.addr_validate(input)?` 3. Use `let checked: Addr = deps.api.addr_humanize(canonical_addr)?` 4. Deserialize from JSON. This must only be done from JSON that was validated before such as a contract's state. `Addr` must not be used in messages sent by the user because this would result in unvalidated instances.\n\nThis type is immutable. If you really need to mutate it (Really? Are you sure?), create a mutable copy using `let mut mutable = Addr::to_string()` and operate on that `String` instance.",
+          "type": "string"
+        },
+        "Currency_for_Token": {
+          "type": "object",
+          "required": [
+            "decimals",
+            "token"
+          ],
+          "properties": {
+            "decimals": {
+              "type": "integer",
+              "format": "uint8",
+              "minimum": 0.0
+            },
+            "token": {
+              "$ref": "#/definitions/Token"
+            }
+          },
+          "additionalProperties": false
+        },
+        "Funds_for_Token": {
+          "type": "object",
+          "required": [
+            "amount",
+            "currency"
+          ],
+          "properties": {
+            "amount": {
+              "$ref": "#/definitions/Uint128"
+            },
+            "currency": {
+              "$ref": "#/definitions/Currency_for_Token"
+            }
+          },
+          "additionalProperties": false
+        },
+        "Token": {
+          "oneOf": [
+            {
+              "type": "object",
+              "required": [
+                "native"
+              ],
+              "properties": {
+                "native": {
+                  "type": "object",
+                  "required": [
+                    "denom"
+                  ],
+                  "properties": {
+                    "denom": {
+                      "type": "string"
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "required": [
+                "cw20"
+              ],
+              "properties": {
+                "cw20": {
+                  "type": "object",
+                  "required": [
+                    "address"
+                  ],
+                  "properties": {
+                    "address": {
+                      "$ref": "#/definitions/Addr"
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "additionalProperties": false
+            }
+          ]
+        },
+        "Uint128": {
+          "description": "A thin wrapper around u128 that is using strings for JSON encoding/decoding, such that the full u128 range can be used for clients that convert JSON numbers to floats, like JavaScript and jq.\n\n# Examples\n\nUse `from` to create instances of this and `u128` to get the value out:\n\n``` # use cosmwasm_std::Uint128; let a = Uint128::from(123u128); assert_eq!(a.u128(), 123);\n\nlet b = Uint128::from(42u64); assert_eq!(b.u128(), 42);\n\nlet c = Uint128::from(70u32); assert_eq!(c.u128(), 70); ```",
+          "type": "string"
+        }
+      }
+    }
+  }
+}

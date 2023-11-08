@@ -1,0 +1,45 @@
+{
+  "name": "gopstake-scripts",
+  "version": "1.0.0",
+  "description": "",
+  "main": "./dist/backend/index.js",
+  "private": true,
+  "engines": {
+    "node": ">=18.x"
+  },
+  "scripts": {
+    "start": "node ./dist/backend/index.js",
+    "build": "shx rm -rf ./dist/backend/* && shx rm -rf ./dist/common/* && tsc -p ./src/backend/tsconfig.json && shx cp -r ./src/backend/storages/*.json ./dist/backend/storages",
+    "store": "ts-node ./src/backend/services/store-contract.ts",
+    "call": "ts-node ./src/backend/services/call-contract.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/M-Daeva/gopstake-contracts"
+  },
+  "keywords": [],
+  "author": "M. Daeva",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/M-Daeva/gopstake-contracts/issues"
+  },
+  "homepage": "https://github.com/M-Daeva/gopstake-contracts#readme",
+  "dependencies": {
+    "@chain-registry/types": "^0.17.0",
+    "@cosmjs/cosmwasm-stargate": "^0.30.1",
+    "@cosmjs/stargate": "^0.30.1",
+    "axios": "^1.4.0",
+    "chain-registry": "^1.20.0",
+    "crypto-js": "^4.1.1",
+    "decimal.js": "^10.4.3",
+    "dotenv": "^16.0.3"
+  },
+  "devDependencies": {
+    "@types/crypto-js": "^4.1.1",
+    "@types/node": "^20.2.1",
+    "cosmjs-types": "^0.7.2",
+    "cross-env": "^7.0.3",
+    "shx": "^0.3.4",
+    "typescript": "^5.0.4"
+  }
+}
