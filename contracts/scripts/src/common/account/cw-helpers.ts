@@ -1,6 +1,6 @@
 import { l } from "../utils";
 import { getCwClient, signAndBroadcastWrapper } from "./clients";
-import { toUtf8 } from "@cosmjs/encoding";
+import { toUtf8, toBase64 } from "@cosmjs/encoding";
 import { MsgExecuteContract } from "cosmjs-types/cosmwasm/wasm/v1/tx";
 import { MinterMsgComposer } from "../codegen/Minter.message-composer";
 import { MinterQueryClient } from "../codegen/Minter.client";
@@ -9,6 +9,7 @@ import { StakingPlatformQueryClient } from "../codegen/StakingPlatform.client";
 import {
   ProposalForStringAndTokenUnverified,
   StakedCollectionInfoForString,
+  TokenUnverified,
 } from "../codegen/StakingPlatform.types";
 import {
   SigningCosmWasmClient,
@@ -31,9 +32,46 @@ import {
   RevokeCollectionMsg,
   QueryApprovalsMsg,
   ApprovalsResponse,
+  Cw20SendMsg,
 } from "../interfaces";
 
-function getExecuteContractMsg(
+function getSingleTokenExecMsg(
+  contractAddress: string,
+  senderAddress: string,
+  msg: any,
+  amount?: number,
+  token?: TokenUnverified
+) {
+  // get msg without funds
+  if (!(token && amount)) {
+    return _getExecuteContractMsg(contractAddress, senderAddress, msg, []);
+  }
+
+  // get msg with native token
+  if ("native" in token) {
+    return _getExecuteContractMsg(contractAddress, senderAddress, msg, [
+      coin(amount, token.native.denom),
+    ]);
+  }
+
+  // get msg with CW20 token
+  const cw20SendMsg: Cw20SendMsg = {
+    send: {
+      contract: token.cw20.address,
+      amount: `${amount}`,
+      msg: toBase64(msg),
+    },
+  };
+
+  return _getExecuteContractMsg(
+    contractAddress,
+    senderAddress,
+    cw20SendMsg,
+    []
+  );
+}
+
+function _getExecuteContractMsg(
   contractAddress: string,
   senderAddress: string,
   msg: any,
@@ -59,11 +97,10 @@ function getApproveCollectionMsg(
     approve_all: { operator },
   };
 
-  return getExecuteContractMsg(
+  return getSingleTokenExecMsg(
     collectionAddress,
     senderAddress,
-    approveCollectionMsg,
-    []
+    approveCollectionMsg
   );
 }
 
@@ -76,25 +113,22 @@ function getRevokeCollectionMsg(
     revoke_all: { operator },
   };
 
-  return getExecuteContractMsg(
+  return getSingleTokenExecMsg(
     collectionAddress,
     senderAddress,
-    revokeCollectionMsg,
-    []
+    revokeCollectionMsg
   );
 }
 
 function getSetMetadataMsg(
   minterContractAddress: string,
   senderAddress: string,
-  setMetadataMsg: SetMetadataMsg,
-  funds: Coin[]
+  setMetadataMsg: SetMetadataMsg
 ): MsgExecuteContractEncodeObject {
-  return getExecuteContractMsg(
+  return getSingleTokenExecMsg(
     minterContractAddress,
     senderAddress,
-    setMetadataMsg,
-    funds
+    setMetadataMsg
   );
 }
 
@@ -160,10 +194,10 @@ async function getCwExecHelpers(
   const minterMsgComposer = new MinterMsgComposer(owner, minterContractAddress);
 
   async function _msgWrapperWithGasPrice(
-    msg: MsgExecuteContractEncodeObject,
+    msgs: MsgExecuteContractEncodeObject[],
     gasPrice: string
   ) {
-    const tx = await _signAndBroadcast([msg], gasPrice);
+    const tx = await _signAndBroadcast(msgs, gasPrice);
     l("\n", tx, "\n");
     return tx;
   }
@@ -177,7 +211,7 @@ async function getCwExecHelpers(
     gasPrice: string
   ) {
     return await _msgWrapperWithGasPrice(
-      getApproveCollectionMsg(collectionAddress, senderAddress, operator),
+      [getApproveCollectionMsg(collectionAddress, senderAddress, operator)],
       gasPrice
     );
   }
@@ -189,7 +223,7 @@ async function getCwExecHelpers(
     gasPrice: string
   ) {
     return await _msgWrapperWithGasPrice(
-      getRevokeCollectionMsg(collectionAddress, senderAddress, operator),
+      [getRevokeCollectionMsg(collectionAddress, senderAddress, operator)],
       gasPrice
     );
   }
@@ -200,7 +234,7 @@ async function getCwExecHelpers(
     gasPrice: string
   ) {
     return await _msgWrapperWithGasPrice(
-      stakingPlatformMsgComposer.stake({ collectionsToStake }),
+      [stakingPlatformMsgComposer.stake({ collectionsToStake })],
       gasPrice
     );
   }
@@ -210,14 +244,14 @@ async function getCwExecHelpers(
     gasPrice: string
   ) {
     return await _msgWrapperWithGasPrice(
-      stakingPlatformMsgComposer.unstake({ collectionsToUnstake }),
+      [stakingPlatformMsgComposer.unstake({ collectionsToUnstake })],
       gasPrice
     );
   }
 
   async function cwClaimStakingRewards(gasPrice: string) {
     return await _msgWrapperWithGasPrice(
-      stakingPlatformMsgComposer.claimStakingRewards(),
+      [stakingPlatformMsgComposer.claimStakingRewards()],
       gasPrice
     );
   }
@@ -227,9 +261,11 @@ async function getCwExecHelpers(
     gasPrice: string
   ) {
     return await _msgWrapperWithGasPrice(
-      stakingPlatformMsgComposer.updateConfig(
-        updateStakingPlatformConfigStruct
-      ),
+      [
+        stakingPlatformMsgComposer.updateConfig(
+          updateStakingPlatformConfigStruct
+        ),
+      ],
       gasPrice
     );
   }
@@ -239,14 +275,14 @@ async function getCwExecHelpers(
     gasPrice: string
   ) {
     return await _msgWrapperWithGasPrice(
-      stakingPlatformMsgComposer.distributeFunds({ addressAndWeightList }),
+      [stakingPlatformMsgComposer.distributeFunds({ addressAndWeightList })],
       gasPrice
     );
   }
 
   async function cwRemoveCollection(address: string, gasPrice: string) {
     return await _msgWrapperWithGasPrice(
-      stakingPlatformMsgComposer.removeCollection({ address }),
+      [stakingPlatformMsgComposer.removeCollection({ address })],
       gasPrice
     );
   }
@@ -256,37 +292,54 @@ async function getCwExecHelpers(
     gasPrice: string
   ) {
     return await _msgWrapperWithGasPrice(
-      stakingPlatformMsgComposer.createProposal({ proposal }),
+      [stakingPlatformMsgComposer.createProposal({ proposal })],
       gasPrice
     );
   }
 
   async function cwRejectProposal(id: number, gasPrice: string) {
     return await _msgWrapperWithGasPrice(
-      stakingPlatformMsgComposer.rejectProposal({ id: `${id}` }),
+      [stakingPlatformMsgComposer.rejectProposal({ id: `${id}` })],
       gasPrice
     );
   }
 
-  // TODO: add CW20
   async function cwAcceptProposal(
     id: number,
     amount: number,
-    denom_or_contract: string,
+    token: TokenUnverified,
     gasPrice: string
   ) {
+    const {
+      value: { contract, sender, msg },
+    } = stakingPlatformMsgComposer.acceptProposal({ id: `${id}` });
+
+    if (!(contract && sender && msg)) {
+      throw new Error("cwAcceptProposal parameters error!");
+    }
+
     return await _msgWrapperWithGasPrice(
-      stakingPlatformMsgComposer.acceptProposal({ id: `${id}` }, [
-        coin(amount, denom_or_contract),
-      ]),
+      [getSingleTokenExecMsg(contract, sender, msg, amount, token)],
       gasPrice
     );
   }
 
-  // TODO: add CW20
-  async function cwDepositTokens(collectionAddress: string, gasPrice: string) {
+  async function cwDepositTokens(
+    collectionAddress: string,
+    amount: number,
+    token: TokenUnverified,
+    gasPrice: string
+  ) {
+    const {
+      value: { contract, sender, msg },
+    } = stakingPlatformMsgComposer.depositTokens({ collectionAddress });
+
+    if (!(contract && sender && msg)) {
+      throw new Error("cwDepositTokens parameters error!");
+    }
+
     return await _msgWrapperWithGasPrice(
-      stakingPlatformMsgComposer.depositTokens({ collectionAddress }),
+      [getSingleTokenExecMsg(contract, sender, msg, amount, token)],
       gasPrice
     );
   }
@@ -297,10 +350,12 @@ async function getCwExecHelpers(
     gasPrice: string
   ) {
     return await _msgWrapperWithGasPrice(
-      stakingPlatformMsgComposer.withdrawTokens({
-        collectionAddress,
-        amount: `${amount}`,
-      }),
+      [
+        stakingPlatformMsgComposer.withdrawTokens({
+          collectionAddress,
+          amount: `${amount}`,
+        }),
+      ],
       gasPrice
     );
   }
@@ -313,10 +368,20 @@ async function getCwExecHelpers(
     paymentDenom: string,
     gasPrice: string
   ) {
+    const {
+      value: { contract, sender, msg },
+    } = minterMsgComposer.createDenom({ subdenom });
+
+    if (!(contract && sender && msg)) {
+      throw new Error("cwCreateDenom parameters error!");
+    }
+
     return await _msgWrapperWithGasPrice(
-      minterMsgComposer.createDenom({ subdenom }, [
-        coin(paymentAmount, paymentDenom),
-      ]),
+      [
+        getSingleTokenExecMsg(contract, sender, msg, paymentAmount, {
+          native: { denom: paymentDenom },
+        }),
+      ],
       gasPrice
     );
   }
@@ -328,11 +393,13 @@ async function getCwExecHelpers(
     gasPrice: string
   ) {
     return await _msgWrapperWithGasPrice(
-      minterMsgComposer.mintTokens({
-        denom,
-        amount: `${amount}`,
-        mintToAddress,
-      }),
+      [
+        minterMsgComposer.mintTokens({
+          denom,
+          amount: `${amount}`,
+          mintToAddress,
+        }),
+      ],
       gasPrice
     );
   }
@@ -344,11 +411,13 @@ async function getCwExecHelpers(
     gasPrice: string
   ) {
     return await _msgWrapperWithGasPrice(
-      minterMsgComposer.burnTokens({
-        denom,
-        amount: `${amount}`,
-        burnFromAddress,
-      }),
+      [
+        minterMsgComposer.burnTokens({
+          denom,
+          amount: `${amount}`,
+          burnFromAddress,
+        }),
+      ],
       gasPrice
     );
   }
@@ -373,7 +442,7 @@ async function getCwExecHelpers(
     };
 
     return await _msgWrapperWithGasPrice(
-      getSetMetadataMsg(minterContractAddress, owner, setMetadataMsg, []),
+      [getSetMetadataMsg(minterContractAddress, owner, setMetadataMsg)],
       gasPrice
     );
   }
@@ -382,12 +451,14 @@ async function getCwExecHelpers(
     updateMinterConfigStruct: UpdateMinterConfigStruct,
     gasPrice: string
   ) {
-    const { staking_platform } = updateMinterConfigStruct;
+    const { stakingPlatform } = updateMinterConfigStruct;
 
     return await _msgWrapperWithGasPrice(
-      minterMsgComposer.updateConfig({
-        stakingPlatform: staking_platform,
-      }),
+      [
+        minterMsgComposer.updateConfig({
+          stakingPlatform,
+        }),
+      ],
       gasPrice
     );
   }

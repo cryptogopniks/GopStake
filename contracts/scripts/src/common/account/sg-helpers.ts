@@ -2,7 +2,6 @@ import { l, Request } from "../utils";
 import { getSgClient, signAndBroadcastWrapper } from "./clients";
 import { Tendermint37Client } from "@cosmjs/tendermint-rpc";
 import { TokenfactoryConfigResponse } from "../interfaces";
-import { chains } from "chain-registry";
 import {
   DirectSecp256k1HdWallet,
   OfflineSigner,
@@ -24,7 +23,7 @@ async function getSgExecHelpers(
   signer: (OfflineSigner & OfflineDirectSigner) | DirectSecp256k1HdWallet
 ) {
   const sgClient = await getSgClient(rpc, owner, signer);
-  if (!sgClient) return;
+  if (!sgClient) throw new Error("sgClient is not found!");
 
   const client = sgClient.client as SigningStargateClient;
   const signAndBroadcast = signAndBroadcastWrapper(client, owner);

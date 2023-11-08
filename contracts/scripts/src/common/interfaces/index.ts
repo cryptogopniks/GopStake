@@ -6,7 +6,7 @@ interface UpdateStakingPlatformConfigStruct {
 }
 
 interface UpdateMinterConfigStruct {
-  staking_platform?: string;
+  stakingPlatform?: string;
 }
 
 interface TokenfactoryConfigResponse {
@@ -16,6 +16,14 @@ interface TokenfactoryConfigResponse {
       amount: string;
     }[];
     denom_creation_gas_consume: string;
+  };
+}
+
+interface Cw20SendMsg {
+  send: {
+    contract: string;
+    amount: string;
+    msg: string;
   };
 }
 
@@ -159,4 +167,5 @@ export {
   RevokeCollectionMsg,
   QueryApprovalsMsg,
   ApprovalsResponse,
+  Cw20SendMsg,
 };
