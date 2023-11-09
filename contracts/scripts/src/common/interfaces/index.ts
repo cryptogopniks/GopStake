@@ -144,17 +144,39 @@ interface Pagination {
   total: string;
 }
 
+type NetworkName = "STARGAZE" | "INJECTIVE";
+
 type NetworkConfig = {
-  [network: string]: {
-    PREFIX: string;
-    DENOM: string;
-    CHAIN_ID: string;
-    RPC: string;
-    GAS_PRICE_AMOUNT: number;
+  [network in NetworkName]: {
+    BASE: BaseNetworkConfig;
+    CONTRACTS: ContractsConfig[];
   };
 };
 
-export type { NetworkConfig };
+type BaseNetworkConfig = {
+  PREFIX: string;
+  DENOM: string;
+  CHAIN_ID: string;
+  RPC_LIST: string[];
+  GAS_PRICE_AMOUNT: number;
+  STORE_CODE_GAS_MULTIPLIER: number;
+};
+
+type ContractName = "STAKING_PLATFORM" | "MINTER";
+
+type ContractsConfig = {
+  WASM: string;
+  LABEL: string;
+  INIT_MSG: any;
+  DATA: ContractData;
+};
+
+type ContractData = {
+  CODE: number;
+  ADDRESS: string;
+};
+
+export type { NetworkConfig, NetworkName };
 
 export {
   ChainResponse,
@@ -168,4 +190,6 @@ export {
   QueryApprovalsMsg,
   ApprovalsResponse,
   Cw20SendMsg,
+  BaseNetworkConfig,
+  ContractData,
 };

@@ -15,7 +15,7 @@ import {
 async function main(network: NetworkName) {
   try {
     const {
-      BASE: { DENOM, CHAIN_ID },
+      BASE: { CHAIN_ID },
       CONTRACTS,
     } = NETWORK_CONFIG[network];
 
@@ -43,9 +43,22 @@ async function main(network: NetworkName) {
 
     const gasPrice = getGasPriceFromChainRegistryItem(chain);
 
-    const { owner } = await initExecWorkers(network, seed, gasPrice);
+    const { cwUpdateMinterConfig, cwUpdateStakingPlatformConfig } =
+      await initExecWorkers(network, seed, gasPrice);
 
-    const {} = await initQueryWorkers(network);
+    const { cwQueryMinterConfig, cwQueryStakingPlatformConfig } =
+      await initQueryWorkers(network);
+
+    await cwUpdateMinterConfig({
+      stakingPlatform: STAKING_PLATFORM_CONTRACT.DATA.ADDRESS,
+    });
+    await cwUpdateStakingPlatformConfig({
+      minter: MINTER_CONTRACT.DATA.ADDRESS,
+      owner: "stars1hvp3q00ypzrurd46h7c7c3hu86tx9uf8sg5lm3",
+    });
+
+    await cwQueryMinterConfig();
+    await cwQueryStakingPlatformConfig();
   } catch (error) {
     l(error);
   }

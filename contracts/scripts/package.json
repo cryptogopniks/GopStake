@@ -11,7 +11,8 @@
     "start": "node ./dist/backend/index.js",
     "build": "shx rm -rf ./dist/backend/* && shx rm -rf ./dist/common/* && tsc -p ./src/backend/tsconfig.json && shx cp -r ./src/backend/storages/*.json ./dist/backend/storages",
     "store": "ts-node ./src/backend/services/store-contract.ts",
-    "call": "ts-node ./src/backend/services/call-contract.ts"
+    "call": "ts-node ./src/backend/services/call-contract.ts",
+    "config": "ts-node ./src/backend/services/update-config.ts"
   },
   "repository": {
     "type": "git",

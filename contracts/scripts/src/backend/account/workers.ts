@@ -1,6 +1,6 @@
-import { coin, Coin } from "@cosmjs/stargate";
+import { coin } from "@cosmjs/stargate";
 import { getSigner } from "./signer";
-import { l, specifyTimeout as _specifyTimeout } from "../../common/utils";
+import { l } from "../../common/utils";
 import {
   getCwExecHelpers,
   getCwQueryHelpers,
@@ -10,118 +10,243 @@ import {
   getSgQueryHelpers,
 } from "../../common/account/sg-helpers";
 import {
-  CONTRACT_ADDRESS,
-  PREFIX,
-  RPC,
-  CHAIN_ID,
-} from "../../common/config/stars-testnet-config.json";
-// import {
-//   CONTRACT_ADDRESS,
-//   PREFIX,
-//   RPC,
-// } from "../../common/config/osmo-testnet-config.json";
+  NETWORK_CONFIG,
+  MINTER_WASM,
+  STAKING_PLATFORM_WASM,
+} from "../../common/config";
+import {
+  NetworkName,
+  UpdateMinterConfigStruct,
+  UpdateStakingPlatformConfigStruct,
+} from "../../common/interfaces";
+import {
+  ProposalForStringAndTokenUnverified,
+  StakedCollectionInfoForString,
+  TokenUnverified,
+} from "../../common/codegen/StakingPlatform.types";
 
-async function init(seed?: string, gasPrice?: string) {
-  // query functions
-  const dappCwQueryHelpers = await getCwQueryHelpers(CONTRACT_ADDRESS, RPC);
-  if (!dappCwQueryHelpers) throw new Error("dappCwQueryHelpers are not found!");
-
-  const dappSgQueryHelpers = await getSgQueryHelpers(RPC);
-  if (!dappSgQueryHelpers) throw new Error("dappSgQueryHelpers are not found!");
-
+async function initExecWorkers(
+  network: NetworkName,
+  seed: string,
+  gasPrice: string
+) {
   const {
-    cwQueryDenomsByCreator: _cwQueryDenomsByCreator,
-    cwQueryConfig: _cwQueryConfig,
-  } = dappCwQueryHelpers;
+    BASE: {
+      PREFIX,
+      RPC_LIST: [RPC],
+    },
+    CONTRACTS,
+  } = NETWORK_CONFIG[network];
 
-  const {
-    getAllBalances: _getAllBalances,
-    getMetadata: _getMetadata,
-    getTokenfactoryConfig: _getTokenfactoryConfig,
-  } = dappSgQueryHelpers;
+  const MINTER_CONTRACT = CONTRACTS.find((x) => x.WASM === MINTER_WASM);
+  if (!MINTER_CONTRACT) throw new Error("MINTER_CONTRACT in not found!");
 
-  async function cwQueryDenomsByCreator(creator: string) {
-    try {
-      return await _cwQueryDenomsByCreator(creator);
-    } catch (error) {
-      l(error, "\n");
-    }
+  const STAKING_PLATFORM_CONTRACT = CONTRACTS.find(
+    (x) => x.WASM === STAKING_PLATFORM_WASM
+  );
+  if (!STAKING_PLATFORM_CONTRACT) {
+    throw new Error("STAKING_PLATFORM_CONTRACT in not found!");
   }
 
-  async function cwQueryConfig() {
-    try {
-      return await _cwQueryConfig();
-    } catch (error) {
-      l(error, "\n");
-    }
-  }
-
-  async function sgGetAllBalances(address: string) {
-    try {
-      return await _getAllBalances(address);
-    } catch (error) {
-      l(error, "\n");
-    }
-  }
-
-  async function sgGetMetadata(denom: string) {
-    try {
-      return await _getMetadata(denom);
-    } catch (error) {
-      l(error, "\n");
-    }
-  }
-
-  async function sgGetTokenfactoryConfig() {
-    try {
-      return await _getTokenfactoryConfig(CHAIN_ID);
-    } catch (error) {
-      l(error, "\n");
-    }
-  }
-
-  if (!seed) {
-    return {
-      cwQueryDenomsByCreator,
-      cwQueryConfig,
-      sgGetAllBalances,
-      sgGetMetadata,
-      sgGetTokenfactoryConfig,
-    };
-  }
-
-  if (typeof gasPrice != "string") throw new Error("gasPrice is not found!");
-  const gasPriceStr = gasPrice;
-
-  // execute functions
   const { signer, owner } = await getSigner(RPC, PREFIX, seed);
 
-  // dapp cosmwasm helpers
+  // cosmwasm helpers
   const dappCwExecHelpers = await getCwExecHelpers(
-    CONTRACT_ADDRESS,
+    STAKING_PLATFORM_CONTRACT.DATA.ADDRESS,
+    MINTER_CONTRACT.DATA.ADDRESS,
     RPC,
     owner,
     signer
   );
-  if (!dappCwExecHelpers) throw new Error("dappCwExecHelpers are not found!");
+  if (!dappCwExecHelpers) throw new Error("cwExecHelpers are not found!");
 
   const {
+    cwApproveCollection: _cwApproveCollection,
+    cwRevokeCollection: _cwRevokeCollection,
+    cwStake: _cwStake,
+    cwUnstake: _cwUnstake,
+    cwClaimStakingRewards: _cwClaimStakingRewards,
+    cwDistributeFunds: _cwDistributeFunds,
+    cwRemoveCollection: _cwRemoveCollection,
+    cwCreateProposal: _cwCreateProposal,
+    cwRejectProposal: _cwRejectProposal,
+    cwAcceptProposal: _cwAcceptProposal,
+    cwDepositTokens: _cwDepositTokens,
+    cwWithdrawTokens: _cwWithdrawTokens,
     cwCreateDenom: _cwCreateDenom,
     cwMintTokens: _cwMintTokens,
     cwBurnTokens: _cwBurnTokens,
     cwSetMetadata: _cwSetMetadata,
-    cwUpdateConfig: _cwUpdateConfig,
+    cwUpdateStakingPlatformConfig: _cwUpdateStakingPlatformConfig,
+    cwUpdateMinterConfig: _cwUpdateMinterConfig,
   } = dappCwExecHelpers;
 
-  // dapp stargate helpers
+  // stargate helpers
   const dappSgExecHelpers = await getSgExecHelpers(RPC, owner, signer);
-  if (!dappSgExecHelpers) throw new Error("dappSgExecHelpers are not found!");
+  if (!dappSgExecHelpers) throw new Error("sgExecHelpers are not found!");
 
   const { sgSend: _sgSend } = dappSgExecHelpers;
 
-  async function cwCreateDenom(subdenom: string, funds: Coin) {
+  async function cwApproveCollection(
+    collectionAddress: string,
+    senderAddress: string,
+    operator: string
+  ) {
     try {
-      return await _cwCreateDenom(subdenom, funds, gasPriceStr);
+      return await _cwApproveCollection(
+        collectionAddress,
+        senderAddress,
+        operator,
+        gasPrice
+      );
+    } catch (error) {
+      l(error, "\n");
+    }
+  }
+
+  async function cwRevokeCollection(
+    collectionAddress: string,
+    senderAddress: string,
+    operator: string
+  ) {
+    try {
+      return await _cwRevokeCollection(
+        collectionAddress,
+        senderAddress,
+        operator,
+        gasPrice
+      );
+    } catch (error) {
+      l(error, "\n");
+    }
+  }
+
+  async function cwStake(collectionsToStake: StakedCollectionInfoForString[]) {
+    try {
+      return await _cwStake(collectionsToStake, gasPrice);
+    } catch (error) {
+      l(error, "\n");
+    }
+  }
+
+  async function cwUnstake(
+    collectionsToUnstake: StakedCollectionInfoForString[]
+  ) {
+    try {
+      return await _cwUnstake(collectionsToUnstake, gasPrice);
+    } catch (error) {
+      l(error, "\n");
+    }
+  }
+
+  async function cwClaimStakingRewards() {
+    try {
+      return await _cwClaimStakingRewards(gasPrice);
+    } catch (error) {
+      l(error, "\n");
+    }
+  }
+
+  async function cwDistributeFunds(addressAndWeightList: [string, string][]) {
+    try {
+      return await _cwDistributeFunds(addressAndWeightList, gasPrice);
+    } catch (error) {
+      l(error, "\n");
+    }
+  }
+
+  async function cwRemoveCollection(address: string) {
+    try {
+      return await _cwRemoveCollection(address, gasPrice);
+    } catch (error) {
+      l(error, "\n");
+    }
+  }
+
+  async function cwCreateProposal(
+    proposal: ProposalForStringAndTokenUnverified
+  ) {
+    try {
+      return await _cwCreateProposal(proposal, gasPrice);
+    } catch (error) {
+      l(error, "\n");
+    }
+  }
+
+  async function cwRejectProposal(id: number) {
+    try {
+      return await _cwRejectProposal(id, gasPrice);
+    } catch (error) {
+      l(error, "\n");
+    }
+  }
+
+  async function cwAcceptProposal(
+    id: number,
+    amount: number,
+    token: TokenUnverified
+  ) {
+    try {
+      return await _cwAcceptProposal(id, amount, token, gasPrice);
+    } catch (error) {
+      l(error, "\n");
+    }
+  }
+
+  async function cwDepositTokens(
+    collectionAddress: string,
+    amount: number,
+    token: TokenUnverified
+  ) {
+    try {
+      return await _cwDepositTokens(collectionAddress, amount, token, gasPrice);
+    } catch (error) {
+      l(error, "\n");
+    }
+  }
+
+  async function cwWithdrawTokens(collectionAddress: string, amount: number) {
+    try {
+      return await _cwWithdrawTokens(collectionAddress, amount, gasPrice);
+    } catch (error) {
+      l(error, "\n");
+    }
+  }
+
+  // async function a() {
+  //   try {
+  //     return await
+  //   } catch (error) {
+  //     l(error, "\n");
+  //   }
+  // }
+
+  async function cwUpdateStakingPlatformConfig(
+    updateStakingPlatformConfigStruct: UpdateStakingPlatformConfigStruct
+  ) {
+    try {
+      return await _cwUpdateStakingPlatformConfig(
+        updateStakingPlatformConfigStruct,
+        gasPrice
+      );
+    } catch (error) {
+      l(error, "\n");
+    }
+  }
+
+  async function cwCreateDenom(
+    subdenom: string,
+    paymentAmount: number,
+    paymentDenom: string,
+    gasPrice: string
+  ) {
+    try {
+      return await _cwCreateDenom(
+        subdenom,
+        paymentAmount,
+        paymentDenom,
+        gasPrice
+      );
     } catch (error) {
       l(error, "\n");
     }
@@ -133,7 +258,7 @@ async function init(seed?: string, gasPrice?: string) {
     mintToAddress: string
   ) {
     try {
-      return await _cwMintTokens(denom, amount, mintToAddress, gasPriceStr);
+      return await _cwMintTokens(denom, amount, mintToAddress, gasPrice);
     } catch (error) {
       l(error, "\n");
     }
@@ -145,7 +270,7 @@ async function init(seed?: string, gasPrice?: string) {
     burnFromAddress: string
   ) {
     try {
-      return await _cwBurnTokens(denom, amount, burnFromAddress, gasPriceStr);
+      return await _cwBurnTokens(denom, amount, burnFromAddress, gasPrice);
     } catch (error) {
       l(error, "\n");
     }
@@ -165,16 +290,18 @@ async function init(seed?: string, gasPrice?: string) {
         description,
         uri,
         uriHash,
-        gasPriceStr
+        gasPrice
       );
     } catch (error) {
       l(error, "\n");
     }
   }
 
-  async function cwUpdateConfig(stakingPlatform: string) {
+  async function cwUpdateMinterConfig(
+    updateMinterConfigStruct: UpdateMinterConfigStruct
+  ) {
     try {
-      return await _cwUpdateConfig(stakingPlatform, gasPriceStr);
+      return await _cwUpdateMinterConfig(updateMinterConfigStruct, gasPrice);
     } catch (error) {
       l(error, "\n");
     }
@@ -182,7 +309,7 @@ async function init(seed?: string, gasPrice?: string) {
 
   async function sgSend(recipient: string, amount: number, denom: string) {
     try {
-      return await _sgSend(recipient, coin(amount, denom), gasPriceStr);
+      return await _sgSend(recipient, coin(amount, denom), gasPrice);
     } catch (error) {
       l(error, "\n");
     }
@@ -191,19 +318,209 @@ async function init(seed?: string, gasPrice?: string) {
   return {
     owner,
 
-    cwQueryDenomsByCreator,
-    cwQueryConfig,
-    sgGetAllBalances,
-    sgGetMetadata,
-    sgGetTokenfactoryConfig,
-
+    cwApproveCollection,
+    cwRevokeCollection,
+    cwStake,
+    cwUnstake,
+    cwClaimStakingRewards,
+    cwDistributeFunds,
+    cwRemoveCollection,
+    cwCreateProposal,
+    cwRejectProposal,
+    cwAcceptProposal,
+    cwDepositTokens,
+    cwWithdrawTokens,
     cwCreateDenom,
     cwMintTokens,
     cwBurnTokens,
     cwSetMetadata,
-    cwUpdateConfig,
+
+    // backend
+    cwUpdateStakingPlatformConfig,
+    cwUpdateMinterConfig,
+
     sgSend,
   };
 }
 
-export { init };
+async function initQueryWorkers(network: NetworkName) {
+  const {
+    BASE: {
+      RPC_LIST: [RPC],
+      CHAIN_ID,
+    },
+    CONTRACTS,
+  } = NETWORK_CONFIG[network];
+
+  const MINTER_CONTRACT = CONTRACTS.find((x) => x.WASM === MINTER_WASM);
+  if (!MINTER_CONTRACT) throw new Error("MINTER_CONTRACT in not found!");
+
+  const STAKING_PLATFORM_CONTRACT = CONTRACTS.find(
+    (x) => x.WASM === STAKING_PLATFORM_WASM
+  );
+  if (!STAKING_PLATFORM_CONTRACT) {
+    throw new Error("STAKING_PLATFORM_CONTRACT in not found!");
+  }
+
+  const cwQueryHelpers = await getCwQueryHelpers(
+    STAKING_PLATFORM_CONTRACT.DATA.ADDRESS,
+    MINTER_CONTRACT.DATA.ADDRESS,
+    RPC
+  );
+  if (!cwQueryHelpers) throw new Error("cwQueryHelpers are not found!");
+
+  const sgQueryHelpers = await getSgQueryHelpers(RPC);
+  if (!sgQueryHelpers) throw new Error("sgQueryHelpers are not found!");
+
+  const {
+    cwQueryApprovals: _cwQueryApprovals,
+    cwQueryStakingPlatformConfig: _cwQueryStakingPlatformConfig,
+    cwQueryFunds: _cwQueryFunds,
+    cwQueryStakers: _cwQueryStakers,
+    cwQueryStakingRewards: _cwQueryStakingRewards,
+    cwQueryAssociatedBalances: _cwQueryAssociatedBalances,
+    cwQueryProposals: _cwQueryProposals,
+    cwQueryCollections: _cwQueryCollections,
+    cwQueryCollectionsBalances: _cwQueryCollectionsBalances,
+    cwQueryDenomsByCreator: _cwQueryDenomsByCreator,
+    cwQueryMinterConfig: _cwQueryMinterConfig,
+  } = cwQueryHelpers;
+
+  const {
+    getAllBalances: _getAllBalances,
+    getMetadata: _getMetadata,
+    getTokenfactoryConfig: _getTokenfactoryConfig,
+  } = sgQueryHelpers;
+
+  async function cwQueryApprovals(collectionAddress: string, tokenId: number) {
+    try {
+      return await _cwQueryApprovals(collectionAddress, tokenId);
+    } catch (error) {
+      l(error, "\n");
+    }
+  }
+
+  async function cwQueryStakingPlatformConfig() {
+    try {
+      return await _cwQueryStakingPlatformConfig();
+    } catch (error) {
+      l(error, "\n");
+    }
+  }
+
+  async function cwQueryFunds() {
+    try {
+      return await _cwQueryFunds();
+    } catch (error) {
+      l(error, "\n");
+    }
+  }
+
+  async function cwQueryStakers(addresses?: string[]) {
+    try {
+      return await _cwQueryStakers(addresses);
+    } catch (error) {
+      l(error, "\n");
+    }
+  }
+
+  async function cwQueryStakingRewards(address: string) {
+    try {
+      return await _cwQueryStakingRewards(address);
+    } catch (error) {
+      l(error, "\n");
+    }
+  }
+
+  async function cwQueryAssociatedBalances(address: string) {
+    try {
+      return await _cwQueryAssociatedBalances(address);
+    } catch (error) {
+      l(error, "\n");
+    }
+  }
+
+  async function cwQueryProposals(lastAmount?: number) {
+    try {
+      return await _cwQueryProposals(lastAmount);
+    } catch (error) {
+      l(error, "\n");
+    }
+  }
+
+  async function cwQueryCollections(addresses?: string[]) {
+    try {
+      return await _cwQueryCollections(addresses);
+    } catch (error) {
+      l(error, "\n");
+    }
+  }
+
+  async function cwQueryCollectionsBalances(addresses?: string[]) {
+    try {
+      return await _cwQueryCollectionsBalances(addresses);
+    } catch (error) {
+      l(error, "\n");
+    }
+  }
+
+  async function cwQueryDenomsByCreator(creator: string) {
+    try {
+      return await _cwQueryDenomsByCreator(creator);
+    } catch (error) {
+      l(error, "\n");
+    }
+  }
+
+  async function cwQueryMinterConfig() {
+    try {
+      return await _cwQueryMinterConfig();
+    } catch (error) {
+      l(error, "\n");
+    }
+  }
+
+  async function getAllBalances(address: string) {
+    try {
+      return await _getAllBalances(address);
+    } catch (error) {
+      l(error, "\n");
+    }
+  }
+
+  async function getMetadata(denom: string) {
+    try {
+      return await _getMetadata(denom);
+    } catch (error) {
+      l(error, "\n");
+    }
+  }
+
+  async function getTokenfactoryConfig() {
+    try {
+      return await _getTokenfactoryConfig(CHAIN_ID);
+    } catch (error) {
+      l(error, "\n");
+    }
+  }
+
+  return {
+    cwQueryApprovals,
+    cwQueryStakingPlatformConfig,
+    cwQueryFunds,
+    cwQueryStakers,
+    cwQueryStakingRewards,
+    cwQueryAssociatedBalances,
+    cwQueryProposals,
+    cwQueryCollections,
+    cwQueryCollectionsBalances,
+    cwQueryDenomsByCreator,
+    cwQueryMinterConfig,
+
+    getAllBalances,
+    getMetadata,
+    getTokenfactoryConfig,
+  };
+}
+
+export { initExecWorkers, initQueryWorkers };

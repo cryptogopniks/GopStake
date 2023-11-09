@@ -6,6 +6,5 @@
 .DS_Store
 /keys
 *.todo
-/**/config
 *.cert
 *.key
