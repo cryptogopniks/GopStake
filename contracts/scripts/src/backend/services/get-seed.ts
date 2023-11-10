@@ -1,6 +1,6 @@
 import { access, readFile } from "fs/promises";
-import { rootPath, decrypt, l } from "../../common/utils";
-import { PATH } from "../envs";
+import { decrypt, l } from "../../common/utils";
+import { PATH, rootPath } from "../envs";
 
 async function getSeed(seedEncrypted: string): Promise<string | undefined> {
   const keyPath = rootPath(PATH.TO_ENCRYPTION_KEY);

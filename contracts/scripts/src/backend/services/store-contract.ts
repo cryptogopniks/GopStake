@@ -1,5 +1,5 @@
-import { l, rootPath } from "../../common/utils";
-import { PATH } from "../envs";
+import { l } from "../../common/utils";
+import { PATH, rootPath } from "../envs";
 import { calculateFee } from "@cosmjs/stargate";
 import { SigningCosmWasmClient } from "@cosmjs/cosmwasm-stargate";
 import { toUtf8 } from "@cosmjs/encoding";

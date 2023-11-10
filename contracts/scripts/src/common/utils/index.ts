@@ -1,10 +1,9 @@
+import { SHA256, AES, enc } from "crypto-js";
 import axios, {
   AxiosRequestConfig,
   AxiosInstance,
   CreateAxiosDefaults,
 } from "axios";
-import path from "path";
-import { SHA256, AES, enc } from "crypto-js";
 
 const l = console.log.bind(console);
 
@@ -17,10 +16,6 @@ function r(num: number, digits: number = 0): number {
 
 function getLast<T>(arr: T[]) {
   return arr[arr.length - 1];
-}
-
-function rootPath(dir: string) {
-  return path.resolve(__dirname, "../../../", dir);
 }
 
 class Request {
@@ -115,7 +110,6 @@ export {
   getID,
   l,
   r,
-  rootPath,
   getLast,
   specifyTimeout,
   getIbcDenom,

@@ -1,6 +1,10 @@
 import dotenv from "dotenv";
-import { rootPath } from "../common/utils";
+import path from "path";
 import fs from "fs";
+
+export function rootPath(dir: string) {
+  return path.resolve(__dirname, "../../", dir);
+}
 
 const envPath = rootPath("./config.env");
 

@@ -607,4 +607,4 @@ async function getCwQueryHelpers(
   };
 }
 
-export { getCwExecHelpers, getCwQueryHelpers, SetMetadataMsg };
+export { getCwExecHelpers, getCwQueryHelpers };

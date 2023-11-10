@@ -12,7 +12,10 @@
     "build": "shx rm -rf ./dist/backend/* && shx rm -rf ./dist/common/* && tsc -p ./src/backend/tsconfig.json && shx cp -r ./src/backend/storages/*.json ./dist/backend/storages",
     "store": "ts-node ./src/backend/services/store-contract.ts",
     "call": "ts-node ./src/backend/services/call-contract.ts",
-    "config": "ts-node ./src/backend/services/update-config.ts"
+    "config": "ts-node ./src/backend/services/update-config.ts",
+    "transpile": "shx rm -rf ./dist/backend/* && shx rm -rf ./dist/common/* && npx babel ./src/common --out-dir ./dist/common --extensions '.ts' && shx cp -r ./src/common/config/*.json ./dist/common/config",
+    "types": "tsc -p ./src/backend/tsconfig.json",
+    "prepare": "npm run transpile && npm run types"
   },
   "repository": {
     "type": "git",
@@ -36,6 +39,9 @@
     "dotenv": "^16.0.3"
   },
   "devDependencies": {
+    "@babel/cli": "^7.23.0",
+    "@babel/core": "^7.23.3",
+    "@babel/preset-typescript": "^7.23.3",
     "@types/crypto-js": "^4.1.1",
     "@types/node": "^20.2.1",
     "cosmjs-types": "^0.7.2",

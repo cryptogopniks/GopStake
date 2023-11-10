@@ -18,8 +18,6 @@ import {
   calculateFee as _calculateFee,
   GasPrice,
   DeliverTxResponse,
-  coin,
-  StdFee,
 } from "@cosmjs/stargate";
 
 async function getSgClient(

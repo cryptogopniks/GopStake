@@ -34,6 +34,13 @@
     "resolveJsonModule": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-    "module": "commonjs"
+    "module": "commonjs",
+    // Ensure that .d.ts files are created by tsc, but not .js files
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    // "declarationMap": true,
+    "sourceMap": true,
+    // "inlineSources": true,
+    // "inlineSourceMap": true
   }
 }
