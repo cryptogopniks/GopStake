@@ -23,6 +23,7 @@ import {
   Coin,
   coin,
 } from "@cosmjs/proto-signing";
+import { NETWORK_CONFIG, MINTER_WASM, STAKING_PLATFORM_WASM } from "../config";
 import {
   SetMetadataMsg,
   Metadata,
@@ -33,6 +34,7 @@ import {
   QueryApprovalsMsg,
   ApprovalsResponse,
   Cw20SendMsg,
+  NetworkName,
 } from "../interfaces";
 
 function getSingleTokenExecMsg(
@@ -175,12 +177,23 @@ function createMetadata(
 }
 
 async function getCwExecHelpers(
-  stakingPlatformContractAddress: string,
-  minterContractAddress: string,
+  network: NetworkName,
   rpc: string,
   owner: string,
   signer: (OfflineSigner & OfflineDirectSigner) | DirectSecp256k1HdWallet
 ) {
+  const { CONTRACTS } = NETWORK_CONFIG[network];
+
+  const MINTER_CONTRACT = CONTRACTS.find((x) => x.WASM === MINTER_WASM);
+  if (!MINTER_CONTRACT) throw new Error("MINTER_CONTRACT in not found!");
+
+  const STAKING_PLATFORM_CONTRACT = CONTRACTS.find(
+    (x) => x.WASM === STAKING_PLATFORM_WASM
+  );
+  if (!STAKING_PLATFORM_CONTRACT) {
+    throw new Error("STAKING_PLATFORM_CONTRACT in not found!");
+  }
+
   const cwClient = await getCwClient(rpc, owner, signer);
   if (!cwClient) throw new Error("cwClient is not found!");
 
@@ -189,9 +202,12 @@ async function getCwExecHelpers(
 
   const stakingPlatformMsgComposer = new StakingPlatformMsgComposer(
     owner,
-    stakingPlatformContractAddress
+    STAKING_PLATFORM_CONTRACT.DATA.ADDRESS
   );
-  const minterMsgComposer = new MinterMsgComposer(owner, minterContractAddress);
+  const minterMsgComposer = new MinterMsgComposer(
+    owner,
+    MINTER_CONTRACT.DATA.ADDRESS
+  );
 
   async function _msgWrapperWithGasPrice(
     msgs: MsgExecuteContractEncodeObject[],
@@ -441,8 +457,10 @@ async function getCwExecHelpers(
       set_metadata: { metadata },
     };
 
+    if (!MINTER_CONTRACT) throw new Error("MINTER_CONTRACT in not found!");
+
     return await _msgWrapperWithGasPrice(
-      [getSetMetadataMsg(minterContractAddress, owner, setMetadataMsg)],
+      [getSetMetadataMsg(MINTER_CONTRACT.DATA.ADDRESS, owner, setMetadataMsg)],
       gasPrice
     );
   }
@@ -488,22 +506,30 @@ async function getCwExecHelpers(
   };
 }
 
-async function getCwQueryHelpers(
-  stakingPlatformContractAddress: string,
-  minterContractAddress: string,
-  rpc: string
-) {
+async function getCwQueryHelpers(network: NetworkName, rpc: string) {
+  const { CONTRACTS } = NETWORK_CONFIG[network];
+
+  const MINTER_CONTRACT = CONTRACTS.find((x) => x.WASM === MINTER_WASM);
+  if (!MINTER_CONTRACT) throw new Error("MINTER_CONTRACT in not found!");
+
+  const STAKING_PLATFORM_CONTRACT = CONTRACTS.find(
+    (x) => x.WASM === STAKING_PLATFORM_WASM
+  );
+  if (!STAKING_PLATFORM_CONTRACT) {
+    throw new Error("STAKING_PLATFORM_CONTRACT in not found!");
+  }
+
   const cwClient = await getCwClient(rpc);
   if (!cwClient) throw new Error("cwClient is not found!");
 
   const cosmwasmQueryClient: CosmWasmClient = cwClient.client;
   const stakingPlatformQueryClient = new StakingPlatformQueryClient(
     cosmwasmQueryClient,
-    stakingPlatformContractAddress
+    STAKING_PLATFORM_CONTRACT.DATA.ADDRESS
   );
   const minterQueryClient = new MinterQueryClient(
     cosmwasmQueryClient,
-    minterContractAddress
+    MINTER_CONTRACT.DATA.ADDRESS
   );
 
   // staking platform

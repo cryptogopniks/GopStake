@@ -51,9 +51,9 @@ function signAndBroadcastWrapper(client, signerAddress, margin = 1.2) {
   };
 }
 function getGasPriceFromChainRegistryItem(chain) {
-  const gasPriceAmountDefault = 0.04;
+  const gasPriceAmountDefault = 0.005;
   let gasPriceAmount = 0;
-  const minGasPrice = chain?.fees?.fee_tokens?.[0]?.fixed_min_gas_price;
+  const minGasPrice = chain?.fees?.fee_tokens?.[0]?.average_gas_price;
   if (minGasPrice) gasPriceAmount = minGasPrice;
   gasPriceAmount = Math.max(gasPriceAmountDefault, gasPriceAmount);
   const gasPrice = `${gasPriceAmount}${chain.fees?.fee_tokens[0]?.denom}`;

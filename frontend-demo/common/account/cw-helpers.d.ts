@@ -1,7 +1,7 @@
 import { ProposalForStringAndTokenUnverified, StakedCollectionInfoForString, TokenUnverified } from "../codegen/StakingPlatform.types";
 import { DirectSecp256k1HdWallet, OfflineSigner, OfflineDirectSigner } from "@cosmjs/proto-signing";
-import { UpdateMinterConfigStruct, UpdateStakingPlatformConfigStruct, ApprovalsResponse } from "../interfaces";
-declare function getCwExecHelpers(stakingPlatformContractAddress: string, minterContractAddress: string, rpc: string, owner: string, signer: (OfflineSigner & OfflineDirectSigner) | DirectSecp256k1HdWallet): Promise<{
+import { UpdateMinterConfigStruct, UpdateStakingPlatformConfigStruct, ApprovalsResponse, NetworkName } from "../interfaces";
+declare function getCwExecHelpers(network: NetworkName, rpc: string, owner: string, signer: (OfflineSigner & OfflineDirectSigner) | DirectSecp256k1HdWallet): Promise<{
     cwApproveCollection: (collectionAddress: string, senderAddress: string, operator: string, gasPrice: string) => Promise<import("@cosmjs/cosmwasm-stargate").DeliverTxResponse>;
     cwRevokeCollection: (collectionAddress: string, senderAddress: string, operator: string, gasPrice: string) => Promise<import("@cosmjs/cosmwasm-stargate").DeliverTxResponse>;
     cwStake: (collectionsToStake: StakedCollectionInfoForString[], gasPrice: string) => Promise<import("@cosmjs/cosmwasm-stargate").DeliverTxResponse>;
@@ -21,7 +21,7 @@ declare function getCwExecHelpers(stakingPlatformContractAddress: string, minter
     cwUpdateStakingPlatformConfig: (updateStakingPlatformConfigStruct: UpdateStakingPlatformConfigStruct, gasPrice: string) => Promise<import("@cosmjs/cosmwasm-stargate").DeliverTxResponse>;
     cwUpdateMinterConfig: (updateMinterConfigStruct: UpdateMinterConfigStruct, gasPrice: string) => Promise<import("@cosmjs/cosmwasm-stargate").DeliverTxResponse>;
 }>;
-declare function getCwQueryHelpers(stakingPlatformContractAddress: string, minterContractAddress: string, rpc: string): Promise<{
+declare function getCwQueryHelpers(network: NetworkName, rpc: string): Promise<{
     cwQueryApprovals: (collectionAddress: string, tokenId: number) => Promise<ApprovalsResponse>;
     cwQueryStakingPlatformConfig: () => Promise<import("../codegen/StakingPlatform.types").Config>;
     cwQueryFunds: () => Promise<import("../codegen/StakingPlatform.types").ArrayOfFundsForToken>;

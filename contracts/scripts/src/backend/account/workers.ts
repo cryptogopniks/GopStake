@@ -1,6 +1,7 @@
 import { coin } from "@cosmjs/stargate";
 import { getSigner } from "./signer";
 import { l } from "../../common/utils";
+import { NETWORK_CONFIG } from "../../common/config";
 import {
   getCwExecHelpers,
   getCwQueryHelpers,
@@ -9,11 +10,6 @@ import {
   getSgExecHelpers,
   getSgQueryHelpers,
 } from "../../common/account/sg-helpers";
-import {
-  NETWORK_CONFIG,
-  MINTER_WASM,
-  STAKING_PLATFORM_WASM,
-} from "../../common/config";
 import {
   NetworkName,
   UpdateMinterConfigStruct,
@@ -35,29 +31,12 @@ async function initExecWorkers(
       PREFIX,
       RPC_LIST: [RPC],
     },
-    CONTRACTS,
   } = NETWORK_CONFIG[network];
-
-  const MINTER_CONTRACT = CONTRACTS.find((x) => x.WASM === MINTER_WASM);
-  if (!MINTER_CONTRACT) throw new Error("MINTER_CONTRACT in not found!");
-
-  const STAKING_PLATFORM_CONTRACT = CONTRACTS.find(
-    (x) => x.WASM === STAKING_PLATFORM_WASM
-  );
-  if (!STAKING_PLATFORM_CONTRACT) {
-    throw new Error("STAKING_PLATFORM_CONTRACT in not found!");
-  }
 
   const { signer, owner } = await getSigner(RPC, PREFIX, seed);
 
   // cosmwasm helpers
-  const dappCwExecHelpers = await getCwExecHelpers(
-    STAKING_PLATFORM_CONTRACT.DATA.ADDRESS,
-    MINTER_CONTRACT.DATA.ADDRESS,
-    RPC,
-    owner,
-    signer
-  );
+  const dappCwExecHelpers = await getCwExecHelpers(network, RPC, owner, signer);
   if (!dappCwExecHelpers) throw new Error("cwExecHelpers are not found!");
 
   const {
@@ -213,14 +192,6 @@ async function initExecWorkers(
     }
   }
 
-  // async function a() {
-  //   try {
-  //     return await
-  //   } catch (error) {
-  //     l(error, "\n");
-  //   }
-  // }
-
   async function cwUpdateStakingPlatformConfig(
     updateStakingPlatformConfigStruct: UpdateStakingPlatformConfigStruct
   ) {
@@ -349,24 +320,9 @@ async function initQueryWorkers(network: NetworkName) {
       RPC_LIST: [RPC],
       CHAIN_ID,
     },
-    CONTRACTS,
   } = NETWORK_CONFIG[network];
 
-  const MINTER_CONTRACT = CONTRACTS.find((x) => x.WASM === MINTER_WASM);
-  if (!MINTER_CONTRACT) throw new Error("MINTER_CONTRACT in not found!");
-
-  const STAKING_PLATFORM_CONTRACT = CONTRACTS.find(
-    (x) => x.WASM === STAKING_PLATFORM_WASM
-  );
-  if (!STAKING_PLATFORM_CONTRACT) {
-    throw new Error("STAKING_PLATFORM_CONTRACT in not found!");
-  }
-
-  const cwQueryHelpers = await getCwQueryHelpers(
-    STAKING_PLATFORM_CONTRACT.DATA.ADDRESS,
-    MINTER_CONTRACT.DATA.ADDRESS,
-    RPC
-  );
+  const cwQueryHelpers = await getCwQueryHelpers(network, RPC);
   if (!cwQueryHelpers) throw new Error("cwQueryHelpers are not found!");
 
   const sgQueryHelpers = await getSgQueryHelpers(RPC);

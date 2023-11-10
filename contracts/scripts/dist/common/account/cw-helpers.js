@@ -7,6 +7,7 @@ import { MinterQueryClient } from "../codegen/Minter.client";
 import { StakingPlatformMsgComposer } from "../codegen/StakingPlatform.message-composer";
 import { StakingPlatformQueryClient } from "../codegen/StakingPlatform.client";
 import { coin } from "@cosmjs/proto-signing";
+import { NETWORK_CONFIG, MINTER_WASM, STAKING_PLATFORM_WASM } from "../config";
 function getSingleTokenExecMsg(contractAddress, senderAddress, msg, amount, token) {
   // get msg without funds
   if (!(token && amount)) {
@@ -88,13 +89,22 @@ function createMetadata(creatorAddress, symbol, description, uri = "", uriHash =
     uri_hash: uriHash
   };
 }
-async function getCwExecHelpers(stakingPlatformContractAddress, minterContractAddress, rpc, owner, signer) {
+async function getCwExecHelpers(network, rpc, owner, signer) {
+  const {
+    CONTRACTS
+  } = NETWORK_CONFIG[network];
+  const MINTER_CONTRACT = CONTRACTS.find(x => x.WASM === MINTER_WASM);
+  if (!MINTER_CONTRACT) throw new Error("MINTER_CONTRACT in not found!");
+  const STAKING_PLATFORM_CONTRACT = CONTRACTS.find(x => x.WASM === STAKING_PLATFORM_WASM);
+  if (!STAKING_PLATFORM_CONTRACT) {
+    throw new Error("STAKING_PLATFORM_CONTRACT in not found!");
+  }
   const cwClient = await getCwClient(rpc, owner, signer);
   if (!cwClient) throw new Error("cwClient is not found!");
   const signingClient = cwClient.client;
   const _signAndBroadcast = signAndBroadcastWrapper(signingClient, owner);
-  const stakingPlatformMsgComposer = new StakingPlatformMsgComposer(owner, stakingPlatformContractAddress);
-  const minterMsgComposer = new MinterMsgComposer(owner, minterContractAddress);
+  const stakingPlatformMsgComposer = new StakingPlatformMsgComposer(owner, STAKING_PLATFORM_CONTRACT.DATA.ADDRESS);
+  const minterMsgComposer = new MinterMsgComposer(owner, MINTER_CONTRACT.DATA.ADDRESS);
   async function _msgWrapperWithGasPrice(msgs, gasPrice) {
     const tx = await _signAndBroadcast(msgs, gasPrice);
     l("\n", tx, "\n");
@@ -226,7 +236,8 @@ async function getCwExecHelpers(stakingPlatformContractAddress, minterContractAd
         metadata
       }
     };
-    return await _msgWrapperWithGasPrice([getSetMetadataMsg(minterContractAddress, owner, setMetadataMsg)], gasPrice);
+    if (!MINTER_CONTRACT) throw new Error("MINTER_CONTRACT in not found!");
+    return await _msgWrapperWithGasPrice([getSetMetadataMsg(MINTER_CONTRACT.DATA.ADDRESS, owner, setMetadataMsg)], gasPrice);
   }
   async function cwUpdateMinterConfig(updateMinterConfigStruct, gasPrice) {
     const {
@@ -259,12 +270,21 @@ async function getCwExecHelpers(stakingPlatformContractAddress, minterContractAd
     cwUpdateMinterConfig
   };
 }
-async function getCwQueryHelpers(stakingPlatformContractAddress, minterContractAddress, rpc) {
+async function getCwQueryHelpers(network, rpc) {
+  const {
+    CONTRACTS
+  } = NETWORK_CONFIG[network];
+  const MINTER_CONTRACT = CONTRACTS.find(x => x.WASM === MINTER_WASM);
+  if (!MINTER_CONTRACT) throw new Error("MINTER_CONTRACT in not found!");
+  const STAKING_PLATFORM_CONTRACT = CONTRACTS.find(x => x.WASM === STAKING_PLATFORM_WASM);
+  if (!STAKING_PLATFORM_CONTRACT) {
+    throw new Error("STAKING_PLATFORM_CONTRACT in not found!");
+  }
   const cwClient = await getCwClient(rpc);
   if (!cwClient) throw new Error("cwClient is not found!");
   const cosmwasmQueryClient = cwClient.client;
-  const stakingPlatformQueryClient = new StakingPlatformQueryClient(cosmwasmQueryClient, stakingPlatformContractAddress);
-  const minterQueryClient = new MinterQueryClient(cosmwasmQueryClient, minterContractAddress);
+  const stakingPlatformQueryClient = new StakingPlatformQueryClient(cosmwasmQueryClient, STAKING_PLATFORM_CONTRACT.DATA.ADDRESS);
+  const minterQueryClient = new MinterQueryClient(cosmwasmQueryClient, MINTER_CONTRACT.DATA.ADDRESS);
 
   // staking platform
 
