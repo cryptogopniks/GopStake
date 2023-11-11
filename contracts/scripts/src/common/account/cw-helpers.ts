@@ -37,6 +37,22 @@ import {
   NetworkName,
 } from "../interfaces";
 
+function addSingleTokenToComposerObj(
+  obj: MsgExecuteContractEncodeObject,
+  amount: number,
+  token: TokenUnverified
+): MsgExecuteContractEncodeObject {
+  const {
+    value: { contract, sender, msg },
+  } = obj;
+
+  if (!(contract && sender && msg)) {
+    throw new Error("cwDepositTokens parameters error!");
+  }
+
+  return getSingleTokenExecMsg(contract, sender, msg, amount, token);
+}
+
 function getSingleTokenExecMsg(
   contractAddress: string,
   senderAddress: string,
@@ -326,16 +342,14 @@ async function getCwExecHelpers(
     token: TokenUnverified,
     gasPrice: string
   ) {
-    const {
-      value: { contract, sender, msg },
-    } = stakingPlatformMsgComposer.acceptProposal({ id: `${id}` });
-
-    if (!(contract && sender && msg)) {
-      throw new Error("cwAcceptProposal parameters error!");
-    }
-
     return await _msgWrapperWithGasPrice(
-      [getSingleTokenExecMsg(contract, sender, msg, amount, token)],
+      [
+        addSingleTokenToComposerObj(
+          stakingPlatformMsgComposer.acceptProposal({ id: `${id}` }),
+          amount,
+          token
+        ),
+      ],
       gasPrice
     );
   }
@@ -346,16 +360,14 @@ async function getCwExecHelpers(
     token: TokenUnverified,
     gasPrice: string
   ) {
-    const {
-      value: { contract, sender, msg },
-    } = stakingPlatformMsgComposer.depositTokens({ collectionAddress });
-
-    if (!(contract && sender && msg)) {
-      throw new Error("cwDepositTokens parameters error!");
-    }
-
     return await _msgWrapperWithGasPrice(
-      [getSingleTokenExecMsg(contract, sender, msg, amount, token)],
+      [
+        addSingleTokenToComposerObj(
+          stakingPlatformMsgComposer.depositTokens({ collectionAddress }),
+          amount,
+          token
+        ),
+      ],
       gasPrice
     );
   }
@@ -384,19 +396,15 @@ async function getCwExecHelpers(
     paymentDenom: string,
     gasPrice: string
   ) {
-    const {
-      value: { contract, sender, msg },
-    } = minterMsgComposer.createDenom({ subdenom });
-
-    if (!(contract && sender && msg)) {
-      throw new Error("cwCreateDenom parameters error!");
-    }
-
     return await _msgWrapperWithGasPrice(
       [
-        getSingleTokenExecMsg(contract, sender, msg, paymentAmount, {
-          native: { denom: paymentDenom },
-        }),
+        addSingleTokenToComposerObj(
+          minterMsgComposer.createDenom({ subdenom }),
+          paymentAmount,
+          {
+            native: { denom: paymentDenom },
+          }
+        ),
       ],
       gasPrice
     );

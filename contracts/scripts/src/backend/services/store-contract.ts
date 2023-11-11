@@ -51,6 +51,7 @@ async function main(network: NetworkName) {
       );
       const gasPrice = `${GAS_PRICE_AMOUNT}${DENOM}`;
 
+      // TODO: use 2 msgs 1 tx for each type
       const uploadRes = await signingClient.upload(
         owner,
         wasmBinary,

@@ -3,6 +3,8 @@ import { InstantiateMsg as MinterInitMsg } from "../codegen/Minter.types";
 import { InstantiateMsg as StakingPlatformInitMsg } from "../codegen/StakingPlatform.types";
 import STARGAZE_MINTER from "./stargaze-minter.json";
 import STARGAZE_STAKING_PLATFORM from "./stargaze-staking_platform.json";
+import INJECTIVE_MINTER from "./injective-minter.json";
+import INJECTIVE_STAKING_PLATFORM from "./injective-staking_platform.json";
 
 const MINTER_WASM = "minter.wasm";
 const STAKING_PLATFORM_WASM = "staking_platform.wasm";
@@ -43,14 +45,36 @@ const NETWORK_CONFIG: NetworkConfig = {
   },
   INJECTIVE: {
     BASE: {
-      PREFIX: "osmo",
-      DENOM: "uosmo",
-      CHAIN_ID: "osmo-test-5",
-      RPC_LIST: ["https://osmosis-testnet.rpc.kjnodes.com:443"],
-      GAS_PRICE_AMOUNT: 0.04,
-      STORE_CODE_GAS_MULTIPLIER: 7.3,
+      PREFIX: "inj",
+      DENOM: "inj",
+      CHAIN_ID: "injective-888",
+      RPC_LIST: [
+        "https://injective-testnet-rpc.polkachu.com:443",
+        "https://k8s.testnet.tm.injective.network:443",
+      ],
+      GAS_PRICE_AMOUNT: 700000000,
+      STORE_CODE_GAS_MULTIPLIER: 1,
     },
-    CONTRACTS: [],
+    CONTRACTS: [
+      {
+        WASM: MINTER_WASM,
+        LABEL: "minter-dev-1.0",
+        INIT_MSG: minterInitMsg,
+        DATA: {
+          CODE: INJECTIVE_MINTER.CODE,
+          ADDRESS: INJECTIVE_MINTER.ADDRESS,
+        },
+      },
+      {
+        WASM: STAKING_PLATFORM_WASM,
+        LABEL: "staking_platform-dev-1.0",
+        INIT_MSG: stakingPlatformInitMsg,
+        DATA: {
+          CODE: INJECTIVE_STAKING_PLATFORM.CODE,
+          ADDRESS: INJECTIVE_STAKING_PLATFORM.ADDRESS,
+        },
+      },
+    ],
   },
 };
 

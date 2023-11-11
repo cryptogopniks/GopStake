@@ -49,6 +49,7 @@ async function main(network: NetworkName) {
     const { cwQueryMinterConfig, cwQueryStakingPlatformConfig } =
       await initQueryWorkers(network);
 
+    // TODO: use 2 msgs 1 tx
     await cwUpdateMinterConfig({
       stakingPlatform: STAKING_PLATFORM_CONTRACT.DATA.ADDRESS,
     });
