@@ -1,16 +1,19 @@
 import { l } from "../utils";
 import { Tendermint37Client } from "@cosmjs/tendermint-rpc";
-import { fromBech32, toBech32 } from "@cosmjs/encoding";
-import { DirectSecp256k1HdWallet } from "@cosmjs/proto-signing";
+import { fromBech32, toBech32, toUtf8 } from "@cosmjs/encoding";
 import { Chain } from "@chain-registry/types";
+import { MsgExecuteContract } from "cosmjs-types/cosmwasm/wasm/v1/tx";
 import {
   SigningCosmWasmClient,
   CosmWasmClient,
+  MsgExecuteContractEncodeObject,
 } from "@cosmjs/cosmwasm-stargate";
 import {
   OfflineDirectSigner,
   EncodeObject,
   OfflineSigner,
+  DirectSecp256k1HdWallet,
+  Coin,
 } from "@cosmjs/proto-signing";
 import {
   SigningStargateClient,
@@ -117,10 +120,28 @@ function getGasPriceFromChainRegistryItem(chain: Chain): string {
   return gasPrice;
 }
 
+function getExecuteContractMsg(
+  contractAddress: string,
+  senderAddress: string,
+  msg: any,
+  funds: Coin[]
+): MsgExecuteContractEncodeObject {
+  return {
+    typeUrl: "/cosmwasm.wasm.v1.MsgExecuteContract",
+    value: MsgExecuteContract.fromPartial({
+      sender: senderAddress,
+      contract: contractAddress,
+      msg: toUtf8(JSON.stringify(msg)),
+      funds,
+    }),
+  };
+}
+
 export {
   getSgClient,
   getCwClient,
   getAddrByPrefix,
   signAndBroadcastWrapper,
   getGasPriceFromChainRegistryItem,
+  getExecuteContractMsg,
 };

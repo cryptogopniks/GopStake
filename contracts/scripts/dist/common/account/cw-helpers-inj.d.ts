@@ -1,0 +1,47 @@
+import { MsgBroadcaster } from "@injectivelabs/wallet-ts";
+import { MsgExecuteContractEncodeObject } from "@cosmjs/cosmwasm-stargate";
+import * as MinterTypes from "../codegen/Minter.types";
+import * as StakingPlatformTypes from "../codegen/StakingPlatform.types";
+import { MsgBroadcasterWithPk, ChainGrpcWasmApi, MsgExecuteContract } from "@injectivelabs/sdk-ts";
+import { UpdateMinterConfigStruct, UpdateStakingPlatformConfigStruct, ApprovalsResponse, NetworkName } from "../interfaces";
+declare function getInjExecMsgFromComposerObj(obj: MsgExecuteContractEncodeObject): MsgExecuteContract;
+declare function queryInjContract(chainGrpcWasmApi: ChainGrpcWasmApi, contractAddress: string, queryMsg: any): Promise<string>;
+declare function getCwExecHelpers(network: NetworkName, owner: string, msgBroadcaster: MsgBroadcasterWithPk | MsgBroadcaster): Promise<{
+    cwApproveCollection: (collectionAddress: string, senderAddress: string, operator: string, _gasPrice?: string) => Promise<import("@injectivelabs/sdk-ts").TxResponse>;
+    cwRevokeCollection: (collectionAddress: string, senderAddress: string, operator: string, _gasPrice?: string) => Promise<import("@injectivelabs/sdk-ts").TxResponse>;
+    cwStake: (collectionsToStake: StakingPlatformTypes.StakedCollectionInfoForString[], _gasPrice?: string) => Promise<import("@injectivelabs/sdk-ts").TxResponse>;
+    cwUnstake: (collectionsToUnstake: StakingPlatformTypes.StakedCollectionInfoForString[], _gasPrice?: string) => Promise<import("@injectivelabs/sdk-ts").TxResponse>;
+    cwClaimStakingRewards: (_gasPrice?: string) => Promise<import("@injectivelabs/sdk-ts").TxResponse>;
+    cwDistributeFunds: (addressAndWeightList: [string, string][], _gasPrice?: string) => Promise<import("@injectivelabs/sdk-ts").TxResponse>;
+    cwRemoveCollection: (address: string, _gasPrice?: string) => Promise<import("@injectivelabs/sdk-ts").TxResponse>;
+    cwCreateProposal: (proposal: StakingPlatformTypes.ProposalForStringAndTokenUnverified, _gasPrice?: string) => Promise<import("@injectivelabs/sdk-ts").TxResponse>;
+    cwRejectProposal: (id: number, _gasPrice?: string) => Promise<import("@injectivelabs/sdk-ts").TxResponse>;
+    cwAcceptProposal: (id: number, amount: number, token: StakingPlatformTypes.TokenUnverified, _gasPrice?: string) => Promise<import("@injectivelabs/sdk-ts").TxResponse>;
+    cwDepositTokens: (collectionAddress: string, amount: number, token: StakingPlatformTypes.TokenUnverified, _gasPrice?: string) => Promise<import("@injectivelabs/sdk-ts").TxResponse>;
+    cwWithdrawTokens: (collectionAddress: string, amount: number, _gasPrice?: string) => Promise<import("@injectivelabs/sdk-ts").TxResponse>;
+    cwCreateDenom: (subdenom: string, paymentAmount: number, paymentDenom: string, _gasPrice?: string) => Promise<import("@injectivelabs/sdk-ts").TxResponse>;
+    cwMintTokens: (denom: string, amount: number, mintToAddress: string, _gasPrice?: string) => Promise<import("@injectivelabs/sdk-ts").TxResponse>;
+    cwBurnTokens: (denom: string, amount: number, burnFromAddress: string, _gasPrice?: string) => Promise<import("@injectivelabs/sdk-ts").TxResponse>;
+    cwSetMetadata: (creatorAddress: string, symbol: string, description: string, uri?: string, uriHash?: string, _gasPrice?: string) => Promise<import("@injectivelabs/sdk-ts").TxResponse>;
+    cwUpdateStakingPlatformConfig: (updateStakingPlatformConfigStruct: UpdateStakingPlatformConfigStruct, _gasPrice?: string) => Promise<import("@injectivelabs/sdk-ts").TxResponse>;
+    cwUpdateMinterConfig: (updateMinterConfigStruct: UpdateMinterConfigStruct, _gasPrice?: string) => Promise<import("@injectivelabs/sdk-ts").TxResponse>;
+}>;
+declare function getCwQueryHelpers(network: NetworkName): Promise<{
+    cwQueryApprovals: (collectionAddress: string, tokenId: number) => Promise<ApprovalsResponse>;
+    cwQueryStakingPlatformConfig: () => Promise<StakingPlatformTypes.Config>;
+    cwQueryFunds: () => Promise<StakingPlatformTypes.ArrayOfFundsForToken>;
+    cwQueryStakers: (addresses?: string[]) => Promise<StakingPlatformTypes.ArrayOfQueryStakersResponseItem>;
+    cwQueryStakingRewards: (address: string) => Promise<StakingPlatformTypes.BalancesResponseItem>;
+    cwQueryAssociatedBalances: (address: string) => Promise<StakingPlatformTypes.BalancesResponseItem>;
+    cwQueryProposals: (lastAmount?: number) => Promise<StakingPlatformTypes.ArrayOfQueryProposalsResponseItem>;
+    cwQueryCollections: (addresses?: string[]) => Promise<StakingPlatformTypes.ArrayOfQueryCollectionsResponseItem>;
+    cwQueryCollectionsBalances: (addresses?: string[]) => Promise<StakingPlatformTypes.ArrayOfQueryCollectionsBalancesResponseItem>;
+    cwQueryDenomsByCreator: (creator: string) => Promise<MinterTypes.QueryDenomsFromCreatorResponse>;
+    cwQueryMinterConfig: () => Promise<MinterTypes.Config>;
+}>;
+declare const _default: {
+    getInjExecMsgFromComposerObj: typeof getInjExecMsgFromComposerObj;
+    queryInjContract: typeof queryInjContract;
+};
+export default _default;
+export { getCwExecHelpers, getCwQueryHelpers };

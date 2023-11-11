@@ -10,15 +10,14 @@ import { MinterMsgComposer } from "../../common/codegen/Minter.message-composer"
 import { StakingPlatformMsgComposer } from "../../common/codegen/StakingPlatform.message-composer";
 import { QueryMsg as MinterQueryMsg } from "../../common/codegen/Minter.types";
 import { QueryMsg as StakingPlatformQueryMsg } from "../../common/codegen/StakingPlatform.types";
-import {
-  getInjExecMsgFromComposerObj,
-  queryInjContract,
-} from "../../common/account/cw-helpers-inj";
+import cwHelpersInj from "../../common/account/cw-helpers-inj";
 import {
   NETWORK_CONFIG,
   MINTER_WASM,
   STAKING_PLATFORM_WASM,
 } from "../../common/config";
+
+const { getInjExecMsgFromComposerObj, queryInjContract } = cwHelpersInj;
 
 const encoding = "utf8";
 const networkType = Network.Testnet;

@@ -1,11 +1,15 @@
 import { l } from "../utils";
-import { getCwClient, signAndBroadcastWrapper } from "./clients";
-import { toUtf8, toBase64 } from "@cosmjs/encoding";
-import { MsgExecuteContract } from "cosmjs-types/cosmwasm/wasm/v1/tx";
+import { toBase64 } from "@cosmjs/encoding";
 import { MinterMsgComposer } from "../codegen/Minter.message-composer";
 import { MinterQueryClient } from "../codegen/Minter.client";
 import { StakingPlatformMsgComposer } from "../codegen/StakingPlatform.message-composer";
 import { StakingPlatformQueryClient } from "../codegen/StakingPlatform.client";
+import { NETWORK_CONFIG, MINTER_WASM, STAKING_PLATFORM_WASM } from "../config";
+import {
+  getCwClient,
+  signAndBroadcastWrapper,
+  getExecuteContractMsg,
+} from "./clients";
 import {
   ProposalForStringAndTokenUnverified,
   StakedCollectionInfoForString,
@@ -20,10 +24,8 @@ import {
   DirectSecp256k1HdWallet,
   OfflineSigner,
   OfflineDirectSigner,
-  Coin,
   coin,
 } from "@cosmjs/proto-signing";
-import { NETWORK_CONFIG, MINTER_WASM, STAKING_PLATFORM_WASM } from "../config";
 import {
   SetMetadataMsg,
   Metadata,
@@ -62,12 +64,12 @@ function getSingleTokenExecMsg(
 ) {
   // get msg without funds
   if (!(token && amount)) {
-    return _getExecuteContractMsg(contractAddress, senderAddress, msg, []);
+    return getExecuteContractMsg(contractAddress, senderAddress, msg, []);
   }
 
   // get msg with native token
   if ("native" in token) {
-    return _getExecuteContractMsg(contractAddress, senderAddress, msg, [
+    return getExecuteContractMsg(contractAddress, senderAddress, msg, [
       coin(amount, token.native.denom),
     ]);
   }
@@ -81,29 +83,7 @@ function getSingleTokenExecMsg(
     },
   };
 
-  return _getExecuteContractMsg(
-    contractAddress,
-    senderAddress,
-    cw20SendMsg,
-    []
-  );
-}
-
-function _getExecuteContractMsg(
-  contractAddress: string,
-  senderAddress: string,
-  msg: any,
-  funds: Coin[]
-): MsgExecuteContractEncodeObject {
-  return {
-    typeUrl: "/cosmwasm.wasm.v1.MsgExecuteContract",
-    value: MsgExecuteContract.fromPartial({
-      sender: senderAddress,
-      contract: contractAddress,
-      msg: toUtf8(JSON.stringify(msg)),
-      funds,
-    }),
-  };
+  return getExecuteContractMsg(contractAddress, senderAddress, cw20SendMsg, []);
 }
 
 function getApproveCollectionMsg(

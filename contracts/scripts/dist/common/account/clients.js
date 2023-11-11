@@ -1,6 +1,7 @@
 import { l } from "../utils";
 import { Tendermint37Client } from "@cosmjs/tendermint-rpc";
-import { fromBech32, toBech32 } from "@cosmjs/encoding";
+import { fromBech32, toBech32, toUtf8 } from "@cosmjs/encoding";
+import { MsgExecuteContract } from "cosmjs-types/cosmwasm/wasm/v1/tx";
 import { SigningCosmWasmClient, CosmWasmClient } from "@cosmjs/cosmwasm-stargate";
 import { SigningStargateClient, StargateClient, calculateFee as _calculateFee } from "@cosmjs/stargate";
 async function getSgClient(rpc, owner, signer) {
@@ -59,4 +60,15 @@ function getGasPriceFromChainRegistryItem(chain) {
   const gasPrice = `${gasPriceAmount}${chain.fees?.fee_tokens[0]?.denom}`;
   return gasPrice;
 }
-export { getSgClient, getCwClient, getAddrByPrefix, signAndBroadcastWrapper, getGasPriceFromChainRegistryItem };
+function getExecuteContractMsg(contractAddress, senderAddress, msg, funds) {
+  return {
+    typeUrl: "/cosmwasm.wasm.v1.MsgExecuteContract",
+    value: MsgExecuteContract.fromPartial({
+      sender: senderAddress,
+      contract: contractAddress,
+      msg: toUtf8(JSON.stringify(msg)),
+      funds
+    })
+  };
+}
+export { getSgClient, getCwClient, getAddrByPrefix, signAndBroadcastWrapper, getGasPriceFromChainRegistryItem, getExecuteContractMsg };

@@ -1,7 +1,6 @@
 import { l, Request } from "../utils";
 import { getSgClient, signAndBroadcastWrapper } from "./clients";
 import { Tendermint37Client } from "@cosmjs/tendermint-rpc";
-import { TokenfactoryConfigResponse } from "../interfaces";
 import {
   DirectSecp256k1HdWallet,
   OfflineSigner,
@@ -64,23 +63,7 @@ async function getSgQueryHelpers(rpc: string) {
     return res;
   }
 
-  // TODO: choose API carefully
-  async function getTokenfactoryConfig(chainId: string) {
-    // const chain = chains.find((x) => x.chain_id == chainId);
-    // if (!chain) throw new Error("Chain is not found!");
-
-    // const rest = chain.apis?.rest?.[0]?.address;
-    // if (!rest) throw new Error("REST is not found!");
-
-    const rest = "https://osmosis-testnet.api.kjnodes.com";
-    const res: TokenfactoryConfigResponse = await req.get(
-      `${rest}/osmosis/tokenfactory/v1beta1/params`
-    );
-    l("\n", res, "\n");
-    return res;
-  }
-
-  return { getAllBalances, getMetadata, getTokenfactoryConfig };
+  return { getAllBalances, getMetadata };
 }
 
 export { getSgExecHelpers, getSgQueryHelpers };

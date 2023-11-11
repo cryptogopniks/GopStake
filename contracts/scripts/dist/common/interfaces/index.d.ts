@@ -6,15 +6,6 @@ interface UpdateStakingPlatformConfigStruct {
 interface UpdateMinterConfigStruct {
     stakingPlatform?: string;
 }
-interface TokenfactoryConfigResponse {
-    params: {
-        denom_creation_fee: {
-            denom: string;
-            amount: string;
-        }[];
-        denom_creation_gas_consume: string;
-    };
-}
 interface Cw20SendMsg {
     send: {
         contract: string;
@@ -162,4 +153,4 @@ type ContractData = {
     ADDRESS: string;
 };
 export type { NetworkConfig, NetworkName };
-export { ChainResponse, TokenfactoryConfigResponse, SetMetadataMsg, Metadata, UpdateMinterConfigStruct, UpdateStakingPlatformConfigStruct, ApproveCollectionMsg, RevokeCollectionMsg, QueryApprovalsMsg, ApprovalsResponse, Cw20SendMsg, BaseNetworkConfig, ContractData, };
+export { ChainResponse, SetMetadataMsg, Metadata, UpdateMinterConfigStruct, UpdateStakingPlatformConfigStruct, ApproveCollectionMsg, RevokeCollectionMsg, QueryApprovalsMsg, ApprovalsResponse, Cw20SendMsg, BaseNetworkConfig, ContractData, };
