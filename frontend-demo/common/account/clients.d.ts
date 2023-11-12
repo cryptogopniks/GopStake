@@ -1,7 +1,6 @@
-import { DirectSecp256k1HdWallet } from "@cosmjs/proto-signing";
 import { Chain } from "@chain-registry/types";
-import { SigningCosmWasmClient, CosmWasmClient } from "@cosmjs/cosmwasm-stargate";
-import { OfflineDirectSigner, EncodeObject, OfflineSigner } from "@cosmjs/proto-signing";
+import { SigningCosmWasmClient, CosmWasmClient, MsgExecuteContractEncodeObject } from "@cosmjs/cosmwasm-stargate";
+import { OfflineDirectSigner, EncodeObject, OfflineSigner, DirectSecp256k1HdWallet, Coin } from "@cosmjs/proto-signing";
 import { SigningStargateClient, StargateClient, GasPrice, DeliverTxResponse } from "@cosmjs/stargate";
 declare function getSgClient(rpc: string, owner?: string, signer?: (OfflineSigner & OfflineDirectSigner) | DirectSecp256k1HdWallet): Promise<{
     client: SigningStargateClient;
@@ -18,4 +17,5 @@ declare function getCwClient(rpc: string, owner?: string, signer?: (OfflineSigne
 declare function getAddrByPrefix(address: string, prefix: string): string;
 declare function signAndBroadcastWrapper(client: SigningStargateClient | SigningCosmWasmClient, signerAddress: string, margin?: number): (messages: readonly EncodeObject[], gasPrice: string | GasPrice, memo?: string) => Promise<DeliverTxResponse>;
 declare function getGasPriceFromChainRegistryItem(chain: Chain): string;
-export { getSgClient, getCwClient, getAddrByPrefix, signAndBroadcastWrapper, getGasPriceFromChainRegistryItem, };
+declare function getExecuteContractMsg(contractAddress: string, senderAddress: string, msg: any, funds: Coin[]): MsgExecuteContractEncodeObject;
+export { getSgClient, getCwClient, getAddrByPrefix, signAndBroadcastWrapper, getGasPriceFromChainRegistryItem, getExecuteContractMsg, };

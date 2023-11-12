@@ -1,6 +1,7 @@
 import { AxiosRequestConfig, CreateAxiosDefaults } from "axios";
 declare const l: {
     (...data: any[]): void;
+    (...data: any[]): void;
     (message?: any, ...optionalParams: any[]): void;
 };
 declare const getID: () => string;

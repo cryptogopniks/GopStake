@@ -342,11 +342,8 @@ async function initQueryWorkers(network: NetworkName) {
     cwQueryMinterConfig: _cwQueryMinterConfig,
   } = cwQueryHelpers;
 
-  const {
-    getAllBalances: _getAllBalances,
-    getMetadata: _getMetadata,
-    getTokenfactoryConfig: _getTokenfactoryConfig,
-  } = sgQueryHelpers;
+  const { getAllBalances: _getAllBalances, getMetadata: _getMetadata } =
+    sgQueryHelpers;
 
   async function cwQueryApprovals(collectionAddress: string, tokenId: number) {
     try {
@@ -452,14 +449,6 @@ async function initQueryWorkers(network: NetworkName) {
     }
   }
 
-  async function getTokenfactoryConfig() {
-    try {
-      return await _getTokenfactoryConfig(CHAIN_ID);
-    } catch (error) {
-      l(error, "\n");
-    }
-  }
-
   return {
     cwQueryApprovals,
     cwQueryStakingPlatformConfig,
@@ -475,7 +464,6 @@ async function initQueryWorkers(network: NetworkName) {
 
     getAllBalances,
     getMetadata,
-    getTokenfactoryConfig,
   };
 }
 

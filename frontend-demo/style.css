@@ -44,6 +44,14 @@ body {
 	justify-content: center;
 }
 
+select {
+  margin-right: 10px;
+  margin-bottom: 10px;
+  width: 100px;
+  height: 25px;
+  outline: none;
+}
+
 textarea {
   width: 100%;
   height: 100px;
@@ -85,12 +93,6 @@ h2 {
   text-align: center;
 }
 
-
-
-
-
-
-
 button {
   width: 120px;
   border-radius: 8px;
@@ -104,10 +106,10 @@ button {
   transition: border-color 0.25s;
   outline: none;
 }
+
 button:hover {
   border-color: #646cff;
 }
-
 
 @media (prefers-color-scheme: light) {
   :root {

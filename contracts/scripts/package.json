@@ -11,6 +11,7 @@
     "store": "ts-node ./src/backend/services/store-contract.ts",
     "store-inj": "ts-node ./src/backend/services/store-contract-inj.ts",
     "call": "ts-node ./src/backend/services/call-contract.ts",
+    "call-inj": "ts-node ./src/backend/services/call-contract-inj.ts",
     "config": "ts-node ./src/backend/services/update-config.ts",
     "config-inj": "ts-node ./src/backend/services/update-config-inj.ts",
     "transpile": "shx rm -rf ./dist/backend/* && shx rm -rf ./dist/common/* && npx babel ./src/common --out-dir ./dist/common --extensions '.ts' && shx cp -r ./src/common/config/*.json ./dist/common/config",

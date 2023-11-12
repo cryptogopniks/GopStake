@@ -36,6 +36,5 @@ declare function initQueryWorkers(network: NetworkName): Promise<{
     cwQueryMinterConfig: () => Promise<import("../../common/codegen/Minter.types").Config | undefined>;
     getAllBalances: (address: string) => Promise<import("cosmjs-types/cosmos/base/v1beta1/coin").Coin[] | undefined>;
     getMetadata: (denom: string) => Promise<import("cosmjs-types/cosmos/bank/v1beta1/bank").Metadata | undefined>;
-    getTokenfactoryConfig: () => Promise<any>;
 }>;
 export { initExecWorkers, initQueryWorkers };

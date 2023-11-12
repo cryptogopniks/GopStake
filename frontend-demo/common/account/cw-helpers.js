@@ -1,22 +1,34 @@
 import { l } from "../utils";
-import { getCwClient, signAndBroadcastWrapper } from "./clients";
-import { toUtf8, toBase64 } from "@cosmjs/encoding";
-import { MsgExecuteContract } from "cosmjs-types/cosmwasm/wasm/v1/tx";
+import { toBase64 } from "@cosmjs/encoding";
 import { MinterMsgComposer } from "../codegen/Minter.message-composer";
 import { MinterQueryClient } from "../codegen/Minter.client";
 import { StakingPlatformMsgComposer } from "../codegen/StakingPlatform.message-composer";
 import { StakingPlatformQueryClient } from "../codegen/StakingPlatform.client";
-import { coin } from "@cosmjs/proto-signing";
 import { NETWORK_CONFIG, MINTER_WASM, STAKING_PLATFORM_WASM } from "../config";
+import { getCwClient, signAndBroadcastWrapper, getExecuteContractMsg } from "./clients";
+import { coin } from "@cosmjs/proto-signing";
+function addSingleTokenToComposerObj(obj, amount, token) {
+  const {
+    value: {
+      contract,
+      sender,
+      msg
+    }
+  } = obj;
+  if (!(contract && sender && msg)) {
+    throw new Error("cwDepositTokens parameters error!");
+  }
+  return getSingleTokenExecMsg(contract, sender, msg, amount, token);
+}
 function getSingleTokenExecMsg(contractAddress, senderAddress, msg, amount, token) {
   // get msg without funds
   if (!(token && amount)) {
-    return _getExecuteContractMsg(contractAddress, senderAddress, msg, []);
+    return getExecuteContractMsg(contractAddress, senderAddress, msg, []);
   }
 
   // get msg with native token
   if ("native" in token) {
-    return _getExecuteContractMsg(contractAddress, senderAddress, msg, [coin(amount, token.native.denom)]);
+    return getExecuteContractMsg(contractAddress, senderAddress, msg, [coin(amount, token.native.denom)]);
   }
 
   // get msg with CW20 token
@@ -27,18 +39,7 @@ function getSingleTokenExecMsg(contractAddress, senderAddress, msg, amount, toke
       msg: toBase64(msg)
     }
   };
-  return _getExecuteContractMsg(contractAddress, senderAddress, cw20SendMsg, []);
-}
-function _getExecuteContractMsg(contractAddress, senderAddress, msg, funds) {
-  return {
-    typeUrl: "/cosmwasm.wasm.v1.MsgExecuteContract",
-    value: MsgExecuteContract.fromPartial({
-      sender: senderAddress,
-      contract: contractAddress,
-      msg: toUtf8(JSON.stringify(msg)),
-      funds
-    })
-  };
+  return getExecuteContractMsg(contractAddress, senderAddress, cw20SendMsg, []);
 }
 function getApproveCollectionMsg(collectionAddress, senderAddress, operator) {
   const approveCollectionMsg = {
@@ -158,34 +159,14 @@ async function getCwExecHelpers(network, rpc, owner, signer) {
     })], gasPrice);
   }
   async function cwAcceptProposal(id, amount, token, gasPrice) {
-    const {
-      value: {
-        contract,
-        sender,
-        msg
-      }
-    } = stakingPlatformMsgComposer.acceptProposal({
+    return await _msgWrapperWithGasPrice([addSingleTokenToComposerObj(stakingPlatformMsgComposer.acceptProposal({
       id: `${id}`
-    });
-    if (!(contract && sender && msg)) {
-      throw new Error("cwAcceptProposal parameters error!");
-    }
-    return await _msgWrapperWithGasPrice([getSingleTokenExecMsg(contract, sender, msg, amount, token)], gasPrice);
+    }), amount, token)], gasPrice);
   }
   async function cwDepositTokens(collectionAddress, amount, token, gasPrice) {
-    const {
-      value: {
-        contract,
-        sender,
-        msg
-      }
-    } = stakingPlatformMsgComposer.depositTokens({
+    return await _msgWrapperWithGasPrice([addSingleTokenToComposerObj(stakingPlatformMsgComposer.depositTokens({
       collectionAddress
-    });
-    if (!(contract && sender && msg)) {
-      throw new Error("cwDepositTokens parameters error!");
-    }
-    return await _msgWrapperWithGasPrice([getSingleTokenExecMsg(contract, sender, msg, amount, token)], gasPrice);
+    }), amount, token)], gasPrice);
   }
   async function cwWithdrawTokens(collectionAddress, amount, gasPrice) {
     return await _msgWrapperWithGasPrice([stakingPlatformMsgComposer.withdrawTokens({
@@ -197,19 +178,9 @@ async function getCwExecHelpers(network, rpc, owner, signer) {
   // minter
 
   async function cwCreateDenom(subdenom, paymentAmount, paymentDenom, gasPrice) {
-    const {
-      value: {
-        contract,
-        sender,
-        msg
-      }
-    } = minterMsgComposer.createDenom({
+    return await _msgWrapperWithGasPrice([addSingleTokenToComposerObj(minterMsgComposer.createDenom({
       subdenom
-    });
-    if (!(contract && sender && msg)) {
-      throw new Error("cwCreateDenom parameters error!");
-    }
-    return await _msgWrapperWithGasPrice([getSingleTokenExecMsg(contract, sender, msg, paymentAmount, {
+    }), paymentAmount, {
       native: {
         denom: paymentDenom
       }
