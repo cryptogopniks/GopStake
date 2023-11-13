@@ -39,7 +39,7 @@ async function main(network: NetworkName) {
       const networkName = network.toLowerCase();
       const contractName = WASM.replace(".wasm", "").toLowerCase();
 
-      const { signer, owner } = await getSigner(RPC, PREFIX, seed);
+      const { signer, owner } = await getSigner(PREFIX, seed);
       const cwClient = await getCwClient(RPC, owner, signer);
       if (!cwClient) throw new Error("cwClient is not found!");
 

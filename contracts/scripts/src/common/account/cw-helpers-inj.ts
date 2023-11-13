@@ -57,12 +57,14 @@ function getSingleTokenExecMsg(
   token?: StakingPlatformTypes.TokenUnverified
 ): [MsgExecuteContract, string] {
   const {
-    value: { contract, sender, msg },
+    value: { contract, sender, msg: _msg },
   } = obj;
 
-  if (!(contract && sender && msg)) {
-    throw new Error(`${msg} parameters error!`);
+  if (!(contract && sender && _msg)) {
+    throw new Error(`${_msg} parameters error!`);
   }
+
+  const msg = JSON.parse(fromUtf8(_msg));
 
   // get msg without funds
   if (!(token && amount)) {
@@ -70,7 +72,7 @@ function getSingleTokenExecMsg(
       MsgExecuteContract.fromJSON({
         contractAddress: contract,
         sender,
-        msg: JSON.parse(fromUtf8(msg)),
+        msg,
       }),
       sender,
     ];
@@ -82,18 +84,17 @@ function getSingleTokenExecMsg(
       MsgExecuteContract.fromJSON({
         contractAddress: contract,
         sender,
-        msg: JSON.parse(fromUtf8(msg)),
+        msg,
         funds: { amount: `${amount}`, denom: token.native.denom },
       }),
       sender,
     ];
   }
 
-  // TODO: check
   // get msg with CW20 token
   const cw20SendMsg: Cw20SendMsg = {
     send: {
-      contract: token.cw20.address,
+      contract,
       amount: `${amount}`,
       msg: toBase64(msg),
     },
@@ -101,7 +102,7 @@ function getSingleTokenExecMsg(
 
   return [
     MsgExecuteContract.fromJSON({
-      contractAddress: contract,
+      contractAddress: token.cw20.address,
       sender,
       msg: cw20SendMsg,
     }),

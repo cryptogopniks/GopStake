@@ -1,5 +1,5 @@
 import { l } from "../utils";
-import { toBase64 } from "@cosmjs/encoding";
+import { toBase64, fromUtf8 } from "@cosmjs/encoding";
 import { MinterMsgComposer } from "../codegen/Minter.message-composer";
 import { MinterQueryClient } from "../codegen/Minter.client";
 import { StakingPlatformMsgComposer } from "../codegen/StakingPlatform.message-composer";
@@ -49,10 +49,16 @@ function addSingleTokenToComposerObj(
   } = obj;
 
   if (!(contract && sender && msg)) {
-    throw new Error("cwDepositTokens parameters error!");
+    throw new Error(`${msg} parameters error!`);
   }
 
-  return getSingleTokenExecMsg(contract, sender, msg, amount, token);
+  return getSingleTokenExecMsg(
+    contract,
+    sender,
+    JSON.parse(fromUtf8(msg)),
+    amount,
+    token
+  );
 }
 
 function getSingleTokenExecMsg(
@@ -77,13 +83,18 @@ function getSingleTokenExecMsg(
   // get msg with CW20 token
   const cw20SendMsg: Cw20SendMsg = {
     send: {
-      contract: token.cw20.address,
+      contract: contractAddress,
       amount: `${amount}`,
       msg: toBase64(msg),
     },
   };
 
-  return getExecuteContractMsg(contractAddress, senderAddress, cw20SendMsg, []);
+  return getExecuteContractMsg(
+    token.cw20.address,
+    senderAddress,
+    cw20SendMsg,
+    []
+  );
 }
 
 function getApproveCollectionMsg(

@@ -7,6 +7,7 @@ import { PATH } from "../envs";
 import { MsgBroadcasterWithPk } from "@injectivelabs/sdk-ts";
 import { Network } from "@injectivelabs/networks";
 import { ProposalForStringAndTokenUnverified } from "../../common/codegen/StakingPlatform.types";
+import { getSgQueryHelpers } from "../../common/account/sg-helpers-inj";
 import {
   getCwExecHelpers,
   getCwQueryHelpers,
@@ -33,16 +34,16 @@ async function main(network: NetworkName) {
       simulateTx: true,
     });
 
+    const { getAllBalances } = await getSgQueryHelpers();
     const { cwQueryProposals } = await getCwQueryHelpers(network);
-    const { cwCreateProposal } = await getCwExecHelpers(
-      network,
-      injectiveAddress,
-      msgBroadcasterWithPk
-    );
+    const { cwCreateProposal, cwMintTokens, cwBurnTokens, cwCreateDenom } =
+      await getCwExecHelpers(network, injectiveAddress, msgBroadcasterWithPk);
 
-    await cwCreateProposal(getProposalTemplate(network));
+    // await cwCreateProposal(getProposalTemplate(network));
 
-    await cwQueryProposals(3);
+    // await cwQueryProposals(3);
+
+    await cwCreateDenom("upinj", 1, "inj");
   } catch (error) {
     l(error);
   }

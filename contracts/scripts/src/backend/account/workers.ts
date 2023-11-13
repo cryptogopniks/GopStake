@@ -33,7 +33,7 @@ async function initExecWorkers(
     },
   } = NETWORK_CONFIG[network];
 
-  const { signer, owner } = await getSigner(RPC, PREFIX, seed);
+  const { signer, owner } = await getSigner(PREFIX, seed);
 
   // cosmwasm helpers
   const dappCwExecHelpers = await getCwExecHelpers(network, RPC, owner, signer);

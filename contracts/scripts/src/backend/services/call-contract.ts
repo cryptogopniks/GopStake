@@ -11,11 +11,22 @@ import {
   MINTER_WASM,
   STAKING_PLATFORM_WASM,
 } from "../../common/config";
+import { getSgQueryHelpers } from "../../common/account/sg-helpers";
+import {
+  getCwExecHelpers,
+  getCwQueryHelpers,
+} from "../../common/account/cw-helpers";
+import { getSigner } from "../account/signer";
 
 async function main(network: NetworkName) {
   try {
     const {
-      BASE: { DENOM, CHAIN_ID },
+      BASE: {
+        DENOM,
+        CHAIN_ID,
+        RPC_LIST: [RPC],
+        PREFIX,
+      },
       CONTRACTS,
     } = NETWORK_CONFIG[network];
 
@@ -43,9 +54,17 @@ async function main(network: NetworkName) {
 
     const gasPrice = getGasPriceFromChainRegistryItem(chain);
 
-    const { owner } = await initExecWorkers(network, seed, gasPrice);
+    // const { owner, cwCreateDenom, cwMintTokens, cwBurnTokens } =
+    //   await initExecWorkers(network, seed, gasPrice);
 
-    const {} = await initQueryWorkers(network);
+    // const { getAllBalances } = await initQueryWorkers(network);
+
+    const { signer, owner } = await getSigner(PREFIX, seed);
+
+    const { cwCreateDenom, cwMintTokens, cwBurnTokens } =
+      await getCwExecHelpers(network, RPC, owner, signer);
+
+    await cwCreateDenom("upinj", 1, "ustars", gasPrice);
   } catch (error) {
     l(error);
   }
