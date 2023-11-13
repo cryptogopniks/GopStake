@@ -19,12 +19,12 @@ function getInjExecMsgFromComposerObj(obj) {
   if (!(contract && sender && msg)) {
     throw new Error(`${msg} parameters error!`);
   }
-  return MsgExecuteContract.fromJSON({
+  return [MsgExecuteContract.fromJSON({
     contractAddress: contract,
     sender,
     msg: JSON.parse(fromUtf8(msg)),
     funds
-  });
+  }), sender];
 }
 function getSingleTokenExecMsg(obj, amount, token) {
   const {
@@ -40,17 +40,16 @@ function getSingleTokenExecMsg(obj, amount, token) {
 
   // get msg without funds
   if (!(token && amount)) {
-    return MsgExecuteContract.fromJSON({
+    return [MsgExecuteContract.fromJSON({
       contractAddress: contract,
       sender,
-      msg: JSON.parse(fromUtf8(msg)),
-      funds: undefined
-    });
+      msg: JSON.parse(fromUtf8(msg))
+    }), sender];
   }
 
   // get msg with native token
   if ("native" in token) {
-    return MsgExecuteContract.fromJSON({
+    return [MsgExecuteContract.fromJSON({
       contractAddress: contract,
       sender,
       msg: JSON.parse(fromUtf8(msg)),
@@ -58,7 +57,7 @@ function getSingleTokenExecMsg(obj, amount, token) {
         amount: `${amount}`,
         denom: token.native.denom
       }
-    });
+    }), sender];
   }
 
   // TODO: check
@@ -70,12 +69,11 @@ function getSingleTokenExecMsg(obj, amount, token) {
       msg: toBase64(msg)
     }
   };
-  return MsgExecuteContract.fromJSON({
+  return [MsgExecuteContract.fromJSON({
     contractAddress: contract,
     sender,
-    msg: cw20SendMsg,
-    funds: undefined
-  });
+    msg: cw20SendMsg
+  }), sender];
 }
 async function queryInjContract(chainGrpcWasmApi, contractAddress, queryMsg) {
   const {
@@ -148,119 +146,151 @@ async function getCwExecHelpers(network, owner, msgBroadcaster) {
   // staking-platform
 
   async function cwApproveCollection(collectionAddress, senderAddress, operator, _gasPrice) {
+    const [msg, sender] = getApproveCollectionMsg(collectionAddress, senderAddress, operator);
     return await msgBroadcaster.broadcast({
-      msgs: [getApproveCollectionMsg(collectionAddress, senderAddress, operator)]
+      msgs: [msg],
+      injectiveAddress: sender
     });
   }
   async function cwRevokeCollection(collectionAddress, senderAddress, operator, _gasPrice) {
+    const [msg, sender] = getRevokeCollectionMsg(collectionAddress, senderAddress, operator);
     return await msgBroadcaster.broadcast({
-      msgs: [getRevokeCollectionMsg(collectionAddress, senderAddress, operator)]
+      msgs: [msg],
+      injectiveAddress: sender
     });
   }
   async function cwStake(collectionsToStake, _gasPrice) {
+    const [msg, sender] = getInjExecMsgFromComposerObj(stakingPlatformMsgComposer.stake({
+      collectionsToStake
+    }));
     return await msgBroadcaster.broadcast({
-      msgs: [getInjExecMsgFromComposerObj(stakingPlatformMsgComposer.stake({
-        collectionsToStake
-      }))]
+      msgs: [msg],
+      injectiveAddress: sender
     });
   }
   async function cwUnstake(collectionsToUnstake, _gasPrice) {
+    const [msg, sender] = getInjExecMsgFromComposerObj(stakingPlatformMsgComposer.unstake({
+      collectionsToUnstake
+    }));
     return await msgBroadcaster.broadcast({
-      msgs: [getInjExecMsgFromComposerObj(stakingPlatformMsgComposer.unstake({
-        collectionsToUnstake
-      }))]
+      msgs: [msg],
+      injectiveAddress: sender
     });
   }
   async function cwClaimStakingRewards(_gasPrice) {
+    const [msg, sender] = getInjExecMsgFromComposerObj(stakingPlatformMsgComposer.claimStakingRewards());
     return await msgBroadcaster.broadcast({
-      msgs: [getInjExecMsgFromComposerObj(stakingPlatformMsgComposer.claimStakingRewards())]
+      msgs: [msg],
+      injectiveAddress: sender
     });
   }
   async function cwUpdateStakingPlatformConfig(updateStakingPlatformConfigStruct, _gasPrice) {
+    const [msg, sender] = getInjExecMsgFromComposerObj(stakingPlatformMsgComposer.updateConfig(updateStakingPlatformConfigStruct));
     return await msgBroadcaster.broadcast({
-      msgs: [getInjExecMsgFromComposerObj(stakingPlatformMsgComposer.updateConfig(updateStakingPlatformConfigStruct))]
+      msgs: [msg],
+      injectiveAddress: sender
     });
   }
   async function cwDistributeFunds(addressAndWeightList, _gasPrice) {
+    const [msg, sender] = getInjExecMsgFromComposerObj(stakingPlatformMsgComposer.distributeFunds({
+      addressAndWeightList
+    }));
     return await msgBroadcaster.broadcast({
-      msgs: [getInjExecMsgFromComposerObj(stakingPlatformMsgComposer.distributeFunds({
-        addressAndWeightList
-      }))]
+      msgs: [msg],
+      injectiveAddress: sender
     });
   }
   async function cwRemoveCollection(address, _gasPrice) {
+    const [msg, sender] = getInjExecMsgFromComposerObj(stakingPlatformMsgComposer.removeCollection({
+      address
+    }));
     return await msgBroadcaster.broadcast({
-      msgs: [getInjExecMsgFromComposerObj(stakingPlatformMsgComposer.removeCollection({
-        address
-      }))]
+      msgs: [msg],
+      injectiveAddress: sender
     });
   }
   async function cwCreateProposal(proposal, _gasPrice) {
+    const [msg, sender] = getInjExecMsgFromComposerObj(stakingPlatformMsgComposer.createProposal({
+      proposal
+    }));
     return await msgBroadcaster.broadcast({
-      msgs: [getInjExecMsgFromComposerObj(stakingPlatformMsgComposer.createProposal({
-        proposal
-      }))]
+      msgs: [msg],
+      injectiveAddress: sender
     });
   }
   async function cwRejectProposal(id, _gasPrice) {
+    const [msg, sender] = getInjExecMsgFromComposerObj(stakingPlatformMsgComposer.rejectProposal({
+      id: `${id}`
+    }));
     return await msgBroadcaster.broadcast({
-      msgs: [getInjExecMsgFromComposerObj(stakingPlatformMsgComposer.rejectProposal({
-        id: `${id}`
-      }))]
+      msgs: [msg],
+      injectiveAddress: sender
     });
   }
   async function cwAcceptProposal(id, amount, token, _gasPrice) {
+    const [msg, sender] = getSingleTokenExecMsg(stakingPlatformMsgComposer.acceptProposal({
+      id: `${id}`
+    }), amount, token);
     return await msgBroadcaster.broadcast({
-      msgs: [getSingleTokenExecMsg(stakingPlatformMsgComposer.acceptProposal({
-        id: `${id}`
-      }), amount, token)]
+      msgs: [msg],
+      injectiveAddress: sender
     });
   }
   async function cwDepositTokens(collectionAddress, amount, token, _gasPrice) {
+    const [msg, sender] = getSingleTokenExecMsg(stakingPlatformMsgComposer.depositTokens({
+      collectionAddress
+    }), amount, token);
     return await msgBroadcaster.broadcast({
-      msgs: [getSingleTokenExecMsg(stakingPlatformMsgComposer.depositTokens({
-        collectionAddress
-      }), amount, token)]
+      msgs: [msg],
+      injectiveAddress: sender
     });
   }
   async function cwWithdrawTokens(collectionAddress, amount, _gasPrice) {
+    const [msg, sender] = getInjExecMsgFromComposerObj(stakingPlatformMsgComposer.withdrawTokens({
+      collectionAddress,
+      amount: `${amount}`
+    }));
     return await msgBroadcaster.broadcast({
-      msgs: [getInjExecMsgFromComposerObj(stakingPlatformMsgComposer.withdrawTokens({
-        collectionAddress,
-        amount: `${amount}`
-      }))]
+      msgs: [msg],
+      injectiveAddress: sender
     });
   }
 
   // minter
 
   async function cwCreateDenom(subdenom, paymentAmount, paymentDenom, _gasPrice) {
+    const [msg, sender] = getSingleTokenExecMsg(minterMsgComposer.createDenom({
+      subdenom
+    }), paymentAmount, {
+      native: {
+        denom: paymentDenom
+      }
+    });
     return await msgBroadcaster.broadcast({
-      msgs: [getSingleTokenExecMsg(minterMsgComposer.createDenom({
-        subdenom
-      }), paymentAmount, {
-        native: {
-          denom: paymentDenom
-        }
-      })]
+      msgs: [msg],
+      injectiveAddress: sender
     });
   }
   async function cwMintTokens(denom, amount, mintToAddress, _gasPrice) {
+    const [msg, sender] = getInjExecMsgFromComposerObj(minterMsgComposer.mintTokens({
+      denom,
+      amount: `${amount}`,
+      mintToAddress
+    }));
     return await msgBroadcaster.broadcast({
-      msgs: [getInjExecMsgFromComposerObj(minterMsgComposer.mintTokens({
-        denom,
-        amount: `${amount}`,
-        mintToAddress
-      }))]
+      msgs: [msg],
+      injectiveAddress: sender
     });
   }
   async function cwBurnTokens(denom, amount, burnFromAddress, _gasPrice) {
+    const [msg, sender] = getInjExecMsgFromComposerObj(minterMsgComposer.burnTokens({
+      denom,
+      amount: `${amount}`,
+      burnFromAddress
+    }));
     return await msgBroadcaster.broadcast({
-      msgs: [getInjExecMsgFromComposerObj(minterMsgComposer.burnTokens({
-        denom,
-        amount: `${amount}`,
-        burnFromAddress
-      }))]
+      msgs: [msg],
+      injectiveAddress: sender
     });
   }
   async function cwSetMetadata(creatorAddress, symbol, description, uri = "", uriHash = "", _gasPrice) {
@@ -271,18 +301,22 @@ async function getCwExecHelpers(network, owner, msgBroadcaster) {
       }
     };
     if (!MINTER_CONTRACT) throw new Error("MINTER_CONTRACT in not found!");
+    const [msg, sender] = getSetMetadataMsg(MINTER_CONTRACT.DATA.ADDRESS, owner, setMetadataMsg);
     return await msgBroadcaster.broadcast({
-      msgs: [getSetMetadataMsg(MINTER_CONTRACT.DATA.ADDRESS, owner, setMetadataMsg)]
+      msgs: [msg],
+      injectiveAddress: sender
     });
   }
   async function cwUpdateMinterConfig(updateMinterConfigStruct, _gasPrice) {
     const {
       stakingPlatform
     } = updateMinterConfigStruct;
+    const [msg, sender] = getInjExecMsgFromComposerObj(minterMsgComposer.updateConfig({
+      stakingPlatform
+    }));
     return await msgBroadcaster.broadcast({
-      msgs: [getInjExecMsgFromComposerObj(minterMsgComposer.updateConfig({
-        stakingPlatform
-      }))]
+      msgs: [msg],
+      injectiveAddress: sender
     });
   }
   return {

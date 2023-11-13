@@ -3,20 +3,14 @@ import "./style.css"
 import { l } from "./common/utils"
 import * as stargazeCwHelpers from "./common/account/cw-helpers"
 import * as injectiveCwHelpers from "./common/account/cw-helpers-inj"
-import { getNetworkEndpoints, Network } from "@injectivelabs/networks";
+import { Network } from "@injectivelabs/networks";
 import { WalletStrategy, MsgBroadcaster, Wallet } from "@injectivelabs/wallet-ts"
 import { NETWORK_CONFIG } from "./common/config"
 import {
   connectWallet, disconnectWallet, getAccountAddress, detectWallet, getSigner,
   getChainList, getGasPriceFromChainRegistryItem
 } from "./wallet"
-// TODO: remove
-import { MsgExecuteContract } from "@injectivelabs/sdk-ts";
-import { toUtf8, toBase64, fromUtf8 } from "@cosmjs/encoding";
-import { MsgExecuteContract as DefaultMsgExecuteContract } from "cosmjs-types/cosmwasm/wasm/v1/tx";
-import { getNetworkChainInfo } from "@injectivelabs/networks";
 
-// { getCwQueryHelpers, getCwExecHelpers }
 const stargazeNetworkName = "STARGAZE"
 
 const [btnConnect, btnDisconnect, btnCreateProp, btnRejectProp] = document.querySelectorAll("button");
@@ -87,7 +81,7 @@ btnCreateProp.addEventListener("click", async () => {
     const proposal = JSON.parse(taPropSpecify.value)
 
     const network = selectNetwork.value.toUpperCase()
-    const { BASE: { CHAIN_ID, RPC_LIST: [RPC] }, CONTRACTS } = NETWORK_CONFIG[network]
+    const { BASE: { CHAIN_ID, RPC_LIST: [RPC] } } = NETWORK_CONFIG[network]
 
     const wallet = detectWallet()
 
@@ -99,155 +93,73 @@ btnCreateProp.addEventListener("click", async () => {
       cwQueryProposals = (await stargazeCwHelpers.getCwQueryHelpers(network, RPC)).cwQueryProposals
       cwCreateProposal = (await stargazeCwHelpers.getCwExecHelpers(network, RPC, owner, signer)).cwCreateProposal
     } else {
-      const contractAddress = CONTRACTS[1].DATA.ADDRESS;
+      const injNetwork = Network.Testnet
       const owner = await getAccountAddress(wallet, CHAIN_ID)
 
-
-      const { chainId } = getNetworkChainInfo(Network.Testnet)
-
       const walletStrategy = new WalletStrategy({
-        chainId,
+        chainId: CHAIN_ID,
         wallet: Wallet.Keplr
       });
 
       const msgBroadcaster = new MsgBroadcaster({
-        network: Network.Testnet,
+        network: injNetwork,
         walletStrategy,
         simulateTx: true,
       });
 
-      await msgBroadcaster.broadcast({
-        msgs: [
-          MsgExecuteContract.fromJSON({
-            contractAddress,
-            sender: owner,
-            msg: {
-              create_proposal: {
-                proposal
-              }
-            },
-            funds: undefined
-          })
-        ]
-      });
-
-
-
-
-
-      // prop
-
-
-      // const msg = {
-      //   typeUrl: "/cosmwasm.wasm.v1.MsgExecuteContract",
-      //   value: DefaultMsgExecuteContract.fromPartial({
-      //     sender: owner,
-      //     contract: contractAddress,
-      //     msg: toUtf8(JSON.stringify({
-      //       create_proposal: {
-      //         proposal
-      //       }
-      //     })),
-      //     funds: []
-      //   })
-      // }
-
-      // const msg = {
-      //   create_proposal: {
-      //     proposal
-      //   }
-      // }
-
-
-      // l({ contractAddress, msg })
-
-
-      // await msgBroadcaster.broadcast({
-      //   msgs: [
-      //     MsgExecuteContract.fromJSON({
-      //       contractAddress,
-      //       sender: owner,
-      //       msg,
-      //       funds: undefined
-      //     })
-      //   ]
-      // });
-
-
-
+      cwQueryProposals = (await injectiveCwHelpers.getCwQueryHelpers(network)).cwQueryProposals
+      cwCreateProposal = (await injectiveCwHelpers.getCwExecHelpers(network, owner, msgBroadcaster)).cwCreateProposal
     }
+
+    const [chain] = getChainList([CHAIN_ID])
+    const gasPrice = getGasPriceFromChainRegistryItem(chain)
+
+    await cwCreateProposal(proposal, gasPrice)
+
+    const propList = await cwQueryProposals(3)
+    taPropDisplay.value = propList.reduce((acc, cur) => `${acc}${JSON.stringify(cur)}\n`, "").trim()
   } catch (error) { l(error) }
 })
-
-// btnCreateProp.addEventListener("click", async () => {
-//   try {
-//     const proposal = JSON.parse(taPropSpecify.value)
-
-//     const network = selectNetwork.value.toUpperCase()
-//     const { BASE: { CHAIN_ID, RPC_LIST: [RPC] } } = NETWORK_CONFIG[network]
-
-//     const wallet = detectWallet()
-
-//     let [cwQueryProposals, cwCreateProposal] = []
-
-//     if (network === stargazeNetworkName) {
-//       const { signer, owner } = await getSigner(CHAIN_ID, wallet)
-
-//       cwQueryProposals = (await stargazeCwHelpers.getCwQueryHelpers(network, RPC)).cwQueryProposals
-//       cwCreateProposal = (await stargazeCwHelpers.getCwExecHelpers(network, RPC, owner, signer)).cwCreateProposal
-//     } else {
-//       const injNetwork = Network.Testnet
-//       const owner = await getAccountAddress(wallet, CHAIN_ID)
-//       //const { rest } = getNetworkEndpoints(injNetwork);
-//       const rest = "https://injective-testnet-api.polkachu.com"
-
-//       l({ owner, rest, rpc: RPC })
-
-//       const walletStrategy = new WalletStrategy({
-//         chainId: CHAIN_ID,
-//         //    endpoints: { rest, rpc: RPC },
-//         wallet: Wallet.Keplr
-//       });
-
-//       const msgBroadcaster = new MsgBroadcaster({
-//         network: injNetwork,
-//         walletStrategy,
-//         simulateTx: true,
-//       });
-
-//       l({ rest: msgBroadcaster.endpoints.rest })
-
-//       cwQueryProposals = (await injectiveCwHelpers.getCwQueryHelpers(network)).cwQueryProposals
-//       cwCreateProposal = (await injectiveCwHelpers.getCwExecHelpers(network, owner, msgBroadcaster)).cwCreateProposal
-//     }
-
-//     const [chain] = getChainList([CHAIN_ID])
-//     const gasPrice = getGasPriceFromChainRegistryItem(chain)
-
-//     await cwCreateProposal(proposal, gasPrice)
-
-//     const propList = await cwQueryProposals(3)
-//     taPropDisplay.value = propList.reduce((acc, cur) => `${acc}${JSON.stringify(cur)}\n`, "").trim()
-//   } catch (error) { l(error) }
-// })
 
 btnRejectProp.addEventListener("click", async () => {
   try {
     const network = selectNetwork.value.toUpperCase()
     const { BASE: { CHAIN_ID, RPC_LIST: [RPC] } } = NETWORK_CONFIG[network]
 
-    const wallet = detectWallet()
-    const { signer, owner } = await getSigner(CHAIN_ID, wallet)
-
-    const { cwQueryProposals } = await getCwQueryHelpers(network, RPC)
-    const { cwRejectProposal } = await getCwExecHelpers(network, RPC, owner, signer)
-
-    const [chain] = getChainList([CHAIN_ID])
-    const gasPrice = getGasPriceFromChainRegistryItem(chain)
-
     const proposalIdString = inpPropSelect.value;
     if (!proposalIdString) throw new Error("Proposal ID is not found!")
     const proposalId = +inpPropSelect.value
+
+    const wallet = detectWallet()
+
+    let [cwQueryProposals, cwRejectProposal] = []
+
+    if (network === stargazeNetworkName) {
+      const { signer, owner } = await getSigner(CHAIN_ID, wallet)
+
+      cwQueryProposals = (await stargazeCwHelpers.getCwQueryHelpers(network, RPC)).cwQueryProposals
+      cwRejectProposal = (await stargazeCwHelpers.getCwExecHelpers(network, RPC, owner, signer)).cwRejectProposal
+    } else {
+      const injNetwork = Network.Testnet
+      const owner = await getAccountAddress(wallet, CHAIN_ID)
+
+      const walletStrategy = new WalletStrategy({
+        chainId: CHAIN_ID,
+        wallet: Wallet.Keplr
+      });
+
+      const msgBroadcaster = new MsgBroadcaster({
+        network: injNetwork,
+        walletStrategy,
+        simulateTx: true,
+      });
+
+      cwQueryProposals = (await injectiveCwHelpers.getCwQueryHelpers(network)).cwQueryProposals
+      cwRejectProposal = (await injectiveCwHelpers.getCwExecHelpers(network, owner, msgBroadcaster)).cwRejectProposal
+    }
+
+    const [chain] = getChainList([CHAIN_ID])
+    const gasPrice = getGasPriceFromChainRegistryItem(chain)
 
     await cwRejectProposal(proposalId, gasPrice)
 

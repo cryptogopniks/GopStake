@@ -31,7 +31,7 @@ const networkType = Network.Testnet;
 
 function getInjExecMsgFromComposerObj(
   obj: MsgExecuteContractEncodeObject
-): MsgExecuteContract {
+): [MsgExecuteContract, string] {
   const {
     value: { contract, sender, msg, funds },
   } = obj;
@@ -40,19 +40,22 @@ function getInjExecMsgFromComposerObj(
     throw new Error(`${msg} parameters error!`);
   }
 
-  return MsgExecuteContract.fromJSON({
-    contractAddress: contract,
+  return [
+    MsgExecuteContract.fromJSON({
+      contractAddress: contract,
+      sender,
+      msg: JSON.parse(fromUtf8(msg)),
+      funds,
+    }),
     sender,
-    msg: JSON.parse(fromUtf8(msg)),
-    funds,
-  });
+  ];
 }
 
 function getSingleTokenExecMsg(
   obj: MsgExecuteContractEncodeObject,
   amount?: number,
   token?: StakingPlatformTypes.TokenUnverified
-): MsgExecuteContract {
+): [MsgExecuteContract, string] {
   const {
     value: { contract, sender, msg },
   } = obj;
@@ -63,22 +66,27 @@ function getSingleTokenExecMsg(
 
   // get msg without funds
   if (!(token && amount)) {
-    return MsgExecuteContract.fromJSON({
-      contractAddress: contract,
+    return [
+      MsgExecuteContract.fromJSON({
+        contractAddress: contract,
+        sender,
+        msg: JSON.parse(fromUtf8(msg)),
+      }),
       sender,
-      msg: JSON.parse(fromUtf8(msg)),
-      funds: undefined,
-    });
+    ];
   }
 
   // get msg with native token
   if ("native" in token) {
-    return MsgExecuteContract.fromJSON({
-      contractAddress: contract,
+    return [
+      MsgExecuteContract.fromJSON({
+        contractAddress: contract,
+        sender,
+        msg: JSON.parse(fromUtf8(msg)),
+        funds: { amount: `${amount}`, denom: token.native.denom },
+      }),
       sender,
-      msg: JSON.parse(fromUtf8(msg)),
-      funds: { amount: `${amount}`, denom: token.native.denom },
-    });
+    ];
   }
 
   // TODO: check
@@ -91,12 +99,14 @@ function getSingleTokenExecMsg(
     },
   };
 
-  return MsgExecuteContract.fromJSON({
-    contractAddress: contract,
+  return [
+    MsgExecuteContract.fromJSON({
+      contractAddress: contract,
+      sender,
+      msg: cw20SendMsg,
+    }),
     sender,
-    msg: cw20SendMsg,
-    funds: undefined,
-  });
+  ];
 }
 
 async function queryInjContract(
@@ -116,7 +126,7 @@ function getApproveCollectionMsg(
   collectionAddress: string,
   senderAddress: string,
   operator: string
-): MsgExecuteContract {
+): [MsgExecuteContract, string] {
   const approveCollectionMsg: ApproveCollectionMsg = {
     approve_all: { operator },
   };
@@ -135,7 +145,7 @@ function getRevokeCollectionMsg(
   collectionAddress: string,
   senderAddress: string,
   operator: string
-): MsgExecuteContract {
+): [MsgExecuteContract, string] {
   const revokeCollectionMsg: RevokeCollectionMsg = {
     revoke_all: { operator },
   };
@@ -154,7 +164,7 @@ function getSetMetadataMsg(
   minterContractAddress: string,
   senderAddress: string,
   setMetadataMsg: SetMetadataMsg
-): MsgExecuteContract {
+): [MsgExecuteContract, string] {
   return getSingleTokenExecMsg(
     getExecuteContractMsg(
       minterContractAddress,
@@ -241,10 +251,15 @@ async function getCwExecHelpers(
     operator: string,
     _gasPrice?: string
   ) {
+    const [msg, sender] = getApproveCollectionMsg(
+      collectionAddress,
+      senderAddress,
+      operator
+    );
+
     return await msgBroadcaster.broadcast({
-      msgs: [
-        getApproveCollectionMsg(collectionAddress, senderAddress, operator),
-      ],
+      msgs: [msg],
+      injectiveAddress: sender,
     });
   }
 
@@ -254,10 +269,15 @@ async function getCwExecHelpers(
     operator: string,
     _gasPrice?: string
   ) {
+    const [msg, sender] = getRevokeCollectionMsg(
+      collectionAddress,
+      senderAddress,
+      operator
+    );
+
     return await msgBroadcaster.broadcast({
-      msgs: [
-        getRevokeCollectionMsg(collectionAddress, senderAddress, operator),
-      ],
+      msgs: [msg],
+      injectiveAddress: sender,
     });
   }
 
@@ -265,12 +285,13 @@ async function getCwExecHelpers(
     collectionsToStake: StakingPlatformTypes.StakedCollectionInfoForString[],
     _gasPrice?: string
   ) {
+    const [msg, sender] = getInjExecMsgFromComposerObj(
+      stakingPlatformMsgComposer.stake({ collectionsToStake })
+    );
+
     return await msgBroadcaster.broadcast({
-      msgs: [
-        getInjExecMsgFromComposerObj(
-          stakingPlatformMsgComposer.stake({ collectionsToStake })
-        ),
-      ],
+      msgs: [msg],
+      injectiveAddress: sender,
     });
   }
 
@@ -278,22 +299,24 @@ async function getCwExecHelpers(
     collectionsToUnstake: StakingPlatformTypes.StakedCollectionInfoForString[],
     _gasPrice?: string
   ) {
+    const [msg, sender] = getInjExecMsgFromComposerObj(
+      stakingPlatformMsgComposer.unstake({ collectionsToUnstake })
+    );
+
     return await msgBroadcaster.broadcast({
-      msgs: [
-        getInjExecMsgFromComposerObj(
-          stakingPlatformMsgComposer.unstake({ collectionsToUnstake })
-        ),
-      ],
+      msgs: [msg],
+      injectiveAddress: sender,
     });
   }
 
   async function cwClaimStakingRewards(_gasPrice?: string) {
+    const [msg, sender] = getInjExecMsgFromComposerObj(
+      stakingPlatformMsgComposer.claimStakingRewards()
+    );
+
     return await msgBroadcaster.broadcast({
-      msgs: [
-        getInjExecMsgFromComposerObj(
-          stakingPlatformMsgComposer.claimStakingRewards()
-        ),
-      ],
+      msgs: [msg],
+      injectiveAddress: sender,
     });
   }
 
@@ -301,14 +324,13 @@ async function getCwExecHelpers(
     updateStakingPlatformConfigStruct: UpdateStakingPlatformConfigStruct,
     _gasPrice?: string
   ) {
+    const [msg, sender] = getInjExecMsgFromComposerObj(
+      stakingPlatformMsgComposer.updateConfig(updateStakingPlatformConfigStruct)
+    );
+
     return await msgBroadcaster.broadcast({
-      msgs: [
-        getInjExecMsgFromComposerObj(
-          stakingPlatformMsgComposer.updateConfig(
-            updateStakingPlatformConfigStruct
-          )
-        ),
-      ],
+      msgs: [msg],
+      injectiveAddress: sender,
     });
   }
 
@@ -316,22 +338,24 @@ async function getCwExecHelpers(
     addressAndWeightList: [string, string][],
     _gasPrice?: string
   ) {
+    const [msg, sender] = getInjExecMsgFromComposerObj(
+      stakingPlatformMsgComposer.distributeFunds({ addressAndWeightList })
+    );
+
     return await msgBroadcaster.broadcast({
-      msgs: [
-        getInjExecMsgFromComposerObj(
-          stakingPlatformMsgComposer.distributeFunds({ addressAndWeightList })
-        ),
-      ],
+      msgs: [msg],
+      injectiveAddress: sender,
     });
   }
 
   async function cwRemoveCollection(address: string, _gasPrice?: string) {
+    const [msg, sender] = getInjExecMsgFromComposerObj(
+      stakingPlatformMsgComposer.removeCollection({ address })
+    );
+
     return await msgBroadcaster.broadcast({
-      msgs: [
-        getInjExecMsgFromComposerObj(
-          stakingPlatformMsgComposer.removeCollection({ address })
-        ),
-      ],
+      msgs: [msg],
+      injectiveAddress: sender,
     });
   }
 
@@ -339,22 +363,24 @@ async function getCwExecHelpers(
     proposal: StakingPlatformTypes.ProposalForStringAndTokenUnverified,
     _gasPrice?: string
   ) {
+    const [msg, sender] = getInjExecMsgFromComposerObj(
+      stakingPlatformMsgComposer.createProposal({ proposal })
+    );
+
     return await msgBroadcaster.broadcast({
-      msgs: [
-        getInjExecMsgFromComposerObj(
-          stakingPlatformMsgComposer.createProposal({ proposal })
-        ),
-      ],
+      msgs: [msg],
+      injectiveAddress: sender,
     });
   }
 
   async function cwRejectProposal(id: number, _gasPrice?: string) {
+    const [msg, sender] = getInjExecMsgFromComposerObj(
+      stakingPlatformMsgComposer.rejectProposal({ id: `${id}` })
+    );
+
     return await msgBroadcaster.broadcast({
-      msgs: [
-        getInjExecMsgFromComposerObj(
-          stakingPlatformMsgComposer.rejectProposal({ id: `${id}` })
-        ),
-      ],
+      msgs: [msg],
+      injectiveAddress: sender,
     });
   }
 
@@ -364,14 +390,15 @@ async function getCwExecHelpers(
     token: StakingPlatformTypes.TokenUnverified,
     _gasPrice?: string
   ) {
+    const [msg, sender] = getSingleTokenExecMsg(
+      stakingPlatformMsgComposer.acceptProposal({ id: `${id}` }),
+      amount,
+      token
+    );
+
     return await msgBroadcaster.broadcast({
-      msgs: [
-        getSingleTokenExecMsg(
-          stakingPlatformMsgComposer.acceptProposal({ id: `${id}` }),
-          amount,
-          token
-        ),
-      ],
+      msgs: [msg],
+      injectiveAddress: sender,
     });
   }
 
@@ -381,14 +408,15 @@ async function getCwExecHelpers(
     token: StakingPlatformTypes.TokenUnverified,
     _gasPrice?: string
   ) {
+    const [msg, sender] = getSingleTokenExecMsg(
+      stakingPlatformMsgComposer.depositTokens({ collectionAddress }),
+      amount,
+      token
+    );
+
     return await msgBroadcaster.broadcast({
-      msgs: [
-        getSingleTokenExecMsg(
-          stakingPlatformMsgComposer.depositTokens({ collectionAddress }),
-          amount,
-          token
-        ),
-      ],
+      msgs: [msg],
+      injectiveAddress: sender,
     });
   }
 
@@ -397,15 +425,16 @@ async function getCwExecHelpers(
     amount: number,
     _gasPrice?: string
   ) {
+    const [msg, sender] = getInjExecMsgFromComposerObj(
+      stakingPlatformMsgComposer.withdrawTokens({
+        collectionAddress,
+        amount: `${amount}`,
+      })
+    );
+
     return await msgBroadcaster.broadcast({
-      msgs: [
-        getInjExecMsgFromComposerObj(
-          stakingPlatformMsgComposer.withdrawTokens({
-            collectionAddress,
-            amount: `${amount}`,
-          })
-        ),
-      ],
+      msgs: [msg],
+      injectiveAddress: sender,
     });
   }
 
@@ -417,16 +446,17 @@ async function getCwExecHelpers(
     paymentDenom: string,
     _gasPrice?: string
   ) {
+    const [msg, sender] = getSingleTokenExecMsg(
+      minterMsgComposer.createDenom({ subdenom }),
+      paymentAmount,
+      {
+        native: { denom: paymentDenom },
+      }
+    );
+
     return await msgBroadcaster.broadcast({
-      msgs: [
-        getSingleTokenExecMsg(
-          minterMsgComposer.createDenom({ subdenom }),
-          paymentAmount,
-          {
-            native: { denom: paymentDenom },
-          }
-        ),
-      ],
+      msgs: [msg],
+      injectiveAddress: sender,
     });
   }
 
@@ -436,16 +466,17 @@ async function getCwExecHelpers(
     mintToAddress: string,
     _gasPrice?: string
   ) {
+    const [msg, sender] = getInjExecMsgFromComposerObj(
+      minterMsgComposer.mintTokens({
+        denom,
+        amount: `${amount}`,
+        mintToAddress,
+      })
+    );
+
     return await msgBroadcaster.broadcast({
-      msgs: [
-        getInjExecMsgFromComposerObj(
-          minterMsgComposer.mintTokens({
-            denom,
-            amount: `${amount}`,
-            mintToAddress,
-          })
-        ),
-      ],
+      msgs: [msg],
+      injectiveAddress: sender,
     });
   }
 
@@ -455,16 +486,17 @@ async function getCwExecHelpers(
     burnFromAddress: string,
     _gasPrice?: string
   ) {
+    const [msg, sender] = getInjExecMsgFromComposerObj(
+      minterMsgComposer.burnTokens({
+        denom,
+        amount: `${amount}`,
+        burnFromAddress,
+      })
+    );
+
     return await msgBroadcaster.broadcast({
-      msgs: [
-        getInjExecMsgFromComposerObj(
-          minterMsgComposer.burnTokens({
-            denom,
-            amount: `${amount}`,
-            burnFromAddress,
-          })
-        ),
-      ],
+      msgs: [msg],
+      injectiveAddress: sender,
     });
   }
 
@@ -489,10 +521,15 @@ async function getCwExecHelpers(
 
     if (!MINTER_CONTRACT) throw new Error("MINTER_CONTRACT in not found!");
 
+    const [msg, sender] = getSetMetadataMsg(
+      MINTER_CONTRACT.DATA.ADDRESS,
+      owner,
+      setMetadataMsg
+    );
+
     return await msgBroadcaster.broadcast({
-      msgs: [
-        getSetMetadataMsg(MINTER_CONTRACT.DATA.ADDRESS, owner, setMetadataMsg),
-      ],
+      msgs: [msg],
+      injectiveAddress: sender,
     });
   }
 
@@ -502,14 +539,15 @@ async function getCwExecHelpers(
   ) {
     const { stakingPlatform } = updateMinterConfigStruct;
 
+    const [msg, sender] = getInjExecMsgFromComposerObj(
+      minterMsgComposer.updateConfig({
+        stakingPlatform,
+      })
+    );
+
     return await msgBroadcaster.broadcast({
-      msgs: [
-        getInjExecMsgFromComposerObj(
-          minterMsgComposer.updateConfig({
-            stakingPlatform,
-          })
-        ),
-      ],
+      msgs: [msg],
+      injectiveAddress: sender,
     });
   }
 

@@ -21,7 +21,10 @@ async function getSgExecHelpers(
       dstInjectiveAddress: recipient,
     });
 
-    const tx = await msgBroadcaster.broadcast({ msgs: [msg] });
+    const tx = await msgBroadcaster.broadcast({
+      msgs: [msg],
+      injectiveAddress: owner,
+    });
 
     l("\n", tx, "\n");
     return tx;

@@ -4,7 +4,7 @@ import * as MinterTypes from "../codegen/Minter.types";
 import * as StakingPlatformTypes from "../codegen/StakingPlatform.types";
 import { MsgBroadcasterWithPk, ChainGrpcWasmApi, MsgExecuteContract } from "@injectivelabs/sdk-ts";
 import { UpdateMinterConfigStruct, UpdateStakingPlatformConfigStruct, ApprovalsResponse, NetworkName } from "../interfaces";
-declare function getInjExecMsgFromComposerObj(obj: MsgExecuteContractEncodeObject): MsgExecuteContract;
+declare function getInjExecMsgFromComposerObj(obj: MsgExecuteContractEncodeObject): [MsgExecuteContract, string];
 declare function queryInjContract(chainGrpcWasmApi: ChainGrpcWasmApi, contractAddress: string, queryMsg: any): Promise<string>;
 declare function getCwExecHelpers(network: NetworkName, owner: string, msgBroadcaster: MsgBroadcasterWithPk | MsgBroadcaster): Promise<{
     cwApproveCollection: (collectionAddress: string, senderAddress: string, operator: string, _gasPrice?: string) => Promise<import("@injectivelabs/sdk-ts").TxResponse>;
