@@ -1,5 +1,5 @@
 import { l } from "../utils";
-import { toBase64 } from "@cosmjs/encoding";
+import { toBase64, fromUtf8 } from "@cosmjs/encoding";
 import { MinterMsgComposer } from "../codegen/Minter.message-composer";
 import { MinterQueryClient } from "../codegen/Minter.client";
 import { StakingPlatformMsgComposer } from "../codegen/StakingPlatform.message-composer";
@@ -16,9 +16,9 @@ function addSingleTokenToComposerObj(obj, amount, token) {
     }
   } = obj;
   if (!(contract && sender && msg)) {
-    throw new Error("cwDepositTokens parameters error!");
+    throw new Error(`${msg} parameters error!`);
   }
-  return getSingleTokenExecMsg(contract, sender, msg, amount, token);
+  return getSingleTokenExecMsg(contract, sender, JSON.parse(fromUtf8(msg)), amount, token);
 }
 function getSingleTokenExecMsg(contractAddress, senderAddress, msg, amount, token) {
   // get msg without funds
@@ -34,12 +34,12 @@ function getSingleTokenExecMsg(contractAddress, senderAddress, msg, amount, toke
   // get msg with CW20 token
   const cw20SendMsg = {
     send: {
-      contract: token.cw20.address,
+      contract: contractAddress,
       amount: `${amount}`,
       msg: toBase64(msg)
     }
   };
-  return getExecuteContractMsg(contractAddress, senderAddress, cw20SendMsg, []);
+  return getExecuteContractMsg(token.cw20.address, senderAddress, cw20SendMsg, []);
 }
 function getApproveCollectionMsg(collectionAddress, senderAddress, operator) {
   const approveCollectionMsg = {
@@ -60,10 +60,6 @@ function getRevokeCollectionMsg(collectionAddress, senderAddress, operator) {
 function getSetMetadataMsg(minterContractAddress, senderAddress, setMetadataMsg) {
   return getSingleTokenExecMsg(minterContractAddress, senderAddress, setMetadataMsg);
 }
-
-// symbol - PINJ
-// description - Awesome DAO Pinjeons NFT collection staking token
-// full_denom - factory/osmo1ggnqrq28tk7tlyp4c5f2mv4907wa92f5y4gvfhqv5t43fxx4mdxsd8kfs0/upinj
 function createMetadata(creatorAddress, symbol, description, uri = "", uriHash = "") {
   const decimals = 6;
   let subdenom = symbol.toLowerCase();
@@ -193,11 +189,11 @@ async function getCwExecHelpers(network, rpc, owner, signer) {
       mintToAddress
     })], gasPrice);
   }
-  async function cwBurnTokens(denom, amount, burnFromAddress, gasPrice) {
-    return await _msgWrapperWithGasPrice([minterMsgComposer.burnTokens({
-      denom,
-      amount: `${amount}`,
-      burnFromAddress
+  async function cwBurnTokens(denom, amount, gasPrice) {
+    return await _msgWrapperWithGasPrice([addSingleTokenToComposerObj(minterMsgComposer.burnTokens(), amount, {
+      native: {
+        denom
+      }
     })], gasPrice);
   }
   async function cwSetMetadata(creatorAddress, symbol, description, uri = "", uriHash = "", gasPrice) {

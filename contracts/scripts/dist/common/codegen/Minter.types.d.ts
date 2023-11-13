@@ -17,11 +17,7 @@ export type ExecuteMsg = {
         mint_to_address: string;
     };
 } | {
-    burn_tokens: {
-        amount: Uint128;
-        burn_from_address: string;
-        denom: string;
-    };
+    burn_tokens: {};
 } | {
     set_metadata: {
         metadata: Metadata;

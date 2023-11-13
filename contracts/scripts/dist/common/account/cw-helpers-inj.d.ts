@@ -21,7 +21,7 @@ declare function getCwExecHelpers(network: NetworkName, owner: string, msgBroadc
     cwWithdrawTokens: (collectionAddress: string, amount: number, _gasPrice?: string) => Promise<import("@injectivelabs/sdk-ts").TxResponse>;
     cwCreateDenom: (subdenom: string, paymentAmount: number, paymentDenom: string, _gasPrice?: string) => Promise<import("@injectivelabs/sdk-ts").TxResponse>;
     cwMintTokens: (denom: string, amount: number, mintToAddress: string, _gasPrice?: string) => Promise<import("@injectivelabs/sdk-ts").TxResponse>;
-    cwBurnTokens: (denom: string, amount: number, burnFromAddress: string, _gasPrice?: string) => Promise<import("@injectivelabs/sdk-ts").TxResponse>;
+    cwBurnTokens: (denom: string, amount: number, _gasPrice?: string) => Promise<import("@injectivelabs/sdk-ts").TxResponse>;
     cwSetMetadata: (creatorAddress: string, symbol: string, description: string, uri?: string, uriHash?: string, _gasPrice?: string) => Promise<import("@injectivelabs/sdk-ts").TxResponse>;
     cwUpdateStakingPlatformConfig: (updateStakingPlatformConfigStruct: UpdateStakingPlatformConfigStruct, _gasPrice?: string) => Promise<import("@injectivelabs/sdk-ts").TxResponse>;
     cwUpdateMinterConfig: (updateMinterConfigStruct: UpdateMinterConfigStruct, _gasPrice?: string) => Promise<import("@injectivelabs/sdk-ts").TxResponse>;

@@ -78,22 +78,6 @@
         "properties": {
           "burn_tokens": {
             "type": "object",
-            "required": [
-              "amount",
-              "burn_from_address",
-              "denom"
-            ],
-            "properties": {
-              "amount": {
-                "$ref": "#/definitions/Uint128"
-              },
-              "burn_from_address": {
-                "type": "string"
-              },
-              "denom": {
-                "type": "string"
-              }
-            },
             "additionalProperties": false
           }
         },

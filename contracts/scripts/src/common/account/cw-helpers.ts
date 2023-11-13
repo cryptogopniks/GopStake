@@ -416,18 +416,11 @@ async function getCwExecHelpers(
     );
   }
 
-  async function cwBurnTokens(
-    denom: string,
-    amount: number,
-    burnFromAddress: string,
-    gasPrice: string
-  ) {
+  async function cwBurnTokens(denom: string, amount: number, gasPrice: string) {
     return await _msgWrapperWithGasPrice(
       [
-        minterMsgComposer.burnTokens({
-          denom,
-          amount: `${amount}`,
-          burnFromAddress,
+        addSingleTokenToComposerObj(minterMsgComposer.burnTokens(), amount, {
+          native: { denom },
         }),
       ],
       gasPrice

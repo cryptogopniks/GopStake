@@ -60,17 +60,9 @@ export class MinterClient extends MinterQueryClient {
       }
     }, fee, memo, _funds);
   };
-  burnTokens = async ({
-    amount,
-    burnFromAddress,
-    denom
-  }, fee = "auto", memo, _funds) => {
+  burnTokens = async (fee = "auto", memo, _funds) => {
     return await this.client.execute(this.sender, this.contractAddress, {
-      burn_tokens: {
-        amount,
-        burn_from_address: burnFromAddress,
-        denom
-      }
+      burn_tokens: {}
     }, fee, memo, _funds);
   };
   setMetadata = async ({

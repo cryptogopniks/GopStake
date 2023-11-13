@@ -35,7 +35,6 @@ pub trait MinterExtension {
         sender: ProjectAccount,
         denom: ProjectCoin,
         amount: u128,
-        burn_from_address: ProjectAccount,
     ) -> StdResult<AppResponse>;
 
     fn minter_try_set_metadata(
@@ -106,18 +105,13 @@ impl MinterExtension for Project {
         sender: ProjectAccount,
         denom: ProjectCoin,
         amount: u128,
-        burn_from_address: ProjectAccount,
     ) -> StdResult<AppResponse> {
         self.app
             .execute_contract(
                 sender.into(),
                 self.get_minter_address(),
-                &ExecuteMsg::BurnTokens {
-                    denom: denom.to_string(),
-                    amount: Uint128::new(amount),
-                    burn_from_address: burn_from_address.to_string(),
-                },
-                &[],
+                &ExecuteMsg::BurnTokens {},
+                &[coin(amount, denom.to_string())],
             )
             .map_err(parse_err)
     }

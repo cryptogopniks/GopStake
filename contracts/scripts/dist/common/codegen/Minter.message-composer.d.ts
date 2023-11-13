@@ -17,11 +17,7 @@ export interface MinterMsg {
         denom: string;
         mintToAddress: string;
     }, _funds?: Coin[]) => MsgExecuteContractEncodeObject;
-    burnTokens: ({ amount, burnFromAddress, denom }: {
-        amount: Uint128;
-        burnFromAddress: string;
-        denom: string;
-    }, _funds?: Coin[]) => MsgExecuteContractEncodeObject;
+    burnTokens: (_funds?: Coin[]) => MsgExecuteContractEncodeObject;
     setMetadata: ({ metadata }: {
         metadata: Metadata;
     }, _funds?: Coin[]) => MsgExecuteContractEncodeObject;
@@ -41,11 +37,7 @@ export declare class MinterMsgComposer implements MinterMsg {
         denom: string;
         mintToAddress: string;
     }, _funds?: Coin[]) => MsgExecuteContractEncodeObject;
-    burnTokens: ({ amount, burnFromAddress, denom }: {
-        amount: Uint128;
-        burnFromAddress: string;
-        denom: string;
-    }, _funds?: Coin[]) => MsgExecuteContractEncodeObject;
+    burnTokens: (_funds?: Coin[]) => MsgExecuteContractEncodeObject;
     setMetadata: ({ metadata }: {
         metadata: Metadata;
     }, _funds?: Coin[]) => MsgExecuteContractEncodeObject;

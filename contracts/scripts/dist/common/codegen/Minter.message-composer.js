@@ -54,22 +54,14 @@ export class MinterMsgComposer {
       })
     };
   };
-  burnTokens = ({
-    amount,
-    burnFromAddress,
-    denom
-  }, _funds) => {
+  burnTokens = _funds => {
     return {
       typeUrl: "/cosmwasm.wasm.v1.MsgExecuteContract",
       value: MsgExecuteContract.fromPartial({
         sender: this.sender,
         contract: this.contractAddress,
         msg: toUtf8(JSON.stringify({
-          burn_tokens: {
-            amount,
-            burn_from_address: burnFromAddress,
-            denom
-          }
+          burn_tokens: {}
         })),
         funds: _funds
       })

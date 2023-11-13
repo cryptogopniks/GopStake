@@ -61,15 +61,7 @@ export interface MinterInterface extends MinterReadOnlyInterface {
     denom: string;
     mintToAddress: string;
   }, fee?: number | StdFee | "auto", memo?: string, _funds?: Coin[]) => Promise<ExecuteResult>;
-  burnTokens: ({
-    amount,
-    burnFromAddress,
-    denom
-  }: {
-    amount: Uint128;
-    burnFromAddress: string;
-    denom: string;
-  }, fee?: number | StdFee | "auto", memo?: string, _funds?: Coin[]) => Promise<ExecuteResult>;
+  burnTokens: (fee?: number | StdFee | "auto", memo?: string, _funds?: Coin[]) => Promise<ExecuteResult>;
   setMetadata: ({
     metadata
   }: {
@@ -126,21 +118,9 @@ export class MinterClient extends MinterQueryClient implements MinterInterface {
       }
     }, fee, memo, _funds);
   };
-  burnTokens = async ({
-    amount,
-    burnFromAddress,
-    denom
-  }: {
-    amount: Uint128;
-    burnFromAddress: string;
-    denom: string;
-  }, fee: number | StdFee | "auto" = "auto", memo?: string, _funds?: Coin[]): Promise<ExecuteResult> => {
+  burnTokens = async (fee: number | StdFee | "auto" = "auto", memo?: string, _funds?: Coin[]): Promise<ExecuteResult> => {
     return await this.client.execute(this.sender, this.contractAddress, {
-      burn_tokens: {
-        amount,
-        burn_from_address: burnFromAddress,
-        denom
-      }
+      burn_tokens: {}
     }, fee, memo, _funds);
   };
   setMetadata = async ({

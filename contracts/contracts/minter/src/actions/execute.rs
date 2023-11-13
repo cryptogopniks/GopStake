@@ -1,5 +1,5 @@
 use cosmwasm_std::{
-    coin, Addr, BankMsg, CosmosMsg, DepsMut, Env, MessageInfo, Order, Response, StdError,
+    coin, Addr, BankMsg, Coin, CosmosMsg, DepsMut, Env, MessageInfo, Order, Response, StdError,
     StdResult, Uint128,
 };
 
@@ -120,32 +120,17 @@ pub fn try_burn_tokens(
     deps: DepsMut,
     env: Env,
     info: MessageInfo,
-    denom: String,
-    amount: Uint128,
-    burn_from_address: String,
 ) -> Result<Response, ContractError> {
     // verify funds
-    nonpayable(&info).map_err(|e| StdError::GenericErr { msg: e.to_string() })?;
+    let Coin { amount, denom } = one_coin(&info)?;
 
     let owner_and_denoms = TOKENS
         .range(deps.storage, None, None, Order::Ascending)
         .flatten()
         .find(|(_, tokens)| tokens.contains(&denom));
-    let owner_and_denoms = unwrap_field(owner_and_denoms, "owner_and_denoms");
 
-    let Config {
-        staking_platform, ..
-    } = CONFIG.load(deps.storage)?;
-    let staking_platform = unwrap_field(staking_platform, "staking_platform");
-
-    if owner_and_denoms.is_err() {
+    if owner_and_denoms.is_none() {
         Err(ContractError::AssetIsNotFound)?;
-    }
-
-    if (staking_platform.is_ok() && (info.sender != staking_platform?))
-        && (owner_and_denoms.is_ok() && (info.sender != owner_and_denoms?.0))
-    {
-        Err(ContractError::Unauthorized)?;
     }
 
     let creator = &env.contract.address;
@@ -154,7 +139,7 @@ pub fn try_burn_tokens(
     let msg: CosmosMsg = MsgBurn {
         sender: creator.to_string(),
         amount: Some(amount.into()),
-        burn_from_address,
+        burn_from_address: creator.to_string(),
     }
     .into();
 

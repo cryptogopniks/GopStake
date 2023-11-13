@@ -16,7 +16,7 @@ declare function initExecWorkers(network: NetworkName, seed: string, gasPrice: s
     cwWithdrawTokens: (collectionAddress: string, amount: number) => Promise<import("@cosmjs/stargate").DeliverTxResponse | undefined>;
     cwCreateDenom: (subdenom: string, paymentAmount: number, paymentDenom: string, gasPrice: string) => Promise<import("@cosmjs/stargate").DeliverTxResponse | undefined>;
     cwMintTokens: (denom: string, amount: number, mintToAddress: string) => Promise<import("@cosmjs/stargate").DeliverTxResponse | undefined>;
-    cwBurnTokens: (denom: string, amount: number, burnFromAddress: string) => Promise<import("@cosmjs/stargate").DeliverTxResponse | undefined>;
+    cwBurnTokens: (denom: string, amount: number) => Promise<import("@cosmjs/stargate").DeliverTxResponse | undefined>;
     cwSetMetadata: (creatorAddress: string, symbol: string, description: string, uri?: string, uriHash?: string) => Promise<import("@cosmjs/stargate").DeliverTxResponse | undefined>;
     cwUpdateStakingPlatformConfig: (updateStakingPlatformConfigStruct: UpdateStakingPlatformConfigStruct) => Promise<import("@cosmjs/stargate").DeliverTxResponse | undefined>;
     cwUpdateMinterConfig: (updateMinterConfigStruct: UpdateMinterConfigStruct) => Promise<import("@cosmjs/stargate").DeliverTxResponse | undefined>;

@@ -31,19 +31,20 @@ function getSingleTokenExecMsg(obj, amount, token) {
     value: {
       contract,
       sender,
-      msg
+      msg: _msg
     }
   } = obj;
-  if (!(contract && sender && msg)) {
-    throw new Error(`${msg} parameters error!`);
+  if (!(contract && sender && _msg)) {
+    throw new Error(`${_msg} parameters error!`);
   }
+  const msg = JSON.parse(fromUtf8(_msg));
 
   // get msg without funds
   if (!(token && amount)) {
     return [MsgExecuteContract.fromJSON({
       contractAddress: contract,
       sender,
-      msg: JSON.parse(fromUtf8(msg))
+      msg
     }), sender];
   }
 
@@ -52,7 +53,7 @@ function getSingleTokenExecMsg(obj, amount, token) {
     return [MsgExecuteContract.fromJSON({
       contractAddress: contract,
       sender,
-      msg: JSON.parse(fromUtf8(msg)),
+      msg,
       funds: {
         amount: `${amount}`,
         denom: token.native.denom
@@ -60,17 +61,16 @@ function getSingleTokenExecMsg(obj, amount, token) {
     }), sender];
   }
 
-  // TODO: check
   // get msg with CW20 token
   const cw20SendMsg = {
     send: {
-      contract: token.cw20.address,
+      contract,
       amount: `${amount}`,
       msg: toBase64(msg)
     }
   };
   return [MsgExecuteContract.fromJSON({
-    contractAddress: contract,
+    contractAddress: token.cw20.address,
     sender,
     msg: cw20SendMsg
   }), sender];
@@ -100,10 +100,6 @@ function getRevokeCollectionMsg(collectionAddress, senderAddress, operator) {
 function getSetMetadataMsg(minterContractAddress, senderAddress, setMetadataMsg) {
   return getSingleTokenExecMsg(getExecuteContractMsg(minterContractAddress, senderAddress, setMetadataMsg, []));
 }
-
-// symbol - PINJ
-// description - Awesome DAO Pinjeons NFT collection staking token
-// full_denom - factory/osmo1ggnqrq28tk7tlyp4c5f2mv4907wa92f5y4gvfhqv5t43fxx4mdxsd8kfs0/upinj
 function createMetadata(creatorAddress, symbol, description, uri = "", uriHash = "") {
   const decimals = 6;
   let subdenom = symbol.toLowerCase();
@@ -282,12 +278,12 @@ async function getCwExecHelpers(network, owner, msgBroadcaster) {
       injectiveAddress: sender
     });
   }
-  async function cwBurnTokens(denom, amount, burnFromAddress, _gasPrice) {
-    const [msg, sender] = getInjExecMsgFromComposerObj(minterMsgComposer.burnTokens({
-      denom,
-      amount: `${amount}`,
-      burnFromAddress
-    }));
+  async function cwBurnTokens(denom, amount, _gasPrice) {
+    const [msg, sender] = getSingleTokenExecMsg(minterMsgComposer.burnTokens(), amount, {
+      native: {
+        denom
+      }
+    });
     return await msgBroadcaster.broadcast({
       msgs: [msg],
       injectiveAddress: sender

@@ -26,15 +26,7 @@ export interface MinterMsg {
     denom: string;
     mintToAddress: string;
   }, _funds?: Coin[]) => MsgExecuteContractEncodeObject;
-  burnTokens: ({
-    amount,
-    burnFromAddress,
-    denom
-  }: {
-    amount: Uint128;
-    burnFromAddress: string;
-    denom: string;
-  }, _funds?: Coin[]) => MsgExecuteContractEncodeObject;
+  burnTokens: (_funds?: Coin[]) => MsgExecuteContractEncodeObject;
   setMetadata: ({
     metadata
   }: {
@@ -104,26 +96,14 @@ export class MinterMsgComposer implements MinterMsg {
       })
     };
   };
-  burnTokens = ({
-    amount,
-    burnFromAddress,
-    denom
-  }: {
-    amount: Uint128;
-    burnFromAddress: string;
-    denom: string;
-  }, _funds?: Coin[]): MsgExecuteContractEncodeObject => {
+  burnTokens = (_funds?: Coin[]): MsgExecuteContractEncodeObject => {
     return {
       typeUrl: "/cosmwasm.wasm.v1.MsgExecuteContract",
       value: MsgExecuteContract.fromPartial({
         sender: this.sender,
         contract: this.contractAddress,
         msg: toUtf8(JSON.stringify({
-          burn_tokens: {
-            amount,
-            burn_from_address: burnFromAddress,
-            denom
-          }
+          burn_tokens: {}
         })),
         funds: _funds
       })

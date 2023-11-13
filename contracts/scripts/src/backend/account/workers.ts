@@ -235,13 +235,9 @@ async function initExecWorkers(
     }
   }
 
-  async function cwBurnTokens(
-    denom: string,
-    amount: number,
-    burnFromAddress: string
-  ) {
+  async function cwBurnTokens(denom: string, amount: number) {
     try {
-      return await _cwBurnTokens(denom, amount, burnFromAddress, gasPrice);
+      return await _cwBurnTokens(denom, amount, gasPrice);
     } catch (error) {
       l(error, "\n");
     }
@@ -318,7 +314,6 @@ async function initQueryWorkers(network: NetworkName) {
   const {
     BASE: {
       RPC_LIST: [RPC],
-      CHAIN_ID,
     },
   } = NETWORK_CONFIG[network];
 

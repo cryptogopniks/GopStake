@@ -21,11 +21,7 @@ pub enum ExecuteMsg {
         mint_to_address: String,
     },
 
-    BurnTokens {
-        denom: String,
-        amount: Uint128,
-        burn_from_address: String,
-    },
+    BurnTokens {},
 
     SetMetadata {
         metadata: Metadata,

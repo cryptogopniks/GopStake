@@ -481,15 +481,14 @@ async function getCwExecHelpers(
   async function cwBurnTokens(
     denom: string,
     amount: number,
-    burnFromAddress: string,
     _gasPrice?: string
   ) {
-    const [msg, sender] = getInjExecMsgFromComposerObj(
-      minterMsgComposer.burnTokens({
-        denom,
-        amount: `${amount}`,
-        burnFromAddress,
-      })
+    const [msg, sender] = getSingleTokenExecMsg(
+      minterMsgComposer.burnTokens(),
+      amount,
+      {
+        native: { denom },
+      }
     );
 
     return await msgBroadcaster.broadcast({

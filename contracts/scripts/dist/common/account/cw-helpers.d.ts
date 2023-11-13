@@ -16,7 +16,7 @@ declare function getCwExecHelpers(network: NetworkName, rpc: string, owner: stri
     cwWithdrawTokens: (collectionAddress: string, amount: number, gasPrice: string) => Promise<import("@cosmjs/cosmwasm-stargate").DeliverTxResponse>;
     cwCreateDenom: (subdenom: string, paymentAmount: number, paymentDenom: string, gasPrice: string) => Promise<import("@cosmjs/cosmwasm-stargate").DeliverTxResponse>;
     cwMintTokens: (denom: string, amount: number, mintToAddress: string, gasPrice: string) => Promise<import("@cosmjs/cosmwasm-stargate").DeliverTxResponse>;
-    cwBurnTokens: (denom: string, amount: number, burnFromAddress: string, gasPrice: string) => Promise<import("@cosmjs/cosmwasm-stargate").DeliverTxResponse>;
+    cwBurnTokens: (denom: string, amount: number, gasPrice: string) => Promise<import("@cosmjs/cosmwasm-stargate").DeliverTxResponse>;
     cwSetMetadata: (creatorAddress: string, symbol: string, description: string, uri: string | undefined, uriHash: string | undefined, gasPrice: string) => Promise<import("@cosmjs/cosmwasm-stargate").DeliverTxResponse>;
     cwUpdateStakingPlatformConfig: (updateStakingPlatformConfigStruct: UpdateStakingPlatformConfigStruct, gasPrice: string) => Promise<import("@cosmjs/cosmwasm-stargate").DeliverTxResponse>;
     cwUpdateMinterConfig: (updateMinterConfigStruct: UpdateMinterConfigStruct, gasPrice: string) => Promise<import("@cosmjs/cosmwasm-stargate").DeliverTxResponse>;
