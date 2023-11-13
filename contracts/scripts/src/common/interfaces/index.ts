@@ -61,79 +61,6 @@ interface ApprovalsResponse {
   approvals: Approval[];
 }
 
-interface ChainResponse {
-  $schema: string;
-  chain_name: string;
-  status: string;
-  network_type: string;
-  pretty_name: string;
-  chain_id: string;
-  bech32_prefix: string;
-  daemon_name: string;
-  node_home: string;
-  genesis: {
-    genesis_url: string;
-  };
-  key_algos: string[];
-  slip44: number;
-  fees: {
-    fee_tokens: {
-      denom: string;
-      fixed_min_gas_price?: number;
-      low_gas_price?: number;
-      average_gas_price?: number;
-      high_gas_price?: number;
-    }[];
-  };
-  codebase: {
-    git_repo: string;
-    recommended_version: string;
-    compatible_versions: string[];
-    binaries: {
-      "linux/amd64": string;
-      "linux/arm64": string;
-      "darwin/amd64": string;
-      "darwin/arm64": string;
-      "windows/amd64": string;
-    };
-  };
-  peers: {
-    seeds: {
-      id: string;
-      address: string;
-    }[];
-    persistent_peers: {
-      id: string;
-      address: string;
-      provider: string;
-    }[];
-  };
-  apis: {
-    rpc: {
-      address: string;
-      provider: string;
-    }[];
-    rest: {
-      address: string;
-      provider: string;
-    }[];
-    grpc: {
-      address: string;
-      provider: string;
-    }[];
-  };
-  explorers: {
-    kind: string;
-    url: string;
-    tx_page: string;
-  }[];
-}
-
-interface Pagination {
-  next_key: null;
-  total: string;
-}
-
 type NetworkName = "STARGAZE" | "INJECTIVE";
 
 type NetworkConfig = {
@@ -152,8 +79,6 @@ type BaseNetworkConfig = {
   STORE_CODE_GAS_MULTIPLIER: number;
 };
 
-type ContractName = "STAKING_PLATFORM" | "MINTER";
-
 type ContractsConfig = {
   WASM: string;
   LABEL: string;
@@ -169,7 +94,6 @@ type ContractData = {
 export type { NetworkConfig, NetworkName };
 
 export {
-  ChainResponse,
   SetMetadataMsg,
   Metadata,
   UpdateMinterConfigStruct,

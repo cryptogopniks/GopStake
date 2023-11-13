@@ -76,7 +76,7 @@ async function main(network: NetworkName) {
     });
 
     await msgBroadcasterWithPk.broadcast({
-      msgs: [msg1, msg2].map(getInjExecMsgFromComposerObj),
+      msgs: [msg1, msg2].map((x) => getInjExecMsgFromComposerObj(x)[0]),
     });
 
     const endpoints = getNetworkEndpoints(networkType);

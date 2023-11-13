@@ -1,4 +1,4 @@
-import { l, Request } from "../utils";
+import { l } from "../utils";
 import { getSgClient, signAndBroadcastWrapper } from "./clients";
 import { Tendermint37Client } from "@cosmjs/tendermint-rpc";
 import {
@@ -13,8 +13,6 @@ import {
   setupBankExtension,
   QueryClient,
 } from "@cosmjs/stargate";
-
-const req = new Request({});
 
 async function getSgExecHelpers(
   rpc: string,

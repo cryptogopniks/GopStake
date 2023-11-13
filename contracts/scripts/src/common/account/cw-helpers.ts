@@ -130,9 +130,6 @@ function getSetMetadataMsg(
   );
 }
 
-// symbol - PINJ
-// description - Awesome DAO Pinjeons NFT collection staking token
-// full_denom - factory/osmo1ggnqrq28tk7tlyp4c5f2mv4907wa92f5y4gvfhqv5t43fxx4mdxsd8kfs0/upinj
 function createMetadata(
   creatorAddress: string,
   symbol: string,
