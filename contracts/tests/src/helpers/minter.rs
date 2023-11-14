@@ -5,7 +5,7 @@ use gopstake_base::{
     error::parse_err,
     minter::{
         msg::{ExecuteMsg, QueryMsg},
-        types::{Config, Metadata, QueryDenomsFromCreatorResponse},
+        types::{Config, FactoryType, Metadata, QueryDenomsFromCreatorResponse},
     },
 };
 
@@ -47,6 +47,7 @@ pub trait MinterExtension {
         &mut self,
         sender: ProjectAccount,
         staking_platform: &Option<Addr>,
+        factory_type: &Option<FactoryType>,
     ) -> StdResult<AppResponse>;
 
     fn minter_query_denoms_by_creator(
@@ -137,6 +138,7 @@ impl MinterExtension for Project {
         &mut self,
         sender: ProjectAccount,
         staking_platform: &Option<Addr>,
+        factory_type: &Option<FactoryType>,
     ) -> StdResult<AppResponse> {
         self.app
             .execute_contract(
@@ -144,6 +146,7 @@ impl MinterExtension for Project {
                 self.get_minter_address(),
                 &ExecuteMsg::UpdateConfig {
                     staking_platform: staking_platform.as_ref().map(|x| x.to_string()),
+                    factory_type: factory_type.to_owned(),
                 },
                 &[],
             )

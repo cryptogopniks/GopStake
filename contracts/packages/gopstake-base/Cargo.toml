@@ -20,5 +20,6 @@ cw-storage-plus = { workspace = true }
 serde = { workspace = true }
 cw20 = { workspace = true }
 osmosis-std = { workspace = true }
+injective-std = { workspace = true }
 thiserror = { workspace = true }
 anyhow = { workspace = true }

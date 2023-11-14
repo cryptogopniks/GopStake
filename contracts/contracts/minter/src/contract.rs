@@ -46,9 +46,10 @@ pub fn execute(
         } => try_mint_tokens(deps, env, info, denom, amount, mint_to_address),
         ExecuteMsg::BurnTokens {} => try_burn_tokens(deps, env, info),
         ExecuteMsg::SetMetadata { metadata } => try_set_metadata(deps, env, info, metadata),
-        ExecuteMsg::UpdateConfig { staking_platform } => {
-            try_update_config(deps, env, info, staking_platform)
-        }
+        ExecuteMsg::UpdateConfig {
+            staking_platform,
+            factory_type,
+        } => try_update_config(deps, env, info, staking_platform, factory_type),
     }
 }
 

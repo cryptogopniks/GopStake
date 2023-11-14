@@ -36,6 +36,8 @@ async function main(network: NetworkName) {
     if (!seed) throw new Error("Seed is not found!");
 
     for (const { WASM, LABEL, INIT_MSG } of CONTRACTS) {
+      if (WASM !== "minter.wasm") continue;
+
       const networkName = network.toLowerCase();
       const contractName = WASM.replace(".wasm", "").toLowerCase();
 

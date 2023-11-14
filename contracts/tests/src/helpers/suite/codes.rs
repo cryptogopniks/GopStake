@@ -3,6 +3,8 @@ use cw_multi_test::ContractWrapper;
 
 use strum::IntoEnumIterator;
 
+use gopstake_base::minter::types::FactoryType;
+
 use crate::helpers::suite::{
     core::Project,
     types::{GetDecimals, ProjectAccount, ProjectNft, ProjectToken},
@@ -20,7 +22,12 @@ pub trait WithCodes {
     // instantiate packages
     fn instantiate_cw20_base_token(&mut self, code_id: u64, project_token: ProjectToken) -> Addr;
     fn instantiate_cw721_base_token(&mut self, code_id: u64, project_nft: ProjectNft) -> Addr;
-    fn instantiate_minter(&mut self, minter_code_id: u64, staking_platform: &Option<Addr>) -> Addr;
+    fn instantiate_minter(
+        &mut self,
+        minter_code_id: u64,
+        staking_platform: &Option<Addr>,
+        factory_type: &Option<FactoryType>,
+    ) -> Addr;
 
     // instantiate contracts
     fn instantiate_staking_platform(
@@ -129,12 +136,18 @@ impl WithCodes for Project {
         )
     }
 
-    fn instantiate_minter(&mut self, minter_code_id: u64, staking_platform: &Option<Addr>) -> Addr {
+    fn instantiate_minter(
+        &mut self,
+        minter_code_id: u64,
+        staking_platform: &Option<Addr>,
+        factory_type: &Option<FactoryType>,
+    ) -> Addr {
         self.instantiate_contract(
             minter_code_id,
             "minter_mocks",
             &gopstake_base::minter::msg::InstantiateMsg {
                 staking_platform: staking_platform.as_ref().map(|x| x.to_string()),
+                factory_type: factory_type.to_owned(),
             },
         )
     }

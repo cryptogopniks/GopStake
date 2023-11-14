@@ -4,7 +4,9 @@
 * and run the @cosmwasm/ts-codegen generate command to regenerate this file.
 */
 
+export type FactoryType = "osmosis" | "injective";
 export interface InstantiateMsg {
+  factory_type?: FactoryType | null;
   staking_platform?: string | null;
 }
 export type ExecuteMsg = {
@@ -25,6 +27,7 @@ export type ExecuteMsg = {
   };
 } | {
   update_config: {
+    factory_type?: FactoryType | null;
     staking_platform?: string | null;
   };
 };
@@ -36,13 +39,13 @@ export interface Metadata {
   display: string;
   name: string;
   symbol: string;
-  [k: string]: unknown;
+  uri?: string | null;
+  uri_hash?: string | null;
 }
 export interface DenomUnit {
   aliases: string[];
   denom: string;
   exponent: number;
-  [k: string]: unknown;
 }
 export type QueryMsg = {
   denoms_by_creator: {
@@ -59,5 +62,6 @@ export type Addr = string;
 export interface Config {
   admin: Addr;
   chain_id_dev: string;
+  factory_type?: FactoryType | null;
   staking_platform?: Addr | null;
 }

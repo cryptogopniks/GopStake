@@ -18,8 +18,8 @@ incremental = false
 overflow-checks = true
 
 [workspace.dependencies]
-cosmwasm-schema = "1.3.0"
-cosmwasm-std = "1.3.0"
+cosmwasm-schema = "1.4.1"
+cosmwasm-std = "1.4.1"
 cw-storage-plus = "1.1.0"
 cw2 = "1.1.0"
 cw20 = "1.0.1"
@@ -27,6 +27,7 @@ cw20-base = { version = "1.0.1", features = ["library"] }
 cw721 = "0.18.0"
 cw721-base = { version = "0.18.0", features = ["library"] }
 osmosis-std = "0.20.1"
+injective-std = "0.1.4"
 serde = "1.0.163"
 strum = "0.24.1"
 strum_macros = "0.24.3"

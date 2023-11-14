@@ -3,18 +3,23 @@ use cosmwasm_std::{
     StdResult, Uint128,
 };
 
+use injective_std::types::{
+    cosmos::bank::v1beta1::{DenomUnit as InjectiveDenomUnit, Metadata as InjectiveMetadata},
+    injective::tokenfactory::v1beta1 as InjectiveFactory,
+};
+
 use osmosis_std::types::{
-    cosmos::bank::v1beta1::Metadata,
-    osmosis::tokenfactory::v1beta1::{MsgBurn, MsgCreateDenom, MsgMint, MsgSetDenomMetadata},
+    cosmos::bank::v1beta1::{DenomUnit as OsmosisDenomUnit, Metadata as OsmosisMetadata},
+    osmosis::tokenfactory::v1beta1 as OsmosisFactory,
 };
 
 use gopstake_base::{
     error::ContractError,
     minter::{
         state::{CONFIG, TOKENS},
-        types::Config,
+        types::{Config, DenomUnit, FactoryType, Metadata},
     },
-    utils::{nonpayable, one_coin, unwrap_field, validate_attr, Attrs},
+    utils::{add_attr, nonpayable, one_coin, unwrap_field, validate_attr, Attrs},
 };
 
 pub fn try_create_denom(
@@ -52,11 +57,21 @@ pub fn try_create_denom(
         }
     })?;
 
-    let msg: CosmosMsg = MsgCreateDenom {
-        sender: creator.to_string(),
-        subdenom,
-    }
-    .into();
+    let Config { factory_type, .. } = CONFIG.load(deps.storage)?;
+    let factory_type = unwrap_field(factory_type, "factory_type")?;
+
+    let msg: CosmosMsg = match factory_type {
+        FactoryType::Osmosis => OsmosisFactory::MsgCreateDenom {
+            sender: creator.to_string(),
+            subdenom,
+        }
+        .into(),
+        FactoryType::Injective => InjectiveFactory::MsgCreateDenom {
+            sender: creator.to_string(),
+            subdenom,
+        }
+        .into(),
+    };
 
     Ok(Response::new()
         .add_message(msg)
@@ -81,9 +96,12 @@ pub fn try_mint_tokens(
     let owner_and_denoms = unwrap_field(owner_and_denoms, "owner_and_denoms");
 
     let Config {
-        staking_platform, ..
+        staking_platform,
+        factory_type,
+        ..
     } = CONFIG.load(deps.storage)?;
     let staking_platform = unwrap_field(staking_platform, "staking_platform");
+    let factory_type = unwrap_field(factory_type, "factory_type")?;
 
     if owner_and_denoms.is_err() {
         Err(ContractError::AssetIsNotFound)?;
@@ -99,12 +117,19 @@ pub fn try_mint_tokens(
     let amount = coin(amount.u128(), denom);
 
     let msg_list = vec![
-        MsgMint {
-            sender: creator.to_string(),
-            amount: Some(amount.clone().into()),
-            mint_to_address: creator.to_string(),
-        }
-        .into(),
+        match factory_type {
+            FactoryType::Osmosis => OsmosisFactory::MsgMint {
+                sender: creator.to_string(),
+                amount: Some(amount.clone().into()),
+                mint_to_address: creator.to_string(),
+            }
+            .into(),
+            FactoryType::Injective => InjectiveFactory::MsgMint {
+                sender: creator.to_string(),
+                amount: Some(amount.clone().into()),
+            }
+            .into(),
+        },
         CosmosMsg::Bank(BankMsg::Send {
             to_address: mint_to_address,
             amount: vec![amount],
@@ -133,15 +158,25 @@ pub fn try_burn_tokens(
         Err(ContractError::AssetIsNotFound)?;
     }
 
+    let Config { factory_type, .. } = CONFIG.load(deps.storage)?;
+    let factory_type = unwrap_field(factory_type, "factory_type")?;
+
     let creator = &env.contract.address;
     let amount = coin(amount.u128(), denom);
 
-    let msg: CosmosMsg = MsgBurn {
-        sender: creator.to_string(),
-        amount: Some(amount.into()),
-        burn_from_address: creator.to_string(),
-    }
-    .into();
+    let msg: CosmosMsg = match factory_type {
+        FactoryType::Osmosis => OsmosisFactory::MsgBurn {
+            sender: creator.to_string(),
+            amount: Some(amount.into()),
+            burn_from_address: creator.to_string(),
+        }
+        .into(),
+        FactoryType::Injective => InjectiveFactory::MsgBurn {
+            sender: creator.to_string(),
+            amount: Some(amount.into()),
+        }
+        .into(),
+    };
 
     Ok(Response::new()
         .add_message(msg)
@@ -173,12 +208,75 @@ pub fn try_set_metadata(
         Err(ContractError::Unauthorized)?;
     }
 
+    let Config { factory_type, .. } = CONFIG.load(deps.storage)?;
+    let factory_type = unwrap_field(factory_type, "factory_type")?;
+
     let sender = env.contract.address.to_string();
-    let msg: CosmosMsg = MsgSetDenomMetadata {
-        sender,
-        metadata: Some(metadata),
-    }
-    .into();
+    let Metadata {
+        description,
+        denom_units,
+        base,
+        display,
+        name,
+        symbol,
+        uri,
+        uri_hash,
+    } = metadata;
+
+    let msg: CosmosMsg = match factory_type {
+        FactoryType::Osmosis => OsmosisFactory::MsgSetDenomMetadata {
+            sender,
+            metadata: Some(OsmosisMetadata {
+                description,
+                denom_units: denom_units
+                    .into_iter()
+                    .map(
+                        |DenomUnit {
+                             denom,
+                             exponent,
+                             aliases,
+                         }| OsmosisDenomUnit {
+                            aliases,
+                            denom,
+                            exponent,
+                        },
+                    )
+                    .collect(),
+                base,
+                display,
+                name,
+                symbol,
+            }),
+        }
+        .into(),
+        FactoryType::Injective => InjectiveFactory::MsgSetDenomMetadata {
+            sender,
+            metadata: Some(InjectiveMetadata {
+                description,
+                denom_units: denom_units
+                    .into_iter()
+                    .map(
+                        |DenomUnit {
+                             denom,
+                             exponent,
+                             aliases,
+                         }| InjectiveDenomUnit {
+                            aliases,
+                            denom,
+                            exponent,
+                        },
+                    )
+                    .collect(),
+                base,
+                display,
+                name,
+                symbol,
+                uri: unwrap_field(uri, "uri")?,
+                uri_hash: unwrap_field(uri_hash, "uri_hash")?,
+            }),
+        }
+        .into(),
+    };
 
     Ok(Response::new()
         .add_message(msg)
@@ -190,6 +288,7 @@ pub fn try_update_config(
     _env: Env,
     info: MessageInfo,
     staking_platform: Option<String>,
+    factory_type: Option<FactoryType>,
 ) -> Result<Response, ContractError> {
     // verify funds
     nonpayable(&info).map_err(|e| StdError::GenericErr { msg: e.to_string() })?;
@@ -205,6 +304,7 @@ pub fn try_update_config(
 
         config.staking_platform =
             validate_attr(&mut attrs, api, "staking_platform", &staking_platform)?;
+        config.factory_type = add_attr(&mut attrs, "factory_type", &factory_type)?;
 
         Ok(config)
     })?;

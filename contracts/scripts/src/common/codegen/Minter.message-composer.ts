@@ -8,7 +8,7 @@ import { Coin } from "@cosmjs/amino";
 import { MsgExecuteContractEncodeObject } from "@cosmjs/cosmwasm-stargate";
 import { MsgExecuteContract } from "cosmjs-types/cosmwasm/wasm/v1/tx";
 import { toUtf8 } from "@cosmjs/encoding";
-import { InstantiateMsg, ExecuteMsg, Uint128, Metadata, DenomUnit, QueryMsg, MigrateMsg, QueryDenomsFromCreatorResponse, Addr, Config } from "./Minter.types";
+import { FactoryType, InstantiateMsg, ExecuteMsg, Uint128, Metadata, DenomUnit, QueryMsg, MigrateMsg, QueryDenomsFromCreatorResponse, Addr, Config } from "./Minter.types";
 export interface MinterMsg {
   contractAddress: string;
   sender: string;
@@ -33,8 +33,10 @@ export interface MinterMsg {
     metadata: Metadata;
   }, _funds?: Coin[]) => MsgExecuteContractEncodeObject;
   updateConfig: ({
+    factoryType,
     stakingPlatform
   }: {
+    factoryType?: FactoryType;
     stakingPlatform?: string;
   }, _funds?: Coin[]) => MsgExecuteContractEncodeObject;
 }
@@ -129,8 +131,10 @@ export class MinterMsgComposer implements MinterMsg {
     };
   };
   updateConfig = ({
+    factoryType,
     stakingPlatform
   }: {
+    factoryType?: FactoryType;
     stakingPlatform?: string;
   }, _funds?: Coin[]): MsgExecuteContractEncodeObject => {
     return {
@@ -140,6 +144,7 @@ export class MinterMsgComposer implements MinterMsg {
         contract: this.contractAddress,
         msg: toUtf8(JSON.stringify({
           update_config: {
+            factory_type: factoryType,
             staking_platform: stakingPlatform
           }
         })),

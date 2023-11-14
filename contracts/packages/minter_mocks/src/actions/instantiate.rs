@@ -4,7 +4,7 @@ use cw2::set_contract_version;
 use gopstake_base::{
     error::ContractError,
     minter::{msg::InstantiateMsg, state::CONFIG, types::Config},
-    utils::{validate_attr, Attrs},
+    utils::{add_attr, validate_attr, Attrs},
 };
 
 const CONTRACT_NAME: &str = "crates.io:gopstake-minter-mocks";
@@ -26,6 +26,7 @@ pub fn try_instantiate(
         &Config::new(
             &info.sender,
             &validate_attr(&mut attrs, api, "staking_platform", &msg.staking_platform)?,
+            &add_attr(&mut attrs, "factory_type", &msg.factory_type)?,
         ),
     )?;
 

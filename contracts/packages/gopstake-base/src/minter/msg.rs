@@ -1,11 +1,12 @@
 use cosmwasm_schema::{cw_serde, QueryResponses};
 use cosmwasm_std::Uint128;
 
-use osmosis_std::types::cosmos::bank::v1beta1::Metadata;
+use crate::minter::types::{FactoryType, Metadata};
 
 #[cw_serde]
 pub struct InstantiateMsg {
     pub staking_platform: Option<String>,
+    pub factory_type: Option<FactoryType>,
 }
 
 #[cw_serde]
@@ -30,6 +31,7 @@ pub enum ExecuteMsg {
     // admin
     UpdateConfig {
         staking_platform: Option<String>,
+        factory_type: Option<FactoryType>,
     },
 }
 

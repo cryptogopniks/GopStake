@@ -1,3 +1,5 @@
+use std::fmt::Debug;
+
 use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{
     coin, to_json_binary, Addr, Api, BankMsg, Coin, CosmosMsg, MessageInfo, StdError, StdResult,
@@ -13,6 +15,20 @@ impl Attrs {
     pub fn init(action: &str) -> Vec<(String, String)> {
         vec![("action".to_string(), action.to_string())]
     }
+}
+
+pub fn add_attr<T: Debug + Clone>(
+    attrs: &mut Vec<(String, String)>,
+    attr: &str,
+    field: &Option<T>,
+) -> StdResult<Option<T>> {
+    if let Some(x) = field {
+        attrs.push((attr.to_string(), format!("{:#?}", x)));
+
+        return Ok(Some(x.to_owned()));
+    }
+
+    Ok(None)
 }
 
 pub fn validate_attr(
