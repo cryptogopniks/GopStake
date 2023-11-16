@@ -35,13 +35,13 @@ export interface Metadata {
     display: string;
     name: string;
     symbol: string;
-    [k: string]: unknown;
+    uri?: string | null;
+    uri_hash?: string | null;
 }
 export interface DenomUnit {
     aliases: string[];
     denom: string;
     exponent: number;
-    [k: string]: unknown;
 }
 export type QueryMsg = {
     denoms_by_creator: {

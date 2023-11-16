@@ -1,7 +1,8 @@
 import STARGAZE_MINTER from "./stargaze-minter.json";
 import STARGAZE_STAKING_PLATFORM from "./stargaze-staking_platform.json";
-import INJECTIVE_MINTER from "./injective-minter.json";
+import INJECTIVE_MINTER from "./injective-minter_inj.json";
 import INJECTIVE_STAKING_PLATFORM from "./injective-staking_platform.json";
+const INJ_MINTER_WASM = "minter_inj.wasm";
 const MINTER_WASM = "minter.wasm";
 const STAKING_PLATFORM_WASM = "staking_platform.wasm";
 const minterInitMsg = {};
@@ -44,7 +45,7 @@ const NETWORK_CONFIG = {
       STORE_CODE_GAS_MULTIPLIER: 1
     },
     CONTRACTS: [{
-      WASM: MINTER_WASM,
+      WASM: INJ_MINTER_WASM,
       LABEL: "minter-dev-1.0",
       INIT_MSG: minterInitMsg,
       DATA: {
@@ -62,4 +63,4 @@ const NETWORK_CONFIG = {
     }]
   }
 };
-export { NETWORK_CONFIG, MINTER_WASM, STAKING_PLATFORM_WASM };
+export { NETWORK_CONFIG, MINTER_WASM, STAKING_PLATFORM_WASM, INJ_MINTER_WASM };
