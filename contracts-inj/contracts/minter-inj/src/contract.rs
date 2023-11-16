@@ -3,6 +3,8 @@ use cosmwasm_std::{
     entry_point, to_binary, Binary, Deps, DepsMut, Env, MessageInfo, Reply, Response, StdResult,
 };
 
+use injective_cosmwasm::{InjectiveMsgWrapper, InjectiveQueryWrapper};
+
 use crate::{
     error::ContractError,
     msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg},
@@ -24,18 +26,18 @@ pub fn instantiate(
     env: Env,
     info: MessageInfo,
     msg: InstantiateMsg,
-) -> Result<Response, ContractError> {
+) -> Result<Response<InjectiveMsgWrapper>, ContractError> {
     try_instantiate(deps, env, info, msg)
 }
 
 /// Exposes all the execute functions available in the contract
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn execute(
-    deps: DepsMut,
+    deps: DepsMut<InjectiveQueryWrapper>,
     env: Env,
     info: MessageInfo,
     msg: ExecuteMsg,
-) -> Result<Response, ContractError> {
+) -> Result<Response<InjectiveMsgWrapper>, ContractError> {
     match msg {
         ExecuteMsg::CreateDenom { subdenom } => try_create_denom(deps, env, info, subdenom),
         ExecuteMsg::MintTokens {
@@ -64,7 +66,11 @@ pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> StdResult<Binary> {
 
 /// Exposes all the replies available in the contract
 #[cfg_attr(not(feature = "library"), entry_point)]
-pub fn reply(_deps: DepsMut, _env: Env, reply: Reply) -> Result<Response, ContractError> {
+pub fn reply(
+    _deps: DepsMut,
+    _env: Env,
+    reply: Reply,
+) -> Result<Response<InjectiveMsgWrapper>, ContractError> {
     let Reply { id: _, result: _ } = reply;
 
     Err(ContractError::UndefinedReplyId)
@@ -72,6 +78,10 @@ pub fn reply(_deps: DepsMut, _env: Env, reply: Reply) -> Result<Response, Contra
 
 /// Used for contract migration
 #[cfg_attr(not(feature = "library"), entry_point)]
-pub fn migrate(deps: DepsMut, env: Env, msg: MigrateMsg) -> Result<Response, ContractError> {
+pub fn migrate(
+    deps: DepsMut,
+    env: Env,
+    msg: MigrateMsg,
+) -> Result<Response<InjectiveMsgWrapper>, ContractError> {
     migrate_contract(deps, env, msg)
 }

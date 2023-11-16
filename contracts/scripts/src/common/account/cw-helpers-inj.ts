@@ -4,11 +4,16 @@ import { toUtf8, toBase64, fromUtf8 } from "@cosmjs/encoding";
 import { getNetworkEndpoints, Network } from "@injectivelabs/networks";
 import { MsgBroadcaster } from "@injectivelabs/wallet-ts";
 import { MsgExecuteContractEncodeObject } from "@cosmjs/cosmwasm-stargate";
-import { NETWORK_CONFIG, MINTER_WASM, STAKING_PLATFORM_WASM } from "../config";
 import { MinterMsgComposer } from "../codegen/Minter.message-composer";
 import { StakingPlatformMsgComposer } from "../codegen/StakingPlatform.message-composer";
 import * as MinterTypes from "../codegen/Minter.types";
 import * as StakingPlatformTypes from "../codegen/StakingPlatform.types";
+import {
+  NETWORK_CONFIG,
+  MINTER_WASM,
+  STAKING_PLATFORM_WASM,
+  INJ_MINTER_WASM,
+} from "../config";
 import {
   MsgBroadcasterWithPk,
   ChainGrpcWasmApi,
@@ -222,7 +227,9 @@ async function getCwExecHelpers(
 ) {
   const { CONTRACTS } = NETWORK_CONFIG[network];
 
-  const MINTER_CONTRACT = CONTRACTS.find((x) => x.WASM === MINTER_WASM);
+  const MINTER_CONTRACT = CONTRACTS.find(
+    (x) => x.WASM === (network === "INJECTIVE" ? INJ_MINTER_WASM : MINTER_WASM)
+  );
   if (!MINTER_CONTRACT) throw new Error("MINTER_CONTRACT in not found!");
 
   const STAKING_PLATFORM_CONTRACT = CONTRACTS.find(

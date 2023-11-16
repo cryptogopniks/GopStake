@@ -15,6 +15,7 @@ import {
   NETWORK_CONFIG,
   MINTER_WASM,
   STAKING_PLATFORM_WASM,
+  INJ_MINTER_WASM,
 } from "../../common/config";
 
 const { getInjExecMsgFromComposerObj, queryInjContract } = cwHelpersInj;
@@ -30,7 +31,10 @@ async function main(network: NetworkName) {
 
     const { CONTRACTS } = NETWORK_CONFIG[network];
 
-    const MINTER_CONTRACT = CONTRACTS.find((x) => x.WASM === MINTER_WASM);
+    const MINTER_CONTRACT = CONTRACTS.find(
+      (x) =>
+        x.WASM === (network === "INJECTIVE" ? INJ_MINTER_WASM : MINTER_WASM)
+    );
     if (!MINTER_CONTRACT) throw new Error("MINTER_CONTRACT in not found!");
 
     const STAKING_PLATFORM_CONTRACT = CONTRACTS.find(

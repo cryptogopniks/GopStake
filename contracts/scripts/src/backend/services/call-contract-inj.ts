@@ -12,11 +12,33 @@ import {
   getCwExecHelpers,
   getCwQueryHelpers,
 } from "../../common/account/cw-helpers-inj";
+import {
+  NETWORK_CONFIG,
+  MINTER_WASM,
+  STAKING_PLATFORM_WASM,
+  INJ_MINTER_WASM,
+} from "../../common/config";
 
 const networkType = Network.Testnet;
 
 async function main(network: NetworkName) {
   try {
+    const {
+      BASE: {
+        DENOM,
+        CHAIN_ID,
+        RPC_LIST: [RPC],
+        PREFIX,
+      },
+      CONTRACTS,
+    } = NETWORK_CONFIG[network];
+
+    const MINTER_CONTRACT = CONTRACTS.find(
+      (x) =>
+        x.WASM === (network === "INJECTIVE" ? INJ_MINTER_WASM : MINTER_WASM)
+    );
+    if (!MINTER_CONTRACT) throw new Error("MINTER_CONTRACT in not found!");
+
     const testWallets: {
       SEED_DAPP: string;
     } = JSON.parse(await readFile(PATH.TO_TEST_WALLETS, { encoding: "utf8" }));
@@ -36,14 +58,28 @@ async function main(network: NetworkName) {
 
     const { getAllBalances } = await getSgQueryHelpers();
     const { cwQueryProposals } = await getCwQueryHelpers(network);
-    const { cwCreateProposal, cwMintTokens, cwBurnTokens, cwCreateDenom } =
-      await getCwExecHelpers(network, injectiveAddress, msgBroadcasterWithPk);
+    const {
+      cwCreateProposal,
+      cwMintTokens,
+      cwBurnTokens,
+      cwCreateDenom,
+      cwStake,
+    } = await getCwExecHelpers(network, injectiveAddress, msgBroadcasterWithPk);
+
+    const alice = "inj1prmtvxpvdcmp3dtn6qn4hyq9gytj5ry4u28nqz";
+    const denom = "upinj";
+    const fullDenom = `factory/${MINTER_CONTRACT.DATA.ADDRESS}/${denom}`;
 
     // await cwCreateProposal(getProposalTemplate(network));
 
     // await cwQueryProposals(3);
 
-    await cwCreateDenom("upinj", 1, "inj");
+    // await cwCreateDenom("upinj", 1000000000000000000, "inj");
+
+    //await cwMintTokens(fullDenom, 100, alice);
+    // await cwBurnTokens(fullDenom, 100);
+
+    await getAllBalances(alice);
   } catch (error) {
     l(error);
   }

@@ -3,24 +3,24 @@ use cosmwasm_std::{
     StdResult, Uint128,
 };
 
-use injective_std::types::{
-    cosmos::bank::v1beta1::{DenomUnit as InjectiveDenomUnit, Metadata as InjectiveMetadata},
-    injective::tokenfactory::v1beta1 as InjectiveFactory,
+use injective_cosmwasm::{
+    create_burn_tokens_msg, create_mint_tokens_msg, create_new_denom_msg,
+    create_set_token_metadata_msg, InjectiveMsgWrapper, InjectiveQueryWrapper,
 };
 
 use crate::{
     error::ContractError,
     state::{CONFIG, TOKENS},
-    types::{Config, DenomUnit, Metadata},
+    types::{Config, Metadata},
     utils::{nonpayable, one_coin, unwrap_field, validate_attr, Attrs},
 };
 
 pub fn try_create_denom(
-    deps: DepsMut,
+    deps: DepsMut<InjectiveQueryWrapper>,
     env: Env,
     info: MessageInfo,
     subdenom: String,
-) -> Result<Response, ContractError> {
+) -> Result<Response<InjectiveMsgWrapper>, ContractError> {
     // verify funds
     one_coin(&info)?;
 
@@ -50,11 +50,7 @@ pub fn try_create_denom(
         }
     })?;
 
-    let msg: CosmosMsg = InjectiveFactory::MsgCreateDenom {
-        sender: creator.to_string(),
-        subdenom,
-    }
-    .into();
+    let msg = create_new_denom_msg(creator.to_string(), subdenom);
 
     Ok(Response::new()
         .add_message(msg)
@@ -62,13 +58,13 @@ pub fn try_create_denom(
 }
 
 pub fn try_mint_tokens(
-    deps: DepsMut,
+    deps: DepsMut<InjectiveQueryWrapper>,
     env: Env,
     info: MessageInfo,
     denom: String,
     amount: Uint128,
     mint_to_address: String,
-) -> Result<Response, ContractError> {
+) -> Result<Response<InjectiveMsgWrapper>, ContractError> {
     // verify funds
     nonpayable(&info).map_err(|e| StdError::GenericErr { msg: e.to_string() })?;
 
@@ -97,11 +93,7 @@ pub fn try_mint_tokens(
     let amount = coin(amount.u128(), denom);
 
     let msg_list = vec![
-        InjectiveFactory::MsgMint {
-            sender: creator.to_string(),
-            amount: Some(amount.clone().into()),
-        }
-        .into(),
+        create_mint_tokens_msg(creator.to_owned(), amount.clone(), creator.to_string()),
         CosmosMsg::Bank(BankMsg::Send {
             to_address: mint_to_address,
             amount: vec![amount],
@@ -114,10 +106,10 @@ pub fn try_mint_tokens(
 }
 
 pub fn try_burn_tokens(
-    deps: DepsMut,
+    deps: DepsMut<InjectiveQueryWrapper>,
     env: Env,
     info: MessageInfo,
-) -> Result<Response, ContractError> {
+) -> Result<Response<InjectiveMsgWrapper>, ContractError> {
     // verify funds
     let Coin { amount, denom } = one_coin(&info)?;
 
@@ -133,11 +125,7 @@ pub fn try_burn_tokens(
     let creator = &env.contract.address;
     let amount = coin(amount.u128(), denom);
 
-    let msg: CosmosMsg = InjectiveFactory::MsgBurn {
-        sender: creator.to_string(),
-        amount: Some(amount.into()),
-    }
-    .into();
+    let msg = create_burn_tokens_msg(creator.to_owned(), amount);
 
     Ok(Response::new()
         .add_message(msg)
@@ -145,11 +133,11 @@ pub fn try_burn_tokens(
 }
 
 pub fn try_set_metadata(
-    deps: DepsMut,
-    env: Env,
+    deps: DepsMut<InjectiveQueryWrapper>,
+    _env: Env,
     info: MessageInfo,
     metadata: Metadata,
-) -> Result<Response, ContractError> {
+) -> Result<Response<InjectiveMsgWrapper>, ContractError> {
     // verify funds
     nonpayable(&info).map_err(|e| StdError::GenericErr { msg: e.to_string() })?;
 
@@ -169,45 +157,23 @@ pub fn try_set_metadata(
         Err(ContractError::Unauthorized)?;
     }
 
-    let sender = env.contract.address.to_string();
     let Metadata {
-        description,
         denom_units,
         base,
-        display,
         name,
         symbol,
-        uri,
-        uri_hash,
+        ..
     } = metadata;
 
-    let msg: CosmosMsg = InjectiveFactory::MsgSetDenomMetadata {
-        sender,
-        metadata: Some(InjectiveMetadata {
-            description,
-            denom_units: denom_units
-                .into_iter()
-                .map(
-                    |DenomUnit {
-                         denom,
-                         exponent,
-                         aliases,
-                     }| InjectiveDenomUnit {
-                        aliases,
-                        denom,
-                        exponent,
-                    },
-                )
-                .collect(),
-            base,
-            display,
-            name,
-            symbol,
-            uri: unwrap_field(uri, "uri")?,
-            uri_hash: unwrap_field(uri_hash, "uri_hash")?,
-        }),
-    }
-    .into();
+    let msg = create_set_token_metadata_msg(
+        base,
+        name,
+        symbol,
+        denom_units
+            .get(1)
+            .ok_or(ContractError::Unauthorized)?
+            .exponent as u8,
+    );
 
     Ok(Response::new()
         .add_message(msg)
@@ -215,11 +181,11 @@ pub fn try_set_metadata(
 }
 
 pub fn try_update_config(
-    deps: DepsMut,
+    deps: DepsMut<InjectiveQueryWrapper>,
     _env: Env,
     info: MessageInfo,
     staking_platform: Option<String>,
-) -> Result<Response, ContractError> {
+) -> Result<Response<InjectiveMsgWrapper>, ContractError> {
     // verify funds
     nonpayable(&info).map_err(|e| StdError::GenericErr { msg: e.to_string() })?;
 

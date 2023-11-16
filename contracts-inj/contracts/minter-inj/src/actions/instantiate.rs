@@ -1,6 +1,8 @@
 use cosmwasm_std::{DepsMut, Env, MessageInfo, Response};
 use cw2::set_contract_version;
 
+use injective_cosmwasm::InjectiveMsgWrapper;
+
 use crate::{
     error::ContractError,
     msg::InstantiateMsg,
@@ -17,7 +19,7 @@ pub fn try_instantiate(
     _env: Env,
     info: MessageInfo,
     msg: InstantiateMsg,
-) -> Result<Response, ContractError> {
+) -> Result<Response<InjectiveMsgWrapper>, ContractError> {
     set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
 
     let mut attrs = Attrs::init("try_instantiate");

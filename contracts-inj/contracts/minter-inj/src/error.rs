@@ -43,6 +43,9 @@ pub enum ContractError {
     #[error("Asset is not found!")]
     AssetIsNotFound,
 
+    #[error("Denom is not found!")]
+    DenomIsNotFound,
+
     #[error("{value:?} config is not found!")]
     ParameterIsNotFound { value: String },
 
