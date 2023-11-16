@@ -7,9 +7,9 @@ use gopstake_base::{
     error::ContractError,
     minter::{
         state::{CONFIG, TOKENS},
-        types::{Config, FactoryType, Metadata},
+        types::{Config, Metadata},
     },
-    utils::{add_attr, nonpayable, one_coin, unwrap_field, validate_attr, Attrs},
+    utils::{nonpayable, one_coin, unwrap_field, validate_attr, Attrs},
 };
 
 pub fn try_create_denom(
@@ -147,7 +147,6 @@ pub fn try_update_config(
     _env: Env,
     info: MessageInfo,
     staking_platform: Option<String>,
-    factory_type: Option<FactoryType>,
 ) -> Result<Response, ContractError> {
     // verify funds
     nonpayable(&info).map_err(|e| StdError::GenericErr { msg: e.to_string() })?;
@@ -163,7 +162,6 @@ pub fn try_update_config(
 
         config.staking_platform =
             validate_attr(&mut attrs, api, "staking_platform", &staking_platform)?;
-        config.factory_type = add_attr(&mut attrs, "factory_type", &factory_type)?;
 
         Ok(config)
     })?;

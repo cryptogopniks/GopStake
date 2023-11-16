@@ -7,7 +7,6 @@ use strum::IntoEnumIterator;
 use gopstake_base::{
     assets::{Currency, Funds, Token},
     error::parse_err,
-    minter::types::FactoryType,
 };
 
 use crate::helpers::{
@@ -114,7 +113,7 @@ impl Project {
             }
         }
 
-        let minter_address = project.instantiate_minter(minter_code_id, &None, &None);
+        let minter_address = project.instantiate_minter(minter_code_id, &None);
 
         // instantiate gopstake contracts
 
@@ -145,11 +144,7 @@ impl Project {
             .unwrap();
 
         project
-            .minter_try_update_config(
-                ProjectAccount::Admin,
-                &Some(staking_platform_address),
-                &Some(FactoryType::Osmosis),
-            )
+            .minter_try_update_config(ProjectAccount::Admin, &Some(staking_platform_address))
             .unwrap();
 
         // add funds to minter

@@ -1,12 +1,11 @@
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::{
-    entry_point, to_json_binary, Binary, Deps, DepsMut, Env, MessageInfo, Reply, Response,
-    StdResult,
+    entry_point, to_binary, Binary, Deps, DepsMut, Env, MessageInfo, Reply, Response, StdResult,
 };
 
-use gopstake_base::{
+use crate::{
     error::ContractError,
-    minter::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg},
+    msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg},
 };
 
 use crate::actions::{
@@ -57,9 +56,9 @@ pub fn execute(
 pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
         QueryMsg::DenomsByCreator { creator } => {
-            to_json_binary(&query_denoms_by_creator(deps, env, creator)?)
+            to_binary(&query_denoms_by_creator(deps, env, creator)?)
         }
-        QueryMsg::QueryConfig {} => to_json_binary(&query_config(deps, env)?),
+        QueryMsg::QueryConfig {} => to_binary(&query_config(deps, env)?),
     }
 }
 

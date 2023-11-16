@@ -6,7 +6,7 @@
 
 import { CosmWasmClient, SigningCosmWasmClient, ExecuteResult } from "@cosmjs/cosmwasm-stargate";
 import { Coin, StdFee } from "@cosmjs/amino";
-import { FactoryType, InstantiateMsg, ExecuteMsg, Uint128, Metadata, DenomUnit, QueryMsg, MigrateMsg, QueryDenomsFromCreatorResponse, Addr, Config } from "./Minter.types";
+import { InstantiateMsg, ExecuteMsg, Uint128, Metadata, DenomUnit, QueryMsg, MigrateMsg, QueryDenomsFromCreatorResponse, Addr, Config } from "./Minter.types";
 export interface MinterReadOnlyInterface {
   contractAddress: string;
   denomsByCreator: ({
@@ -68,10 +68,8 @@ export interface MinterInterface extends MinterReadOnlyInterface {
     metadata: Metadata;
   }, fee?: number | StdFee | "auto", memo?: string, _funds?: Coin[]) => Promise<ExecuteResult>;
   updateConfig: ({
-    factoryType,
     stakingPlatform
   }: {
-    factoryType?: FactoryType;
     stakingPlatform?: string;
   }, fee?: number | StdFee | "auto", memo?: string, _funds?: Coin[]) => Promise<ExecuteResult>;
 }
@@ -137,15 +135,12 @@ export class MinterClient extends MinterQueryClient implements MinterInterface {
     }, fee, memo, _funds);
   };
   updateConfig = async ({
-    factoryType,
     stakingPlatform
   }: {
-    factoryType?: FactoryType;
     stakingPlatform?: string;
   }, fee: number | StdFee | "auto" = "auto", memo?: string, _funds?: Coin[]): Promise<ExecuteResult> => {
     return await this.client.execute(this.sender, this.contractAddress, {
       update_config: {
-        factory_type: factoryType,
         staking_platform: stakingPlatform
       }
     }, fee, memo, _funds);

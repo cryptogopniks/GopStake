@@ -4,9 +4,7 @@
 * and run the @cosmwasm/ts-codegen generate command to regenerate this file.
 */
 
-export type FactoryType = "osmosis" | "injective";
 export interface InstantiateMsg {
-  factory_type?: FactoryType | null;
   staking_platform?: string | null;
 }
 export type ExecuteMsg = {
@@ -27,7 +25,6 @@ export type ExecuteMsg = {
   };
 } | {
   update_config: {
-    factory_type?: FactoryType | null;
     staking_platform?: string | null;
   };
 };
@@ -62,6 +59,5 @@ export type Addr = string;
 export interface Config {
   admin: Addr;
   chain_id_dev: string;
-  factory_type?: FactoryType | null;
   staking_platform?: Addr | null;
 }

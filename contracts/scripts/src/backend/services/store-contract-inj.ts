@@ -40,6 +40,8 @@ async function main(network: NetworkName) {
     });
 
     for (const { WASM, LABEL, INIT_MSG } of CONTRACTS) {
+      if (WASM !== "minter_inj.wasm") continue;
+
       const networkName = network.toLowerCase();
       const contractName = WASM.replace(".wasm", "").toLowerCase();
 

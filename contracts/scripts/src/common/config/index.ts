@@ -6,6 +6,7 @@ import STARGAZE_STAKING_PLATFORM from "./stargaze-staking_platform.json";
 import INJECTIVE_MINTER from "./injective-minter.json";
 import INJECTIVE_STAKING_PLATFORM from "./injective-staking_platform.json";
 
+const INJ_MINTER_WASM = "minter_inj.wasm";
 const MINTER_WASM = "minter.wasm";
 const STAKING_PLATFORM_WASM = "staking_platform.wasm";
 
@@ -57,7 +58,7 @@ const NETWORK_CONFIG: NetworkConfig = {
     },
     CONTRACTS: [
       {
-        WASM: MINTER_WASM,
+        WASM: INJ_MINTER_WASM,
         LABEL: "minter-dev-1.0",
         INIT_MSG: minterInitMsg,
         DATA: {

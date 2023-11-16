@@ -3,17 +3,15 @@ use cosmwasm_std::{
     StdResult, Uint128,
 };
 
-use osmosis_std::types::{
-    cosmos::bank::v1beta1::{DenomUnit as OsmosisDenomUnit, Metadata as OsmosisMetadata},
-    osmosis::tokenfactory::v1beta1 as OsmosisFactory,
+use injective_std::types::{
+    cosmos::bank::v1beta1::{DenomUnit as InjectiveDenomUnit, Metadata as InjectiveMetadata},
+    injective::tokenfactory::v1beta1 as InjectiveFactory,
 };
 
-use gopstake_base::{
+use crate::{
     error::ContractError,
-    minter::{
-        state::{CONFIG, TOKENS},
-        types::{Config, DenomUnit, Metadata},
-    },
+    state::{CONFIG, TOKENS},
+    types::{Config, DenomUnit, Metadata},
     utils::{nonpayable, one_coin, unwrap_field, validate_attr, Attrs},
 };
 
@@ -52,7 +50,7 @@ pub fn try_create_denom(
         }
     })?;
 
-    let msg: CosmosMsg = OsmosisFactory::MsgCreateDenom {
+    let msg: CosmosMsg = InjectiveFactory::MsgCreateDenom {
         sender: creator.to_string(),
         subdenom,
     }
@@ -99,10 +97,9 @@ pub fn try_mint_tokens(
     let amount = coin(amount.u128(), denom);
 
     let msg_list = vec![
-        OsmosisFactory::MsgMint {
+        InjectiveFactory::MsgMint {
             sender: creator.to_string(),
             amount: Some(amount.clone().into()),
-            mint_to_address: creator.to_string(),
         }
         .into(),
         CosmosMsg::Bank(BankMsg::Send {
@@ -136,10 +133,9 @@ pub fn try_burn_tokens(
     let creator = &env.contract.address;
     let amount = coin(amount.u128(), denom);
 
-    let msg: CosmosMsg = OsmosisFactory::MsgBurn {
+    let msg: CosmosMsg = InjectiveFactory::MsgBurn {
         sender: creator.to_string(),
         amount: Some(amount.into()),
-        burn_from_address: creator.to_string(),
     }
     .into();
 
@@ -181,12 +177,13 @@ pub fn try_set_metadata(
         display,
         name,
         symbol,
-        ..
+        uri,
+        uri_hash,
     } = metadata;
 
-    let msg: CosmosMsg = OsmosisFactory::MsgSetDenomMetadata {
+    let msg: CosmosMsg = InjectiveFactory::MsgSetDenomMetadata {
         sender,
-        metadata: Some(OsmosisMetadata {
+        metadata: Some(InjectiveMetadata {
             description,
             denom_units: denom_units
                 .into_iter()
@@ -195,7 +192,7 @@ pub fn try_set_metadata(
                          denom,
                          exponent,
                          aliases,
-                     }| OsmosisDenomUnit {
+                     }| InjectiveDenomUnit {
                         aliases,
                         denom,
                         exponent,
@@ -206,6 +203,8 @@ pub fn try_set_metadata(
             display,
             name,
             symbol,
+            uri: unwrap_field(uri, "uri")?,
+            uri_hash: unwrap_field(uri_hash, "uri_hash")?,
         }),
     }
     .into();

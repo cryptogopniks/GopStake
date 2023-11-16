@@ -1,7 +1,7 @@
 use cosmwasm_schema::{cw_serde, QueryResponses};
 use cosmwasm_std::Uint128;
 
-use crate::minter::types::Metadata;
+use crate::types::Metadata;
 
 #[cw_serde]
 pub struct InstantiateMsg {
@@ -36,10 +36,10 @@ pub enum ExecuteMsg {
 #[cw_serde]
 #[derive(QueryResponses)]
 pub enum QueryMsg {
-    #[returns(crate::minter::types::QueryDenomsFromCreatorResponse)]
+    #[returns(crate::types::QueryDenomsFromCreatorResponse)]
     DenomsByCreator { creator: String },
 
-    #[returns(crate::minter::types::Config)]
+    #[returns(crate::types::Config)]
     QueryConfig {},
 }
 
