@@ -9,7 +9,7 @@ import { getCwClient } from "../../common/account/clients";
 import { getSigner } from "../account/signer";
 import { getSeed } from "./get-seed";
 import { NetworkName, ContractData } from "../../common/interfaces";
-import { NETWORK_CONFIG } from "../../common/config";
+import { NETWORK_CONFIG, STAKING_PLATFORM_WASM } from "../../common/config";
 
 const encoding = "utf8";
 
@@ -36,6 +36,8 @@ async function main(network: NetworkName) {
     if (!seed) throw new Error("Seed is not found!");
 
     for (const { WASM, LABEL, INIT_MSG } of CONTRACTS) {
+      if (WASM !== STAKING_PLATFORM_WASM) continue;
+
       const networkName = network.toLowerCase();
       const contractName = WASM.replace(".wasm", "").toLowerCase();
 

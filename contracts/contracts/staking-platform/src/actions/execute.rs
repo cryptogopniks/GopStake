@@ -41,6 +41,9 @@ pub fn try_stake(
     {
         // validate collection
         let collection_address = deps.api.addr_validate(&collection_address)?;
+        if !COLLECTIONS.has(deps.storage, &collection_address) {
+            Err(ContractError::CollectionIsNotFound)?;
+        }
 
         //  update state and create send messages
         for StakedTokenInfo { token_id, .. } in staked_token_info_list {

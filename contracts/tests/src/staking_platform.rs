@@ -1454,6 +1454,61 @@ fn stake_2_users_2_collections() -> StdResult<()> {
 }
 
 #[test]
+fn stake_unlisted_collection() -> StdResult<()> {
+    let mut project = Project::new(Some(CHAIN_ID_DEV));
+
+    let proposal_a: &Proposal<String, TokenUnverified> = &Proposal {
+        proposal_status: None,
+        price: Funds::new(
+            100u128,
+            &Currency::new(
+                &TokenUnverified::new_native(&ProjectCoin::Denom.to_string()),
+                6,
+            ),
+        ),
+        proposal_type: ProposalType::AddCollection {
+            collection_address: ProjectNft::Gopniks.to_string(),
+            collection: Collection {
+                name: ProjectNft::Gopniks.to_string(),
+                staking_currency: Currency::new(
+                    &TokenUnverified::new_cw20(&ProjectToken::Atom.to_string()),
+                    6,
+                ),
+                daily_rewards: str_to_dec("1000000"),
+                emission_type: EmissionType::Spending,
+                owner: ProjectAccount::Owner.to_string(),
+            },
+        },
+    };
+
+    project.staking_platform_try_create_proposal(ProjectAccount::Admin, proposal_a)?;
+
+    project.increase_allowances_nft(
+        ProjectAccount::Alice,
+        project.get_staking_platform_address(),
+        ProjectNft::Gopniks,
+    );
+
+    let res = project
+        .staking_platform_try_stake(
+            ProjectAccount::Alice,
+            &[StakedCollectionInfo {
+                collection_address: ProjectNft::Gopniks.to_string(),
+                staked_token_info_list: vec![StakedTokenInfo {
+                    token_id: Uint128::new(1),
+                    staking_start_date: None,
+                    last_claim_date: None,
+                }],
+            }],
+        )
+        .unwrap_err();
+
+    assert_error(&res, ContractError::CollectionIsNotFound);
+
+    Ok(())
+}
+
+#[test]
 fn stake_unallowed_unfunded_delayed() -> StdResult<()> {
     let mut project = Project::new(Some(CHAIN_ID_DEV));
 

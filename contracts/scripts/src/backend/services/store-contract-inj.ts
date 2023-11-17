@@ -3,7 +3,7 @@ import { PATH, rootPath } from "../envs";
 import { readFile, writeFile } from "fs/promises";
 import { getSeed } from "./get-seed";
 import { NetworkName, ContractData } from "../../common/interfaces";
-import { NETWORK_CONFIG, INJ_MINTER_WASM } from "../../common/config";
+import { NETWORK_CONFIG, STAKING_PLATFORM_WASM } from "../../common/config";
 import { getPrivateKey } from "../account/signer-inj";
 import { Network } from "@injectivelabs/networks";
 import {
@@ -40,7 +40,7 @@ async function main(network: NetworkName) {
     });
 
     for (const { WASM, LABEL, INIT_MSG } of CONTRACTS) {
-      // if (WASM !== INJ_MINTER_WASM) continue;
+      if (WASM !== STAKING_PLATFORM_WASM) continue;
 
       const networkName = network.toLowerCase();
       const contractName = WASM.replace(".wasm", "").toLowerCase();
