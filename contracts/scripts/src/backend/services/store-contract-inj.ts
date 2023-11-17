@@ -43,7 +43,9 @@ async function main(network: NetworkName) {
       if (WASM !== STAKING_PLATFORM_WASM) continue;
 
       const networkName = network.toLowerCase();
-      const contractName = WASM.replace(".wasm", "").toLowerCase();
+      const contractName = WASM.replace(".wasm", "")
+        .replace("_inj", "")
+        .toLowerCase();
 
       const wasmBinary = await readFile(rootPath(`../artifacts/${WASM}`));
 

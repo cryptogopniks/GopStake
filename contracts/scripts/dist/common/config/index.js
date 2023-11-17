@@ -1,6 +1,6 @@
 import STARGAZE_MINTER from "./stargaze-minter.json";
 import STARGAZE_STAKING_PLATFORM from "./stargaze-staking_platform.json";
-import INJECTIVE_MINTER from "./injective-minter_inj.json";
+import INJECTIVE_MINTER from "./injective-minter.json";
 import INJECTIVE_STAKING_PLATFORM from "./injective-staking_platform.json";
 const INJ_MINTER_WASM = "minter_inj.wasm";
 const MINTER_WASM = "minter.wasm";
