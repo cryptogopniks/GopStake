@@ -32,6 +32,15 @@ interface SetMetadataMsg {
         metadata: Metadata;
     };
 }
+interface ApproveMsg {
+    spender: string;
+    token_id: string;
+    expires?: Expiration;
+}
+interface RevokeMsg {
+    spender: string;
+    token_id: string;
+}
 interface ApproveCollectionMsg {
     approve_all: {
         operator: string;
@@ -86,4 +95,4 @@ type ContractData = {
     ADDRESS: string;
 };
 export type { NetworkConfig, NetworkName };
-export { SetMetadataMsg, Metadata, UpdateMinterConfigStruct, UpdateStakingPlatformConfigStruct, ApproveCollectionMsg, RevokeCollectionMsg, QueryApprovalsMsg, ApprovalsResponse, Cw20SendMsg, BaseNetworkConfig, ContractData, };
+export { SetMetadataMsg, Metadata, UpdateMinterConfigStruct, UpdateStakingPlatformConfigStruct, ApproveCollectionMsg, RevokeCollectionMsg, QueryApprovalsMsg, ApprovalsResponse, Cw20SendMsg, BaseNetworkConfig, ContractData, ApproveMsg, RevokeMsg, };

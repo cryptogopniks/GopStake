@@ -30,6 +30,8 @@ import {
   ApprovalsResponse,
   Cw20SendMsg,
   NetworkName,
+  ApproveMsg,
+  RevokeMsg,
 } from "../interfaces";
 
 const networkType = Network.Testnet;
@@ -147,6 +149,22 @@ function getApproveCollectionMsg(
   );
 }
 
+function getApproveNftMsg(
+  collectionAddress: string,
+  tokenId: number,
+  senderAddress: string,
+  operator: string
+): [MsgExecuteContract, string] {
+  const approveMsg: ApproveMsg = {
+    spender: operator,
+    token_id: `${tokenId}`,
+  };
+
+  return getSingleTokenExecMsg(
+    getExecuteContractMsg(collectionAddress, senderAddress, approveMsg, [])
+  );
+}
+
 function getRevokeCollectionMsg(
   collectionAddress: string,
   senderAddress: string,
@@ -163,6 +181,22 @@ function getRevokeCollectionMsg(
       revokeCollectionMsg,
       []
     )
+  );
+}
+
+function getRevokeNftMsg(
+  collectionAddress: string,
+  tokenId: number,
+  senderAddress: string,
+  operator: string
+): [MsgExecuteContract, string] {
+  const revokeMsg: RevokeMsg = {
+    spender: operator,
+    token_id: `${tokenId}`,
+  };
+
+  return getSingleTokenExecMsg(
+    getExecuteContractMsg(collectionAddress, senderAddress, revokeMsg, [])
   );
 }
 
@@ -300,6 +334,40 @@ async function getCwExecHelpers(
     });
   }
 
+  async function cwApproveAndStake(
+    senderAddress: string,
+    operator: string,
+    collectionsToStake: StakingPlatformTypes.StakedCollectionInfoForString[],
+    _gasPrice?: string
+  ) {
+    let msgList: MsgExecuteContract[] = [];
+
+    for (const {
+      collection_address,
+      staked_token_info_list,
+    } of collectionsToStake) {
+      for (const { token_id } of staked_token_info_list) {
+        msgList.push(
+          getApproveNftMsg(
+            collection_address,
+            +token_id,
+            senderAddress,
+            operator
+          )[0]
+        );
+      }
+    }
+
+    const [msg, sender] = getInjExecMsgFromComposerObj(
+      stakingPlatformMsgComposer.stake({ collectionsToStake })
+    );
+
+    return await msgBroadcaster.broadcast({
+      msgs: [...msgList, msg],
+      injectiveAddress: sender,
+    });
+  }
+
   async function cwUnstake(
     collectionsToUnstake: StakingPlatformTypes.StakedCollectionInfoForString[],
     _gasPrice?: string
@@ -310,6 +378,40 @@ async function getCwExecHelpers(
 
     return await msgBroadcaster.broadcast({
       msgs: [msg],
+      injectiveAddress: sender,
+    });
+  }
+
+  async function cwUnstakeAndRevoke(
+    senderAddress: string,
+    operator: string,
+    collectionsToUnstake: StakingPlatformTypes.StakedCollectionInfoForString[],
+    _gasPrice?: string
+  ) {
+    let msgList: MsgExecuteContract[] = [];
+
+    const [msg, sender] = getInjExecMsgFromComposerObj(
+      stakingPlatformMsgComposer.unstake({ collectionsToUnstake })
+    );
+
+    for (const {
+      collection_address,
+      staked_token_info_list,
+    } of collectionsToUnstake) {
+      for (const { token_id } of staked_token_info_list) {
+        msgList.push(
+          getRevokeNftMsg(
+            collection_address,
+            +token_id,
+            senderAddress,
+            operator
+          )[0]
+        );
+      }
+    }
+
+    return await msgBroadcaster.broadcast({
+      msgs: [msg, ...msgList],
       injectiveAddress: sender,
     });
   }
@@ -560,7 +662,9 @@ async function getCwExecHelpers(
     cwApproveCollection,
     cwRevokeCollection,
     cwStake,
+    cwApproveAndStake,
     cwUnstake,
+    cwUnstakeAndRevoke,
     cwClaimStakingRewards,
     cwDistributeFunds,
     cwRemoveCollection,

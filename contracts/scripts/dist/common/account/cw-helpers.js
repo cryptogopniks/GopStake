@@ -49,6 +49,13 @@ function getApproveCollectionMsg(collectionAddress, senderAddress, operator) {
   };
   return getSingleTokenExecMsg(collectionAddress, senderAddress, approveCollectionMsg);
 }
+function getApproveNftMsg(collectionAddress, tokenId, senderAddress, operator) {
+  const approveMsg = {
+    spender: operator,
+    token_id: `${tokenId}`
+  };
+  return getSingleTokenExecMsg(collectionAddress, senderAddress, approveMsg);
+}
 function getRevokeCollectionMsg(collectionAddress, senderAddress, operator) {
   const revokeCollectionMsg = {
     revoke_all: {
@@ -56,6 +63,13 @@ function getRevokeCollectionMsg(collectionAddress, senderAddress, operator) {
     }
   };
   return getSingleTokenExecMsg(collectionAddress, senderAddress, revokeCollectionMsg);
+}
+function getRevokeNftMsg(collectionAddress, tokenId, senderAddress, operator) {
+  const revokeMsg = {
+    spender: operator,
+    token_id: `${tokenId}`
+  };
+  return getSingleTokenExecMsg(collectionAddress, senderAddress, revokeMsg);
 }
 function getSetMetadataMsg(minterContractAddress, senderAddress, setMetadataMsg) {
   return getSingleTokenExecMsg(minterContractAddress, senderAddress, setMetadataMsg);
@@ -116,17 +130,48 @@ async function getCwExecHelpers(network, rpc, owner, signer) {
   async function cwRevokeCollection(collectionAddress, senderAddress, operator, gasPrice) {
     return await _msgWrapperWithGasPrice([getRevokeCollectionMsg(collectionAddress, senderAddress, operator)], gasPrice);
   }
-
-  // TODO: try single tx Approve + Stake
   async function cwStake(collectionsToStake, gasPrice) {
     return await _msgWrapperWithGasPrice([stakingPlatformMsgComposer.stake({
       collectionsToStake
     })], gasPrice);
   }
+  async function cwApproveAndStake(senderAddress, operator, collectionsToStake, gasPrice) {
+    let msgList = [];
+    for (const {
+      collection_address,
+      staked_token_info_list
+    } of collectionsToStake) {
+      for (const {
+        token_id
+      } of staked_token_info_list) {
+        msgList.push(getApproveNftMsg(collection_address, +token_id, senderAddress, operator));
+      }
+    }
+    msgList.push(stakingPlatformMsgComposer.stake({
+      collectionsToStake
+    }));
+    return await _msgWrapperWithGasPrice(msgList, gasPrice);
+  }
   async function cwUnstake(collectionsToUnstake, gasPrice) {
     return await _msgWrapperWithGasPrice([stakingPlatformMsgComposer.unstake({
       collectionsToUnstake
     })], gasPrice);
+  }
+  async function cwUnstakeAndRevoke(senderAddress, operator, collectionsToUnstake, gasPrice) {
+    let msgList = [stakingPlatformMsgComposer.unstake({
+      collectionsToUnstake
+    })];
+    for (const {
+      collection_address,
+      staked_token_info_list
+    } of collectionsToUnstake) {
+      for (const {
+        token_id
+      } of staked_token_info_list) {
+        msgList.push(getRevokeNftMsg(collection_address, +token_id, senderAddress, operator));
+      }
+    }
+    return await _msgWrapperWithGasPrice(msgList, gasPrice);
   }
   async function cwClaimStakingRewards(gasPrice) {
     return await _msgWrapperWithGasPrice([stakingPlatformMsgComposer.claimStakingRewards()], gasPrice);
@@ -219,7 +264,9 @@ async function getCwExecHelpers(network, rpc, owner, signer) {
     cwApproveCollection,
     cwRevokeCollection,
     cwStake,
+    cwApproveAndStake,
     cwUnstake,
+    cwUnstakeAndRevoke,
     cwClaimStakingRewards,
     cwDistributeFunds,
     cwRemoveCollection,

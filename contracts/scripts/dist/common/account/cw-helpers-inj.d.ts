@@ -10,7 +10,9 @@ declare function getCwExecHelpers(network: NetworkName, owner: string, msgBroadc
     cwApproveCollection: (collectionAddress: string, senderAddress: string, operator: string, _gasPrice?: string) => Promise<import("@injectivelabs/sdk-ts").TxResponse>;
     cwRevokeCollection: (collectionAddress: string, senderAddress: string, operator: string, _gasPrice?: string) => Promise<import("@injectivelabs/sdk-ts").TxResponse>;
     cwStake: (collectionsToStake: StakingPlatformTypes.StakedCollectionInfoForString[], _gasPrice?: string) => Promise<import("@injectivelabs/sdk-ts").TxResponse>;
+    cwApproveAndStake: (senderAddress: string, operator: string, collectionsToStake: StakingPlatformTypes.StakedCollectionInfoForString[], _gasPrice?: string) => Promise<import("@injectivelabs/sdk-ts").TxResponse>;
     cwUnstake: (collectionsToUnstake: StakingPlatformTypes.StakedCollectionInfoForString[], _gasPrice?: string) => Promise<import("@injectivelabs/sdk-ts").TxResponse>;
+    cwUnstakeAndRevoke: (senderAddress: string, operator: string, collectionsToUnstake: StakingPlatformTypes.StakedCollectionInfoForString[], _gasPrice?: string) => Promise<import("@injectivelabs/sdk-ts").TxResponse>;
     cwClaimStakingRewards: (_gasPrice?: string) => Promise<import("@injectivelabs/sdk-ts").TxResponse>;
     cwDistributeFunds: (addressAndWeightList: [string, string][], _gasPrice?: string) => Promise<import("@injectivelabs/sdk-ts").TxResponse>;
     cwRemoveCollection: (address: string, _gasPrice?: string) => Promise<import("@injectivelabs/sdk-ts").TxResponse>;

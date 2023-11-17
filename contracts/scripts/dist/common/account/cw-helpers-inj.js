@@ -89,6 +89,13 @@ function getApproveCollectionMsg(collectionAddress, senderAddress, operator) {
   };
   return getSingleTokenExecMsg(getExecuteContractMsg(collectionAddress, senderAddress, approveCollectionMsg, []));
 }
+function getApproveNftMsg(collectionAddress, tokenId, senderAddress, operator) {
+  const approveMsg = {
+    spender: operator,
+    token_id: `${tokenId}`
+  };
+  return getSingleTokenExecMsg(getExecuteContractMsg(collectionAddress, senderAddress, approveMsg, []));
+}
 function getRevokeCollectionMsg(collectionAddress, senderAddress, operator) {
   const revokeCollectionMsg = {
     revoke_all: {
@@ -96,6 +103,13 @@ function getRevokeCollectionMsg(collectionAddress, senderAddress, operator) {
     }
   };
   return getSingleTokenExecMsg(getExecuteContractMsg(collectionAddress, senderAddress, revokeCollectionMsg, []));
+}
+function getRevokeNftMsg(collectionAddress, tokenId, senderAddress, operator) {
+  const revokeMsg = {
+    spender: operator,
+    token_id: `${tokenId}`
+  };
+  return getSingleTokenExecMsg(getExecuteContractMsg(collectionAddress, senderAddress, revokeMsg, []));
 }
 function getSetMetadataMsg(minterContractAddress, senderAddress, setMetadataMsg) {
   return getSingleTokenExecMsg(getExecuteContractMsg(minterContractAddress, senderAddress, setMetadataMsg, []));
@@ -164,12 +178,52 @@ async function getCwExecHelpers(network, owner, msgBroadcaster) {
       injectiveAddress: sender
     });
   }
+  async function cwApproveAndStake(senderAddress, operator, collectionsToStake, _gasPrice) {
+    let msgList = [];
+    for (const {
+      collection_address,
+      staked_token_info_list
+    } of collectionsToStake) {
+      for (const {
+        token_id
+      } of staked_token_info_list) {
+        msgList.push(getApproveNftMsg(collection_address, +token_id, senderAddress, operator)[0]);
+      }
+    }
+    const [msg, sender] = getInjExecMsgFromComposerObj(stakingPlatformMsgComposer.stake({
+      collectionsToStake
+    }));
+    return await msgBroadcaster.broadcast({
+      msgs: [...msgList, msg],
+      injectiveAddress: sender
+    });
+  }
   async function cwUnstake(collectionsToUnstake, _gasPrice) {
     const [msg, sender] = getInjExecMsgFromComposerObj(stakingPlatformMsgComposer.unstake({
       collectionsToUnstake
     }));
     return await msgBroadcaster.broadcast({
       msgs: [msg],
+      injectiveAddress: sender
+    });
+  }
+  async function cwUnstakeAndRevoke(senderAddress, operator, collectionsToUnstake, _gasPrice) {
+    let msgList = [];
+    const [msg, sender] = getInjExecMsgFromComposerObj(stakingPlatformMsgComposer.unstake({
+      collectionsToUnstake
+    }));
+    for (const {
+      collection_address,
+      staked_token_info_list
+    } of collectionsToUnstake) {
+      for (const {
+        token_id
+      } of staked_token_info_list) {
+        msgList.push(getRevokeNftMsg(collection_address, +token_id, senderAddress, operator)[0]);
+      }
+    }
+    return await msgBroadcaster.broadcast({
+      msgs: [msg, ...msgList],
       injectiveAddress: sender
     });
   }
@@ -320,7 +374,9 @@ async function getCwExecHelpers(network, owner, msgBroadcaster) {
     cwApproveCollection,
     cwRevokeCollection,
     cwStake,
+    cwApproveAndStake,
     cwUnstake,
+    cwUnstakeAndRevoke,
     cwClaimStakingRewards,
     cwDistributeFunds,
     cwRemoveCollection,
