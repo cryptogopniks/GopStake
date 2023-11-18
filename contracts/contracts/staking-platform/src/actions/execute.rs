@@ -1,6 +1,6 @@
 use cosmwasm_std::{
     to_json_binary, Addr, CosmosMsg, Decimal, Deps, DepsMut, Env, MessageInfo, Order, Response,
-    StdError, StdResult, Uint128, WasmMsg,
+    StdResult, Uint128, WasmMsg,
 };
 
 use cw721::Cw721ExecuteMsg;
@@ -29,7 +29,7 @@ pub fn try_stake(
     collections_to_stake: Vec<StakedCollectionInfo<String>>,
 ) -> Result<Response, ContractError> {
     // verify funds
-    nonpayable(&info).map_err(|e| StdError::GenericErr { msg: e.to_string() })?;
+    nonpayable(&info)?;
 
     let mut staker = STAKERS.load(deps.storage, &info.sender).unwrap_or_default();
     let mut msg_list: Vec<CosmosMsg> = vec![];
@@ -97,7 +97,7 @@ pub fn try_unstake(
     collections_to_unstake: Vec<StakedCollectionInfo<String>>,
 ) -> Result<Response, ContractError> {
     // verify funds
-    nonpayable(&info).map_err(|e| StdError::GenericErr { msg: e.to_string() })?;
+    nonpayable(&info)?;
 
     let mut msg_list: Vec<CosmosMsg> = vec![];
     let time_in_nanos: u128 = env.block.time.nanos().into();
@@ -301,7 +301,7 @@ pub fn try_claim_staking_rewards(
     info: MessageInfo,
 ) -> Result<Response, ContractError> {
     // verify funds
-    nonpayable(&info).map_err(|e| StdError::GenericErr { msg: e.to_string() })?;
+    nonpayable(&info)?;
 
     let time_in_nanos: u128 = env.block.time.nanos().into();
     let mins_per_day = u128_to_dec256(MINS_PER_DAY);
@@ -433,7 +433,7 @@ pub fn try_update_config(
     minter: Option<String>,
 ) -> Result<Response, ContractError> {
     // verify funds
-    nonpayable(&info).map_err(|e| StdError::GenericErr { msg: e.to_string() })?;
+    nonpayable(&info)?;
 
     let mut attrs = Attrs::init("try_update_config");
     let api = deps.api;
@@ -460,7 +460,7 @@ pub fn try_distribute_funds(
     address_and_weight_list: Vec<(String, Decimal)>,
 ) -> Result<Response, ContractError> {
     // verify funds
-    nonpayable(&info).map_err(|e| StdError::GenericErr { msg: e.to_string() })?;
+    nonpayable(&info)?;
 
     // verify sender
     verify_admin_and_owner(deps.as_ref(), &info)?;
@@ -523,7 +523,7 @@ pub fn try_remove_collection(
     address: String,
 ) -> Result<Response, ContractError> {
     // verify funds
-    nonpayable(&info).map_err(|e| StdError::GenericErr { msg: e.to_string() })?;
+    nonpayable(&info)?;
 
     // verify sender
     verify_admin_and_owner(deps.as_ref(), &info)?;
@@ -542,7 +542,7 @@ pub fn try_create_proposal(
     proposal: Proposal<String, TokenUnverified>,
 ) -> Result<Response, ContractError> {
     // verify funds
-    nonpayable(&info).map_err(|e| StdError::GenericErr { msg: e.to_string() })?;
+    nonpayable(&info)?;
 
     // verify sender
     verify_admin_and_owner(deps.as_ref(), &info)?;
@@ -679,7 +679,7 @@ pub fn try_reject_proposal(
     id: Uint128,
 ) -> Result<Response, ContractError> {
     // verify funds
-    nonpayable(&info).map_err(|e| StdError::GenericErr { msg: e.to_string() })?;
+    nonpayable(&info)?;
 
     // verify sender
     verify_admin_and_owner(deps.as_ref(), &info)?;

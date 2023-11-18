@@ -1,6 +1,6 @@
 use cosmwasm_std::{
-    coin, Addr, BankMsg, Coin, CosmosMsg, DepsMut, Env, MessageInfo, Order, Response, StdError,
-    StdResult, Uint128,
+    coin, Addr, BankMsg, Coin, CosmosMsg, DepsMut, Env, MessageInfo, Order, Response, StdResult,
+    Uint128,
 };
 
 use injective_cosmwasm::{
@@ -66,7 +66,7 @@ pub fn try_mint_tokens(
     mint_to_address: String,
 ) -> Result<Response<InjectiveMsgWrapper>, ContractError> {
     // verify funds
-    nonpayable(&info).map_err(|e| StdError::GenericErr { msg: e.to_string() })?;
+    nonpayable(&info)?;
 
     let owner_and_denoms = TOKENS
         .range(deps.storage, None, None, Order::Ascending)
@@ -139,7 +139,7 @@ pub fn try_set_metadata(
     metadata: Metadata,
 ) -> Result<Response<InjectiveMsgWrapper>, ContractError> {
     // verify funds
-    nonpayable(&info).map_err(|e| StdError::GenericErr { msg: e.to_string() })?;
+    nonpayable(&info)?;
 
     let Metadata { base: denom, .. } = &metadata;
 
@@ -187,7 +187,7 @@ pub fn try_update_config(
     staking_platform: Option<String>,
 ) -> Result<Response<InjectiveMsgWrapper>, ContractError> {
     // verify funds
-    nonpayable(&info).map_err(|e| StdError::GenericErr { msg: e.to_string() })?;
+    nonpayable(&info)?;
 
     let mut attrs = Attrs::init("try_update_config");
     let api = deps.api;
