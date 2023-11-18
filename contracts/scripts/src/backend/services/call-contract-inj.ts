@@ -15,7 +15,6 @@ import {
 import {
   NETWORK_CONFIG,
   MINTER_WASM,
-  STAKING_PLATFORM_WASM,
   INJ_MINTER_WASM,
 } from "../../common/config";
 
@@ -43,9 +42,7 @@ async function main(network: NetworkName) {
       SEED_DAPP: string;
     } = JSON.parse(await readFile(PATH.TO_TEST_WALLETS, { encoding: "utf8" }));
 
-    const { SEED_DAPP } = testWallets;
-
-    const seed = await getSeed(SEED_DAPP);
+    const seed = await getSeed(testWallets.SEED_DAPP);
     if (!seed) throw new Error("Seed is not found!");
 
     const { privateKey, injectiveAddress } = getPrivateKey(seed);

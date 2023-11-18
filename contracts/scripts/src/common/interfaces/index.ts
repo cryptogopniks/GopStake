@@ -1,12 +1,12 @@
 import { Timestamp } from "cosmjs-types/google/protobuf/timestamp";
 
-interface UpdateStakingPlatformConfigStruct {
+interface UpdateConfigStruct {
+  // minter
+  stakingPlatform?: string;
+
+  // staking platform
   owner?: string;
   minter?: string;
-}
-
-interface UpdateMinterConfigStruct {
-  stakingPlatform?: string;
 }
 
 interface Cw20SendMsg {
@@ -107,8 +107,7 @@ export type { NetworkConfig, NetworkName };
 export {
   SetMetadataMsg,
   Metadata,
-  UpdateMinterConfigStruct,
-  UpdateStakingPlatformConfigStruct,
+  UpdateConfigStruct,
   ApproveCollectionMsg,
   RevokeCollectionMsg,
   QueryApprovalsMsg,

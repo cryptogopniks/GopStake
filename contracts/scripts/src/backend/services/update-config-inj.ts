@@ -4,21 +4,18 @@ import { NetworkName } from "../../common/interfaces";
 import { readFile } from "fs/promises";
 import { PATH } from "../envs";
 import { getPrivateKey } from "../account/signer-inj";
-import { getNetworkEndpoints, Network } from "@injectivelabs/networks";
-import { MsgBroadcasterWithPk, ChainGrpcWasmApi } from "@injectivelabs/sdk-ts";
-import { MinterMsgComposer } from "../../common/codegen/Minter.message-composer";
-import { StakingPlatformMsgComposer } from "../../common/codegen/StakingPlatform.message-composer";
-import { QueryMsg as MinterQueryMsg } from "../../common/codegen/Minter.types";
-import { QueryMsg as StakingPlatformQueryMsg } from "../../common/codegen/StakingPlatform.types";
-import cwHelpersInj from "../../common/account/cw-helpers-inj";
+import { Network } from "@injectivelabs/networks";
+import { MsgBroadcasterWithPk } from "@injectivelabs/sdk-ts";
+import {
+  getCwExecHelpers,
+  getCwQueryHelpers,
+} from "../../common/account/cw-helpers-inj";
 import {
   NETWORK_CONFIG,
   MINTER_WASM,
   STAKING_PLATFORM_WASM,
   INJ_MINTER_WASM,
 } from "../../common/config";
-
-const { getInjExecMsgFromComposerObj, queryInjContract } = cwHelpersInj;
 
 const encoding = "utf8";
 const networkType = Network.Testnet;
@@ -48,9 +45,7 @@ async function main(network: NetworkName) {
       SEED_DAPP: string;
     } = JSON.parse(await readFile(PATH.TO_TEST_WALLETS, { encoding }));
 
-    const { SEED_DAPP } = testWallets;
-
-    const seed = await getSeed(SEED_DAPP);
+    const seed = await getSeed(testWallets.SEED_DAPP);
     if (!seed) throw new Error("Seed is not found!");
 
     const { privateKey, injectiveAddress } = getPrivateKey(seed);
@@ -61,51 +56,26 @@ async function main(network: NetworkName) {
       simulateTx: true,
     });
 
-    const stakingPlatformMsgComposer = new StakingPlatformMsgComposer(
+    const { cwQueryStakingPlatformConfig, cwQueryMinterConfig } =
+      await getCwQueryHelpers(network);
+
+    const { cwUpdateConfig } = await getCwExecHelpers(
+      network,
       injectiveAddress,
-      STAKING_PLATFORM_CONTRACT.DATA.ADDRESS
-    );
-    const minterMsgComposer = new MinterMsgComposer(
-      injectiveAddress,
-      MINTER_CONTRACT.DATA.ADDRESS
+      msgBroadcasterWithPk
     );
 
-    const msg1 = minterMsgComposer.updateConfig({
+    await cwUpdateConfig({
       stakingPlatform: STAKING_PLATFORM_CONTRACT.DATA.ADDRESS,
-    });
-
-    const msg2 = stakingPlatformMsgComposer.updateConfig({
       minter: MINTER_CONTRACT.DATA.ADDRESS,
       owner: "inj1u9jles5s3nw29726frttn007h9880n2zyfwf6c",
     });
 
-    await msgBroadcasterWithPk.broadcast({
-      msgs: [msg1, msg2].map((x) => getInjExecMsgFromComposerObj(x)[0]),
-    });
+    const minterConfig = await cwQueryMinterConfig();
+    l("\n", minterConfig, "\n");
 
-    const endpoints = getNetworkEndpoints(networkType);
-    const chainGrpcWasmApi = new ChainGrpcWasmApi(endpoints.grpc);
-
-    const minterQueryMsg: MinterQueryMsg = { query_config: {} };
-    const stakingPlatformQueryMsg: StakingPlatformQueryMsg = {
-      query_config: {},
-    };
-
-    const minterConfig = await queryInjContract(
-      chainGrpcWasmApi,
-      MINTER_CONTRACT.DATA.ADDRESS,
-      minterQueryMsg
-    );
-
-    l("\n", JSON.parse(minterConfig), "\n");
-
-    const stakingPlatformConfig = await queryInjContract(
-      chainGrpcWasmApi,
-      STAKING_PLATFORM_CONTRACT.DATA.ADDRESS,
-      stakingPlatformQueryMsg
-    );
-
-    l("\n", JSON.parse(stakingPlatformConfig), "\n");
+    const stakingPlatformConfig = await cwQueryStakingPlatformConfig();
+    l("\n", stakingPlatformConfig, "\n");
   } catch (error) {
     l(error);
   }

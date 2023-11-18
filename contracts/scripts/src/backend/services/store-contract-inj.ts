@@ -26,9 +26,7 @@ async function main(network: NetworkName) {
       SEED_DAPP: string;
     } = JSON.parse(await readFile(PATH.TO_TEST_WALLETS, { encoding }));
 
-    const { SEED_DAPP } = testWallets;
-
-    const seed = await getSeed(SEED_DAPP);
+    const seed = await getSeed(testWallets.SEED_DAPP);
     if (!seed) throw new Error("Seed is not found!");
 
     const { privateKey, injectiveAddress } = getPrivateKey(seed);

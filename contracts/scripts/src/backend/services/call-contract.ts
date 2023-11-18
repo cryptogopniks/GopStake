@@ -1,5 +1,5 @@
 import { getGasPriceFromChainRegistryItem } from "../../common/account/clients";
-import { initExecWorkers, initQueryWorkers } from "../account/workers";
+import { getSigner } from "../account/signer";
 import { getSeed } from "./get-seed";
 import { l } from "../../common/utils";
 import { chains } from "chain-registry";
@@ -16,7 +16,6 @@ import {
   getCwExecHelpers,
   getCwQueryHelpers,
 } from "../../common/account/cw-helpers";
-import { getSigner } from "../account/signer";
 
 async function main(network: NetworkName) {
   try {
@@ -44,9 +43,7 @@ async function main(network: NetworkName) {
       SEED_DAPP: string;
     } = JSON.parse(await readFile(PATH.TO_TEST_WALLETS, { encoding: "utf8" }));
 
-    const { SEED_DAPP } = testWallets;
-
-    const seed = await getSeed(SEED_DAPP);
+    const seed = await getSeed(testWallets.SEED_DAPP);
     if (!seed) throw new Error("Seed is not found!");
 
     const chain = chains.find((x) => x.chain_id == CHAIN_ID);
@@ -54,16 +51,13 @@ async function main(network: NetworkName) {
 
     const gasPrice = getGasPriceFromChainRegistryItem(chain);
 
-    // const { owner, cwCreateDenom, cwMintTokens, cwBurnTokens } =
-    //   await initExecWorkers(network, seed, gasPrice);
-
-    // const { getAllBalances } = await initQueryWorkers(network);
-
     const { signer, owner } = await getSigner(PREFIX, seed);
 
     const { getAllBalances } = await getSgQueryHelpers(RPC);
+
     const { cwQueryCollections, cwQueryProposals, cwQueryStakers } =
       await getCwQueryHelpers(network, RPC);
+
     const { cwCreateDenom, cwMintTokens, cwBurnTokens } =
       await getCwExecHelpers(network, RPC, owner, signer);
 
@@ -71,7 +65,7 @@ async function main(network: NetworkName) {
     const denom = "upinj";
     const fullDenom = `factory/${MINTER_CONTRACT.DATA.ADDRESS}/${denom}`;
 
-    // await cwCreateDenom(denom, 10000000000, "ustars", gasPrice);
+    // await cwCreateDenom(denom, 10000000000, DENOM, gasPrice);
     // await cwMintTokens(fullDenom, 100, owner, gasPrice);
     // await cwBurnTokens(fullDenom, 100, gasPrice);
 

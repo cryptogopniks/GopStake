@@ -29,8 +29,7 @@ import {
 import {
   SetMetadataMsg,
   Metadata,
-  UpdateMinterConfigStruct,
-  UpdateStakingPlatformConfigStruct,
+  UpdateConfigStruct,
   ApproveCollectionMsg,
   RevokeCollectionMsg,
   QueryApprovalsMsg,
@@ -363,20 +362,6 @@ async function getCwExecHelpers(
     );
   }
 
-  async function cwUpdateStakingPlatformConfig(
-    updateStakingPlatformConfigStruct: UpdateStakingPlatformConfigStruct,
-    gasPrice: string
-  ) {
-    return await _msgWrapperWithGasPrice(
-      [
-        stakingPlatformMsgComposer.updateConfig(
-          updateStakingPlatformConfigStruct
-        ),
-      ],
-      gasPrice
-    );
-  }
-
   async function cwDistributeFunds(
     addressAndWeightList: [string, string][],
     gasPrice: string
@@ -541,20 +526,31 @@ async function getCwExecHelpers(
     );
   }
 
-  async function cwUpdateMinterConfig(
-    updateMinterConfigStruct: UpdateMinterConfigStruct,
+  async function cwUpdateConfig(
+    updateConfigStruct: UpdateConfigStruct,
     gasPrice: string
   ) {
-    const { stakingPlatform } = updateMinterConfigStruct;
+    let msgList: MsgExecuteContractEncodeObject[] = [];
 
-    return await _msgWrapperWithGasPrice(
-      [
+    const { stakingPlatform, minter, owner } = updateConfigStruct;
+
+    if (stakingPlatform) {
+      msgList.push(
         minterMsgComposer.updateConfig({
           stakingPlatform,
-        }),
-      ],
-      gasPrice
-    );
+        })
+      );
+    }
+
+    if (minter || owner) {
+      msgList.push(stakingPlatformMsgComposer.updateConfig({ minter, owner }));
+    }
+
+    if (!msgList.length) {
+      throw new Error("cwUpdateConfig arguments are not provided!");
+    }
+
+    return await _msgWrapperWithGasPrice(msgList, gasPrice);
   }
 
   return {
@@ -579,8 +575,7 @@ async function getCwExecHelpers(
     cwSetMetadata,
 
     // backend
-    cwUpdateStakingPlatformConfig,
-    cwUpdateMinterConfig,
+    cwUpdateConfig,
   };
 }
 
