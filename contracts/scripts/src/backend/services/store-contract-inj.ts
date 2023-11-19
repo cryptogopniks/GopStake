@@ -5,7 +5,6 @@ import { getSeed } from "./get-seed";
 import { NETWORK_CONFIG } from "../../common/config";
 import { getPrivateKey } from "../account/signer-inj";
 import { Network } from "@injectivelabs/networks";
-import { parseCodeIdList, parseAddressList } from "../utils";
 import {
   MsgBroadcasterWithPk,
   MsgInstantiateContract,
@@ -18,6 +17,22 @@ import {
 } from "../../common/interfaces";
 
 const encoding = "utf8";
+
+function parseCodeIdList(rawLog: string): number[] {
+  const regex = /"code_id","value":"([\d\\\"]+)"/g;
+
+  return (rawLog.match(regex) || []).map(
+    (x) => +x.split("\\")[1].replace('"', "")
+  );
+}
+
+function parseAddressList(rawLog: string): string[] {
+  const regex = /"contract_address","value":"([\w\\\"]+)"/g;
+
+  return (rawLog.match(regex) || []).map((x) =>
+    x.split("\\")[1].replace('"', "")
+  );
+}
 
 async function main(network: NetworkName) {
   try {

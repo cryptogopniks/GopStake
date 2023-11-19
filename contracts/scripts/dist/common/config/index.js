@@ -15,7 +15,7 @@ const NETWORK_CONFIG = {
       CHAIN_ID: "elgafar-1",
       RPC_LIST: ["https://rpc.elgafar-1.stargaze-apis.com:443"],
       GAS_PRICE_AMOUNT: 0.04,
-      STORE_CODE_GAS_MULTIPLIER: 7.3
+      STORE_CODE_GAS_MULTIPLIER: 19.2
     },
     CONTRACTS: [{
       WASM: MINTER_WASM,

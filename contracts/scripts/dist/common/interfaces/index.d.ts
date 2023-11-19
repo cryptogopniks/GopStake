@@ -96,5 +96,5 @@ type ContractData = {
     CODE: number;
     ADDRESS: string;
 };
-export type { NetworkConfig, NetworkName };
+export type { NetworkConfig, NetworkName, ContractsConfig };
 export { SetMetadataMsg, Metadata, UpdateConfigStruct, ApproveCollectionMsg, RevokeCollectionMsg, QueryApprovalsMsg, ApprovalsResponse, Cw20SendMsg, BaseNetworkConfig, ContractData, ApproveMsg, RevokeMsg, };
