@@ -91,8 +91,10 @@ function getApproveCollectionMsg(collectionAddress, senderAddress, operator) {
 }
 function getApproveNftMsg(collectionAddress, tokenId, senderAddress, operator) {
   const approveMsg = {
-    spender: operator,
-    token_id: `${tokenId}`
+    approve: {
+      spender: operator,
+      token_id: `${tokenId}`
+    }
   };
   return getSingleTokenExecMsg(getExecuteContractMsg(collectionAddress, senderAddress, approveMsg, []));
 }
@@ -106,8 +108,10 @@ function getRevokeCollectionMsg(collectionAddress, senderAddress, operator) {
 }
 function getRevokeNftMsg(collectionAddress, tokenId, senderAddress, operator) {
   const revokeMsg = {
-    spender: operator,
-    token_id: `${tokenId}`
+    revoke: {
+      spender: operator,
+      token_id: `${tokenId}`
+    }
   };
   return getSingleTokenExecMsg(getExecuteContractMsg(collectionAddress, senderAddress, revokeMsg, []));
 }
@@ -234,13 +238,6 @@ async function getCwExecHelpers(network, owner, msgBroadcaster) {
       injectiveAddress: sender
     });
   }
-  async function cwUpdateStakingPlatformConfig(updateStakingPlatformConfigStruct, _gasPrice) {
-    const [msg, sender] = getInjExecMsgFromComposerObj(stakingPlatformMsgComposer.updateConfig(updateStakingPlatformConfigStruct));
-    return await msgBroadcaster.broadcast({
-      msgs: [msg],
-      injectiveAddress: sender
-    });
-  }
   async function cwDistributeFunds(addressAndWeightList, _gasPrice) {
     const [msg, sender] = getInjExecMsgFromComposerObj(stakingPlatformMsgComposer.distributeFunds({
       addressAndWeightList
@@ -357,15 +354,35 @@ async function getCwExecHelpers(network, owner, msgBroadcaster) {
       injectiveAddress: sender
     });
   }
-  async function cwUpdateMinterConfig(updateMinterConfigStruct, _gasPrice) {
+  async function cwUpdateConfig(updateConfigStruct, _gasPrice) {
+    let msgList = [];
     const {
-      stakingPlatform
-    } = updateMinterConfigStruct;
-    const [msg, sender] = getInjExecMsgFromComposerObj(minterMsgComposer.updateConfig({
-      stakingPlatform
-    }));
+      stakingPlatform,
+      minter,
+      owner
+    } = updateConfigStruct;
+    if (stakingPlatform) {
+      msgList.push(minterMsgComposer.updateConfig({
+        stakingPlatform
+      }));
+    }
+    if (minter || owner) {
+      msgList.push(stakingPlatformMsgComposer.updateConfig({
+        minter,
+        owner
+      }));
+    }
+    if (!msgList.length) {
+      throw new Error("cwUpdateConfig arguments are not provided!");
+    }
+    const msgs = msgList.map(x => getInjExecMsgFromComposerObj(x)[0]);
+    const [{
+      value: {
+        sender
+      }
+    }] = msgList;
     return await msgBroadcaster.broadcast({
-      msgs: [msg],
+      msgs,
       injectiveAddress: sender
     });
   }
@@ -390,8 +407,7 @@ async function getCwExecHelpers(network, owner, msgBroadcaster) {
     cwBurnTokens,
     cwSetMetadata,
     // backend
-    cwUpdateStakingPlatformConfig,
-    cwUpdateMinterConfig
+    cwUpdateConfig
   };
 }
 async function getCwQueryHelpers(network) {
@@ -550,8 +566,4 @@ async function getCwQueryHelpers(network) {
     cwQueryMinterConfig
   };
 }
-export default {
-  getInjExecMsgFromComposerObj,
-  queryInjContract
-};
 export { getCwExecHelpers, getCwQueryHelpers };

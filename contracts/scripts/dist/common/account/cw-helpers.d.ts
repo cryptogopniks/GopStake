@@ -1,6 +1,6 @@
 import { ProposalForStringAndTokenUnverified, StakedCollectionInfoForString, TokenUnverified } from "../codegen/StakingPlatform.types";
 import { DirectSecp256k1HdWallet, OfflineSigner, OfflineDirectSigner } from "@cosmjs/proto-signing";
-import { UpdateMinterConfigStruct, UpdateStakingPlatformConfigStruct, ApprovalsResponse, NetworkName } from "../interfaces";
+import { UpdateConfigStruct, ApprovalsResponse, NetworkName } from "../interfaces";
 declare function getCwExecHelpers(network: NetworkName, rpc: string, owner: string, signer: (OfflineSigner & OfflineDirectSigner) | DirectSecp256k1HdWallet): Promise<{
     cwApproveCollection: (collectionAddress: string, senderAddress: string, operator: string, gasPrice: string) => Promise<import("@cosmjs/cosmwasm-stargate").DeliverTxResponse>;
     cwRevokeCollection: (collectionAddress: string, senderAddress: string, operator: string, gasPrice: string) => Promise<import("@cosmjs/cosmwasm-stargate").DeliverTxResponse>;
@@ -20,8 +20,7 @@ declare function getCwExecHelpers(network: NetworkName, rpc: string, owner: stri
     cwMintTokens: (denom: string, amount: number, mintToAddress: string, gasPrice: string) => Promise<import("@cosmjs/cosmwasm-stargate").DeliverTxResponse>;
     cwBurnTokens: (denom: string, amount: number, gasPrice: string) => Promise<import("@cosmjs/cosmwasm-stargate").DeliverTxResponse>;
     cwSetMetadata: (creatorAddress: string, symbol: string, description: string, uri: string | undefined, uriHash: string | undefined, gasPrice: string) => Promise<import("@cosmjs/cosmwasm-stargate").DeliverTxResponse>;
-    cwUpdateStakingPlatformConfig: (updateStakingPlatformConfigStruct: UpdateStakingPlatformConfigStruct, gasPrice: string) => Promise<import("@cosmjs/cosmwasm-stargate").DeliverTxResponse>;
-    cwUpdateMinterConfig: (updateMinterConfigStruct: UpdateMinterConfigStruct, gasPrice: string) => Promise<import("@cosmjs/cosmwasm-stargate").DeliverTxResponse>;
+    cwUpdateConfig: (updateConfigStruct: UpdateConfigStruct, gasPrice: string) => Promise<import("@cosmjs/cosmwasm-stargate").DeliverTxResponse>;
 }>;
 declare function getCwQueryHelpers(network: NetworkName, rpc: string): Promise<{
     cwQueryApprovals: (collectionAddress: string, tokenId: number) => Promise<ApprovalsResponse>;

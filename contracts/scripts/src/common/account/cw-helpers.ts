@@ -121,8 +121,10 @@ function getApproveNftMsg(
   operator: string
 ): MsgExecuteContractEncodeObject {
   const approveMsg: ApproveMsg = {
-    spender: operator,
-    token_id: `${tokenId}`,
+    approve: {
+      spender: operator,
+      token_id: `${tokenId}`,
+    },
   };
 
   return getSingleTokenExecMsg(collectionAddress, senderAddress, approveMsg);
@@ -151,8 +153,10 @@ function getRevokeNftMsg(
   operator: string
 ): MsgExecuteContractEncodeObject {
   const revokeMsg: RevokeMsg = {
-    spender: operator,
-    token_id: `${tokenId}`,
+    revoke: {
+      spender: operator,
+      token_id: `${tokenId}`,
+    },
   };
 
   return getSingleTokenExecMsg(collectionAddress, senderAddress, revokeMsg);

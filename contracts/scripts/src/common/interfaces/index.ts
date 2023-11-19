@@ -35,19 +35,22 @@ interface SetMetadataMsg {
 }
 
 interface ApproveMsg {
-  spender: string;
-  token_id: string;
-  expires?: Expiration;
+  approve: {
+    spender: string;
+    token_id: string;
+    expires?: Expiration;
+  };
 }
 
 interface RevokeMsg {
-  spender: string;
-  token_id: string;
+  revoke: {
+    spender: string;
+    token_id: string;
+  };
 }
 
 interface ApproveCollectionMsg {
-  approve_all: { operator: string };
-  expires?: Expiration;
+  approve_all: { operator: string; expires?: Expiration };
 }
 
 interface RevokeCollectionMsg {

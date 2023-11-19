@@ -1,11 +1,8 @@
 import { MsgBroadcaster } from "@injectivelabs/wallet-ts";
-import { MsgExecuteContractEncodeObject } from "@cosmjs/cosmwasm-stargate";
 import * as MinterTypes from "../codegen/Minter.types";
 import * as StakingPlatformTypes from "../codegen/StakingPlatform.types";
-import { MsgBroadcasterWithPk, ChainGrpcWasmApi, MsgExecuteContract } from "@injectivelabs/sdk-ts";
-import { UpdateMinterConfigStruct, UpdateStakingPlatformConfigStruct, ApprovalsResponse, NetworkName } from "../interfaces";
-declare function getInjExecMsgFromComposerObj(obj: MsgExecuteContractEncodeObject): [MsgExecuteContract, string];
-declare function queryInjContract(chainGrpcWasmApi: ChainGrpcWasmApi, contractAddress: string, queryMsg: any): Promise<string>;
+import { MsgBroadcasterWithPk } from "@injectivelabs/sdk-ts";
+import { UpdateConfigStruct, ApprovalsResponse, NetworkName } from "../interfaces";
 declare function getCwExecHelpers(network: NetworkName, owner: string, msgBroadcaster: MsgBroadcasterWithPk | MsgBroadcaster): Promise<{
     cwApproveCollection: (collectionAddress: string, senderAddress: string, operator: string, _gasPrice?: string) => Promise<import("@injectivelabs/sdk-ts").TxResponse>;
     cwRevokeCollection: (collectionAddress: string, senderAddress: string, operator: string, _gasPrice?: string) => Promise<import("@injectivelabs/sdk-ts").TxResponse>;
@@ -25,8 +22,7 @@ declare function getCwExecHelpers(network: NetworkName, owner: string, msgBroadc
     cwMintTokens: (denom: string, amount: number, mintToAddress: string, _gasPrice?: string) => Promise<import("@injectivelabs/sdk-ts").TxResponse>;
     cwBurnTokens: (denom: string, amount: number, _gasPrice?: string) => Promise<import("@injectivelabs/sdk-ts").TxResponse>;
     cwSetMetadata: (creatorAddress: string, symbol: string, description: string, uri?: string, uriHash?: string, _gasPrice?: string) => Promise<import("@injectivelabs/sdk-ts").TxResponse>;
-    cwUpdateStakingPlatformConfig: (updateStakingPlatformConfigStruct: UpdateStakingPlatformConfigStruct, _gasPrice?: string) => Promise<import("@injectivelabs/sdk-ts").TxResponse>;
-    cwUpdateMinterConfig: (updateMinterConfigStruct: UpdateMinterConfigStruct, _gasPrice?: string) => Promise<import("@injectivelabs/sdk-ts").TxResponse>;
+    cwUpdateConfig: (updateConfigStruct: UpdateConfigStruct, _gasPrice?: string) => Promise<import("@injectivelabs/sdk-ts").TxResponse>;
 }>;
 declare function getCwQueryHelpers(network: NetworkName): Promise<{
     cwQueryApprovals: (collectionAddress: string, tokenId: number) => Promise<ApprovalsResponse>;
@@ -41,9 +37,4 @@ declare function getCwQueryHelpers(network: NetworkName): Promise<{
     cwQueryDenomsByCreator: (creator: string) => Promise<MinterTypes.QueryDenomsFromCreatorResponse>;
     cwQueryMinterConfig: () => Promise<MinterTypes.Config>;
 }>;
-declare const _default: {
-    getInjExecMsgFromComposerObj: typeof getInjExecMsgFromComposerObj;
-    queryInjContract: typeof queryInjContract;
-};
-export default _default;
 export { getCwExecHelpers, getCwQueryHelpers };

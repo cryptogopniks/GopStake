@@ -1,10 +1,8 @@
 import { Timestamp } from "cosmjs-types/google/protobuf/timestamp";
-interface UpdateStakingPlatformConfigStruct {
+interface UpdateConfigStruct {
+    stakingPlatform?: string;
     owner?: string;
     minter?: string;
-}
-interface UpdateMinterConfigStruct {
-    stakingPlatform?: string;
 }
 interface Cw20SendMsg {
     send: {
@@ -33,19 +31,23 @@ interface SetMetadataMsg {
     };
 }
 interface ApproveMsg {
-    spender: string;
-    token_id: string;
-    expires?: Expiration;
+    approve: {
+        spender: string;
+        token_id: string;
+        expires?: Expiration;
+    };
 }
 interface RevokeMsg {
-    spender: string;
-    token_id: string;
+    revoke: {
+        spender: string;
+        token_id: string;
+    };
 }
 interface ApproveCollectionMsg {
     approve_all: {
         operator: string;
+        expires?: Expiration;
     };
-    expires?: Expiration;
 }
 interface RevokeCollectionMsg {
     revoke_all: {
@@ -95,4 +97,4 @@ type ContractData = {
     ADDRESS: string;
 };
 export type { NetworkConfig, NetworkName };
-export { SetMetadataMsg, Metadata, UpdateMinterConfigStruct, UpdateStakingPlatformConfigStruct, ApproveCollectionMsg, RevokeCollectionMsg, QueryApprovalsMsg, ApprovalsResponse, Cw20SendMsg, BaseNetworkConfig, ContractData, ApproveMsg, RevokeMsg, };
+export { SetMetadataMsg, Metadata, UpdateConfigStruct, ApproveCollectionMsg, RevokeCollectionMsg, QueryApprovalsMsg, ApprovalsResponse, Cw20SendMsg, BaseNetworkConfig, ContractData, ApproveMsg, RevokeMsg, };

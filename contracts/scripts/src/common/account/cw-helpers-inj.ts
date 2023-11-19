@@ -155,8 +155,10 @@ function getApproveNftMsg(
   operator: string
 ): [MsgExecuteContract, string] {
   const approveMsg: ApproveMsg = {
-    spender: operator,
-    token_id: `${tokenId}`,
+    approve: {
+      spender: operator,
+      token_id: `${tokenId}`,
+    },
   };
 
   return getSingleTokenExecMsg(
@@ -190,8 +192,10 @@ function getRevokeNftMsg(
   operator: string
 ): [MsgExecuteContract, string] {
   const revokeMsg: RevokeMsg = {
-    spender: operator,
-    token_id: `${tokenId}`,
+    revoke: {
+      spender: operator,
+      token_id: `${tokenId}`,
+    },
   };
 
   return getSingleTokenExecMsg(
@@ -941,10 +945,5 @@ async function getCwQueryHelpers(network: NetworkName) {
     cwQueryMinterConfig,
   };
 }
-
-export default {
-  getInjExecMsgFromComposerObj,
-  queryInjContract,
-};
 
 export { getCwExecHelpers, getCwQueryHelpers };

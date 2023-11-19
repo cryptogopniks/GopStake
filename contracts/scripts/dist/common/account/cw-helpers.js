@@ -51,8 +51,10 @@ function getApproveCollectionMsg(collectionAddress, senderAddress, operator) {
 }
 function getApproveNftMsg(collectionAddress, tokenId, senderAddress, operator) {
   const approveMsg = {
-    spender: operator,
-    token_id: `${tokenId}`
+    approve: {
+      spender: operator,
+      token_id: `${tokenId}`
+    }
   };
   return getSingleTokenExecMsg(collectionAddress, senderAddress, approveMsg);
 }
@@ -66,8 +68,10 @@ function getRevokeCollectionMsg(collectionAddress, senderAddress, operator) {
 }
 function getRevokeNftMsg(collectionAddress, tokenId, senderAddress, operator) {
   const revokeMsg = {
-    spender: operator,
-    token_id: `${tokenId}`
+    revoke: {
+      spender: operator,
+      token_id: `${tokenId}`
+    }
   };
   return getSingleTokenExecMsg(collectionAddress, senderAddress, revokeMsg);
 }
@@ -176,9 +180,6 @@ async function getCwExecHelpers(network, rpc, owner, signer) {
   async function cwClaimStakingRewards(gasPrice) {
     return await _msgWrapperWithGasPrice([stakingPlatformMsgComposer.claimStakingRewards()], gasPrice);
   }
-  async function cwUpdateStakingPlatformConfig(updateStakingPlatformConfigStruct, gasPrice) {
-    return await _msgWrapperWithGasPrice([stakingPlatformMsgComposer.updateConfig(updateStakingPlatformConfigStruct)], gasPrice);
-  }
   async function cwDistributeFunds(addressAndWeightList, gasPrice) {
     return await _msgWrapperWithGasPrice([stakingPlatformMsgComposer.distributeFunds({
       addressAndWeightList
@@ -251,13 +252,28 @@ async function getCwExecHelpers(network, rpc, owner, signer) {
     if (!MINTER_CONTRACT) throw new Error("MINTER_CONTRACT in not found!");
     return await _msgWrapperWithGasPrice([getSetMetadataMsg(MINTER_CONTRACT.DATA.ADDRESS, owner, setMetadataMsg)], gasPrice);
   }
-  async function cwUpdateMinterConfig(updateMinterConfigStruct, gasPrice) {
+  async function cwUpdateConfig(updateConfigStruct, gasPrice) {
+    let msgList = [];
     const {
-      stakingPlatform
-    } = updateMinterConfigStruct;
-    return await _msgWrapperWithGasPrice([minterMsgComposer.updateConfig({
-      stakingPlatform
-    })], gasPrice);
+      stakingPlatform,
+      minter,
+      owner
+    } = updateConfigStruct;
+    if (stakingPlatform) {
+      msgList.push(minterMsgComposer.updateConfig({
+        stakingPlatform
+      }));
+    }
+    if (minter || owner) {
+      msgList.push(stakingPlatformMsgComposer.updateConfig({
+        minter,
+        owner
+      }));
+    }
+    if (!msgList.length) {
+      throw new Error("cwUpdateConfig arguments are not provided!");
+    }
+    return await _msgWrapperWithGasPrice(msgList, gasPrice);
   }
   return {
     // frontend
@@ -280,8 +296,7 @@ async function getCwExecHelpers(network, rpc, owner, signer) {
     cwBurnTokens,
     cwSetMetadata,
     // backend
-    cwUpdateStakingPlatformConfig,
-    cwUpdateMinterConfig
+    cwUpdateConfig
   };
 }
 async function getCwQueryHelpers(network, rpc) {
