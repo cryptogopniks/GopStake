@@ -2,15 +2,20 @@ import { l } from "../../common/utils";
 import { PATH, rootPath } from "../envs";
 import { readFile, writeFile } from "fs/promises";
 import { getSeed } from "./get-seed";
-import { NetworkName, ContractData } from "../../common/interfaces";
-import { NETWORK_CONFIG, STAKING_PLATFORM_WASM } from "../../common/config";
+import { NETWORK_CONFIG } from "../../common/config";
 import { getPrivateKey } from "../account/signer-inj";
 import { Network } from "@injectivelabs/networks";
+import { parseCodeIdList, parseAddressList } from "../utils";
 import {
   MsgBroadcasterWithPk,
   MsgInstantiateContract,
   MsgStoreCode,
 } from "@injectivelabs/sdk-ts";
+import {
+  NetworkName,
+  ContractData,
+  ContractsConfig,
+} from "../../common/interfaces";
 
 const encoding = "utf8";
 
@@ -37,29 +42,42 @@ async function main(network: NetworkName) {
       simulateTx: true,
     });
 
-    for (const { WASM, LABEL, INIT_MSG } of CONTRACTS) {
-      if (WASM !== STAKING_PLATFORM_WASM) continue;
+    let contractConfigAndStoreCodeMsgList: [ContractsConfig, MsgStoreCode][] =
+      [];
 
-      const networkName = network.toLowerCase();
+    for (const CONTRACT of CONTRACTS) {
+      const wasmBinary = await readFile(
+        rootPath(`../artifacts/${CONTRACT.WASM}`)
+      );
+
+      contractConfigAndStoreCodeMsgList.push([
+        CONTRACT,
+        MsgStoreCode.fromJSON({
+          sender: injectiveAddress,
+          wasmBytes: wasmBinary,
+        }),
+      ]);
+    }
+
+    const { rawLog } = await msgBroadcasterWithPk.broadcast({
+      msgs: contractConfigAndStoreCodeMsgList.map((x) => x[1]),
+    });
+
+    const codeIds = parseCodeIdList(rawLog);
+
+    let contractConfigAndInitMsgList: [
+      ContractsConfig,
+      MsgInstantiateContract
+    ][] = [];
+
+    for (const i in contractConfigAndStoreCodeMsgList) {
+      const [CONTRACT] = contractConfigAndStoreCodeMsgList[i];
+      const { WASM, LABEL, INIT_MSG } = CONTRACT;
+      const codeId = codeIds[i];
+
       const contractName = WASM.replace(".wasm", "")
         .replace("_inj", "")
         .toLowerCase();
-
-      const wasmBinary = await readFile(rootPath(`../artifacts/${WASM}`));
-
-      // TODO: use 2 msgs 1 tx for each type
-      const msgStore = MsgStoreCode.fromJSON({
-        sender: injectiveAddress,
-        wasmBytes: wasmBinary,
-      });
-
-      const { rawLog } = await msgBroadcasterWithPk.broadcast({
-        msgs: [msgStore],
-      });
-
-      const codeIdMatch = rawLog.split("code_id")[1].match(/[0-9]+/);
-      if (!codeIdMatch) throw new Error("codeIdMatch is not found!");
-      const codeId = +codeIdMatch[0];
 
       l(`\n"${contractName}" contract code is ${codeId}\n`);
 
@@ -71,17 +89,24 @@ async function main(network: NetworkName) {
         admin: injectiveAddress,
       });
 
-      const res = await msgBroadcasterWithPk.broadcast({
-        msgs: [msgInit],
-      });
+      contractConfigAndInitMsgList.push([CONTRACT, msgInit]);
+    }
 
-      const contractAddressMatch = res.rawLog
-        .split("contract_address")[1]
-        .match(/inj[\w]+/);
-      if (!contractAddressMatch) {
-        throw new Error("contractAddressMatch is not found!");
-      }
-      const contractAddress = contractAddressMatch[0];
+    const res = await msgBroadcasterWithPk.broadcast({
+      msgs: contractConfigAndInitMsgList.map((x) => x[1]),
+    });
+
+    const addressList = parseAddressList(res.rawLog);
+
+    for (const i in contractConfigAndInitMsgList) {
+      const [{ WASM }] = contractConfigAndInitMsgList[i];
+      const codeId = codeIds[i];
+      const contractAddress = addressList[i];
+
+      const networkName = network.toLowerCase();
+      const contractName = WASM.replace(".wasm", "")
+        .replace("_inj", "")
+        .toLowerCase();
 
       l(`"${contractName}" contract address is ${contractAddress}\n`);
 

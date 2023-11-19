@@ -105,7 +105,7 @@ type ContractData = {
   ADDRESS: string;
 };
 
-export type { NetworkConfig, NetworkName };
+export type { NetworkConfig, NetworkName, ContractsConfig };
 
 export {
   SetMetadataMsg,
