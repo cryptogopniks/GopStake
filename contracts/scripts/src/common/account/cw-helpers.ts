@@ -38,6 +38,10 @@ import {
   NetworkName,
   ApproveMsg,
   RevokeMsg,
+  QueryTokens,
+  TokensResponse,
+  QueryOwnerOf,
+  OwnerOfResponse,
 } from "../interfaces";
 
 function addSingleTokenToComposerObj(
@@ -613,11 +617,37 @@ async function getCwQueryHelpers(network: NetworkName, rpc: string) {
 
   async function cwQueryApprovals(collectionAddress: string, tokenId: number) {
     const queryApprovalsMsg: QueryApprovalsMsg = {
-      token_id: `${tokenId}`,
+      approvals: {
+        token_id: `${tokenId}`,
+      },
     };
     const res: ApprovalsResponse = await cosmwasmQueryClient.queryContractSmart(
       collectionAddress,
       queryApprovalsMsg
+    );
+    l("\n", res, "\n");
+    return res;
+  }
+
+  async function cwQueryBalanceInNft(owner: string, collectionAddress: string) {
+    const queryTokensMsg: QueryTokens = {
+      tokens: { owner },
+    };
+    const res: TokensResponse = await cosmwasmQueryClient.queryContractSmart(
+      collectionAddress,
+      queryTokensMsg
+    );
+    l("\n", res, "\n");
+    return res;
+  }
+
+  async function cwQueryNftOwner(collectionAddress: string, tokenId: number) {
+    const queryOwnerOfMsg: QueryOwnerOf = {
+      owner_of: { token_id: `${tokenId}` },
+    };
+    const res: OwnerOfResponse = await cosmwasmQueryClient.queryContractSmart(
+      collectionAddress,
+      queryOwnerOfMsg
     );
     l("\n", res, "\n");
     return res;
@@ -697,6 +727,8 @@ async function getCwQueryHelpers(network: NetworkName, rpc: string) {
 
   return {
     cwQueryApprovals,
+    cwQueryBalanceInNft,
+    cwQueryNftOwner,
     cwQueryStakingPlatformConfig,
     cwQueryFunds,
     cwQueryStakers,

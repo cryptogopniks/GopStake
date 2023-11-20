@@ -55,7 +55,10 @@ interface RevokeCollectionMsg {
     };
 }
 interface QueryApprovalsMsg {
-    token_id: string;
+    approvals: {
+        token_id: string;
+        include_expired?: boolean;
+    };
 }
 interface Approval {
     spender: string;
@@ -69,6 +72,26 @@ type Expiration = {
     never: {};
 };
 interface ApprovalsResponse {
+    approvals: Approval[];
+}
+interface QueryTokens {
+    tokens: {
+        owner: string;
+        start_after?: string;
+        limit?: number;
+    };
+}
+interface TokensResponse {
+    tokens: string[];
+}
+interface QueryOwnerOf {
+    owner_of: {
+        token_id: string;
+        include_expired?: boolean;
+    };
+}
+interface OwnerOfResponse {
+    owner: string;
     approvals: Approval[];
 }
 type NetworkName = "STARGAZE" | "INJECTIVE";
@@ -97,4 +120,4 @@ type ContractData = {
     ADDRESS: string;
 };
 export type { NetworkConfig, NetworkName, ContractsConfig };
-export { SetMetadataMsg, Metadata, UpdateConfigStruct, ApproveCollectionMsg, RevokeCollectionMsg, QueryApprovalsMsg, ApprovalsResponse, Cw20SendMsg, BaseNetworkConfig, ContractData, ApproveMsg, RevokeMsg, };
+export { SetMetadataMsg, Metadata, UpdateConfigStruct, ApproveCollectionMsg, RevokeCollectionMsg, QueryApprovalsMsg, ApprovalsResponse, Cw20SendMsg, BaseNetworkConfig, ContractData, ApproveMsg, RevokeMsg, QueryTokens, TokensResponse, QueryOwnerOf, OwnerOfResponse, };

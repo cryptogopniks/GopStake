@@ -58,7 +58,10 @@ interface RevokeCollectionMsg {
 }
 
 interface QueryApprovalsMsg {
-  token_id: string;
+  approvals: {
+    token_id: string;
+    include_expired?: boolean;
+  };
 }
 
 interface Approval {
@@ -72,6 +75,30 @@ type Expiration =
   | { never: {} };
 
 interface ApprovalsResponse {
+  approvals: Approval[];
+}
+
+interface QueryTokens {
+  tokens: {
+    owner: string;
+    start_after?: string;
+    limit?: number;
+  };
+}
+
+interface TokensResponse {
+  tokens: string[];
+}
+
+interface QueryOwnerOf {
+  owner_of: {
+    token_id: string;
+    include_expired?: boolean;
+  };
+}
+
+interface OwnerOfResponse {
+  owner: string;
   approvals: Approval[];
 }
 
@@ -120,4 +147,8 @@ export {
   ContractData,
   ApproveMsg,
   RevokeMsg,
+  QueryTokens,
+  TokensResponse,
+  QueryOwnerOf,
+  OwnerOfResponse,
 };

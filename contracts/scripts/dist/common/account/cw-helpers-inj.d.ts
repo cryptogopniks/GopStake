@@ -2,7 +2,7 @@ import { MsgBroadcaster } from "@injectivelabs/wallet-ts";
 import * as MinterTypes from "../codegen/Minter.types";
 import * as StakingPlatformTypes from "../codegen/StakingPlatform.types";
 import { MsgBroadcasterWithPk } from "@injectivelabs/sdk-ts";
-import { UpdateConfigStruct, ApprovalsResponse, NetworkName } from "../interfaces";
+import { UpdateConfigStruct, ApprovalsResponse, NetworkName, TokensResponse, OwnerOfResponse } from "../interfaces";
 declare function getCwExecHelpers(network: NetworkName, owner: string, msgBroadcaster: MsgBroadcasterWithPk | MsgBroadcaster): Promise<{
     cwApproveCollection: (collectionAddress: string, senderAddress: string, operator: string, _gasPrice?: string) => Promise<import("@injectivelabs/sdk-ts").TxResponse>;
     cwRevokeCollection: (collectionAddress: string, senderAddress: string, operator: string, _gasPrice?: string) => Promise<import("@injectivelabs/sdk-ts").TxResponse>;
@@ -26,6 +26,8 @@ declare function getCwExecHelpers(network: NetworkName, owner: string, msgBroadc
 }>;
 declare function getCwQueryHelpers(network: NetworkName): Promise<{
     cwQueryApprovals: (collectionAddress: string, tokenId: number) => Promise<ApprovalsResponse>;
+    cwQueryBalanceInNft: (owner: string, collectionAddress: string) => Promise<TokensResponse>;
+    cwQueryNftOwner: (collectionAddress: string, tokenId: number) => Promise<OwnerOfResponse>;
     cwQueryStakingPlatformConfig: () => Promise<StakingPlatformTypes.Config>;
     cwQueryFunds: () => Promise<StakingPlatformTypes.ArrayOfFundsForToken>;
     cwQueryStakers: (addresses?: string[]) => Promise<StakingPlatformTypes.ArrayOfQueryStakersResponseItem>;

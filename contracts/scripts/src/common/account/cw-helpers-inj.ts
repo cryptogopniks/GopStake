@@ -31,6 +31,10 @@ import {
   NetworkName,
   ApproveMsg,
   RevokeMsg,
+  QueryTokens,
+  TokensResponse,
+  QueryOwnerOf,
+  OwnerOfResponse,
 } from "../interfaces";
 
 const networkType = Network.Testnet;
@@ -706,10 +710,38 @@ async function getCwQueryHelpers(network: NetworkName) {
 
   async function cwQueryApprovals(collectionAddress: string, tokenId: number) {
     const msg: QueryApprovalsMsg = {
-      token_id: `${tokenId}`,
+      approvals: {
+        token_id: `${tokenId}`,
+      },
     };
 
     const res: ApprovalsResponse = JSON.parse(
+      await queryInjContract(chainGrpcWasmApi, collectionAddress, msg)
+    );
+
+    l("\n", res, "\n");
+    return res;
+  }
+
+  async function cwQueryBalanceInNft(owner: string, collectionAddress: string) {
+    const msg: QueryTokens = {
+      tokens: { owner },
+    };
+
+    const res: TokensResponse = JSON.parse(
+      await queryInjContract(chainGrpcWasmApi, collectionAddress, msg)
+    );
+
+    l("\n", res, "\n");
+    return res;
+  }
+
+  async function cwQueryNftOwner(collectionAddress: string, tokenId: number) {
+    const msg: QueryOwnerOf = {
+      owner_of: { token_id: `${tokenId}` },
+    };
+
+    const res: OwnerOfResponse = JSON.parse(
       await queryInjContract(chainGrpcWasmApi, collectionAddress, msg)
     );
 
@@ -933,6 +965,8 @@ async function getCwQueryHelpers(network: NetworkName) {
 
   return {
     cwQueryApprovals,
+    cwQueryBalanceInNft,
+    cwQueryNftOwner,
     cwQueryStakingPlatformConfig,
     cwQueryFunds,
     cwQueryStakers,

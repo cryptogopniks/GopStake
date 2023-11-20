@@ -1,6 +1,6 @@
 import { ProposalForStringAndTokenUnverified, StakedCollectionInfoForString, TokenUnverified } from "../codegen/StakingPlatform.types";
 import { DirectSecp256k1HdWallet, OfflineSigner, OfflineDirectSigner } from "@cosmjs/proto-signing";
-import { UpdateConfigStruct, ApprovalsResponse, NetworkName } from "../interfaces";
+import { UpdateConfigStruct, ApprovalsResponse, NetworkName, TokensResponse, OwnerOfResponse } from "../interfaces";
 declare function getCwExecHelpers(network: NetworkName, rpc: string, owner: string, signer: (OfflineSigner & OfflineDirectSigner) | DirectSecp256k1HdWallet): Promise<{
     cwApproveCollection: (collectionAddress: string, senderAddress: string, operator: string, gasPrice: string) => Promise<import("@cosmjs/cosmwasm-stargate").DeliverTxResponse>;
     cwRevokeCollection: (collectionAddress: string, senderAddress: string, operator: string, gasPrice: string) => Promise<import("@cosmjs/cosmwasm-stargate").DeliverTxResponse>;
@@ -24,6 +24,8 @@ declare function getCwExecHelpers(network: NetworkName, rpc: string, owner: stri
 }>;
 declare function getCwQueryHelpers(network: NetworkName, rpc: string): Promise<{
     cwQueryApprovals: (collectionAddress: string, tokenId: number) => Promise<ApprovalsResponse>;
+    cwQueryBalanceInNft: (owner: string, collectionAddress: string) => Promise<TokensResponse>;
+    cwQueryNftOwner: (collectionAddress: string, tokenId: number) => Promise<OwnerOfResponse>;
     cwQueryStakingPlatformConfig: () => Promise<import("../codegen/StakingPlatform.types").Config>;
     cwQueryFunds: () => Promise<import("../codegen/StakingPlatform.types").ArrayOfFundsForToken>;
     cwQueryStakers: (addresses?: string[]) => Promise<import("../codegen/StakingPlatform.types").ArrayOfQueryStakersResponseItem>;

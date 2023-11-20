@@ -55,8 +55,12 @@ async function main(network: NetworkName) {
 
     const { getAllBalances } = await getSgQueryHelpers(RPC);
 
-    const { cwQueryCollections, cwQueryProposals, cwQueryStakers } =
-      await getCwQueryHelpers(network, RPC);
+    const {
+      cwQueryCollections,
+      cwQueryProposals,
+      cwQueryStakers,
+      cwQueryApprovals,
+    } = await getCwQueryHelpers(network, RPC);
 
     const { cwCreateDenom, cwMintTokens, cwBurnTokens } =
       await getCwExecHelpers(network, RPC, owner, signer);
@@ -70,9 +74,15 @@ async function main(network: NetworkName) {
     // await cwBurnTokens(fullDenom, 100, gasPrice);
 
     // await getAllBalances(alice);
-    await cwQueryProposals();
-    // await cwQueryCollections();
+    let p = await cwQueryProposals(1);
+    l(p[0]);
+    await cwQueryCollections();
     await cwQueryStakers();
+
+    await cwQueryApprovals(
+      "stars1qrghctped3a7jcklqxg92dn8lvw88adrduwx3h50pmmcgcwl82xsu84lnw",
+      155
+    );
   } catch (error) {
     l(error);
   }

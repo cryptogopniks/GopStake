@@ -319,9 +319,31 @@ async function getCwQueryHelpers(network, rpc) {
 
   async function cwQueryApprovals(collectionAddress, tokenId) {
     const queryApprovalsMsg = {
-      token_id: `${tokenId}`
+      approvals: {
+        token_id: `${tokenId}`
+      }
     };
     const res = await cosmwasmQueryClient.queryContractSmart(collectionAddress, queryApprovalsMsg);
+    l("\n", res, "\n");
+    return res;
+  }
+  async function cwQueryBalanceInNft(owner, collectionAddress) {
+    const queryTokensMsg = {
+      tokens: {
+        owner
+      }
+    };
+    const res = await cosmwasmQueryClient.queryContractSmart(collectionAddress, queryTokensMsg);
+    l("\n", res, "\n");
+    return res;
+  }
+  async function cwQueryNftOwner(collectionAddress, tokenId) {
+    const queryOwnerOfMsg = {
+      owner_of: {
+        token_id: `${tokenId}`
+      }
+    };
+    const res = await cosmwasmQueryClient.queryContractSmart(collectionAddress, queryOwnerOfMsg);
     l("\n", res, "\n");
     return res;
   }
@@ -394,6 +416,8 @@ async function getCwQueryHelpers(network, rpc) {
   }
   return {
     cwQueryApprovals,
+    cwQueryBalanceInNft,
+    cwQueryNftOwner,
     cwQueryStakingPlatformConfig,
     cwQueryFunds,
     cwQueryStakers,
