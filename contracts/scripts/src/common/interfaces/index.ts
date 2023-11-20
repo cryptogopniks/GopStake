@@ -50,7 +50,10 @@ interface RevokeMsg {
 }
 
 interface ApproveCollectionMsg {
-  approve_all: { operator: string; expires?: Expiration };
+  approve_all: {
+    operator: string;
+    expires?: Expiration;
+  };
 }
 
 interface RevokeCollectionMsg {

@@ -289,8 +289,6 @@ async function getCwExecHelpers(
     MINTER_CONTRACT.DATA.ADDRESS
   );
 
-  // staking-platform
-
   async function cwApproveCollection(
     collectionAddress: string,
     senderAddress: string,
@@ -299,6 +297,26 @@ async function getCwExecHelpers(
   ) {
     const [msg, sender] = getApproveCollectionMsg(
       collectionAddress,
+      senderAddress,
+      operator
+    );
+
+    return await msgBroadcaster.broadcast({
+      msgs: [msg],
+      injectiveAddress: sender,
+    });
+  }
+
+  async function cwApprove(
+    collectionAddress: string,
+    tokenId: number,
+    senderAddress: string,
+    operator: string,
+    _gasPrice?: string
+  ) {
+    const [msg, sender] = getApproveNftMsg(
+      collectionAddress,
+      tokenId,
       senderAddress,
       operator
     );
@@ -327,12 +345,18 @@ async function getCwExecHelpers(
     });
   }
 
-  async function cwStake(
-    collectionsToStake: StakingPlatformTypes.StakedCollectionInfoForString[],
+  async function cwRevoke(
+    collectionAddress: string,
+    tokenId: number,
+    senderAddress: string,
+    operator: string,
     _gasPrice?: string
   ) {
-    const [msg, sender] = getInjExecMsgFromComposerObj(
-      stakingPlatformMsgComposer.stake({ collectionsToStake })
+    const [msg, sender] = getRevokeNftMsg(
+      collectionAddress,
+      tokenId,
+      senderAddress,
+      operator
     );
 
     return await msgBroadcaster.broadcast({
@@ -340,6 +364,8 @@ async function getCwExecHelpers(
       injectiveAddress: sender,
     });
   }
+
+  // staking-platform
 
   async function cwApproveAndStake(
     senderAddress: string,
@@ -385,40 +411,6 @@ async function getCwExecHelpers(
 
     return await msgBroadcaster.broadcast({
       msgs: [msg],
-      injectiveAddress: sender,
-    });
-  }
-
-  async function cwUnstakeAndRevoke(
-    senderAddress: string,
-    operator: string,
-    collectionsToUnstake: StakingPlatformTypes.StakedCollectionInfoForString[],
-    _gasPrice?: string
-  ) {
-    let msgList: MsgExecuteContract[] = [];
-
-    const [msg, sender] = getInjExecMsgFromComposerObj(
-      stakingPlatformMsgComposer.unstake({ collectionsToUnstake })
-    );
-
-    for (const {
-      collection_address,
-      staked_token_info_list,
-    } of collectionsToUnstake) {
-      for (const { token_id } of staked_token_info_list) {
-        msgList.push(
-          getRevokeNftMsg(
-            collection_address,
-            +token_id,
-            senderAddress,
-            operator
-          )[0]
-        );
-      }
-    }
-
-    return await msgBroadcaster.broadcast({
-      msgs: [msg, ...msgList],
       injectiveAddress: sender,
     });
   }
@@ -673,11 +665,11 @@ async function getCwExecHelpers(
   return {
     // frontend
     cwApproveCollection,
+    cwApprove,
     cwRevokeCollection,
-    cwStake,
+    cwRevoke,
     cwApproveAndStake,
     cwUnstake,
-    cwUnstakeAndRevoke,
     cwClaimStakingRewards,
     cwDistributeFunds,
     cwRemoveCollection,

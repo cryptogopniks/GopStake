@@ -60,10 +60,21 @@ async function main(network: NetworkName) {
       cwQueryProposals,
       cwQueryStakers,
       cwQueryApprovals,
+      cwQueryNftOwner,
+      cwQueryBalanceInNft,
     } = await getCwQueryHelpers(network, RPC);
 
-    const { cwCreateDenom, cwMintTokens, cwBurnTokens } =
-      await getCwExecHelpers(network, RPC, owner, signer);
+    const {
+      cwCreateDenom,
+      cwMintTokens,
+      cwBurnTokens,
+      cwApproveCollection,
+      cwApprove,
+      cwRevokeCollection,
+      cwRevoke,
+      cwApproveAndStake,
+      cwUnstake,
+    } = await getCwExecHelpers(network, RPC, owner, signer);
 
     const alice = "stars1gjqnuhv52pd2a7ets2vhw9w9qa9knyhyzrpx49";
     const denom = "upinj";
@@ -74,15 +85,91 @@ async function main(network: NetworkName) {
     // await cwBurnTokens(fullDenom, 100, gasPrice);
 
     // await getAllBalances(alice);
-    let p = await cwQueryProposals(1);
-    l(p[0]);
-    await cwQueryCollections();
-    await cwQueryStakers();
 
-    await cwQueryApprovals(
-      "stars1qrghctped3a7jcklqxg92dn8lvw88adrduwx3h50pmmcgcwl82xsu84lnw",
-      155
+    // let p = await cwQueryProposals(1);
+    // l(p[0]);
+    // await cwQueryCollections();
+    // await cwQueryStakers();
+
+    const collection =
+      "stars1qrghctped3a7jcklqxg92dn8lvw88adrduwx3h50pmmcgcwl82xsu84lnw";
+
+    const token1 = 526;
+    const token2 = 679;
+    const token3 = 851;
+
+    // await cwQueryBalanceInNft(owner, collection);
+    // await cwQueryNftOwner(collection, token1);
+
+    // // doesn't work
+    // await cwApproveCollection(
+    //   collection,
+    //   owner,
+    //   STAKING_PLATFORM_CONTRACT.DATA.ADDRESS,
+    //   gasPrice
+    // );
+
+    // // ok
+    // await cwApprove(
+    //   collection,
+    //   token1,
+    //   owner,
+    //   STAKING_PLATFORM_CONTRACT.DATA.ADDRESS,
+    //   gasPrice
+    // );
+
+    // await cwQueryApprovals(collection, token1);
+
+    // await cwRevokeCollection(
+    //   collection,
+    //   owner,
+    //   STAKING_PLATFORM_CONTRACT.DATA.ADDRESS,
+    //   gasPrice
+    // );
+
+    // await cwRevoke(
+    //   collection,
+    //   token1,
+    //   owner,
+    //   STAKING_PLATFORM_CONTRACT.DATA.ADDRESS,
+    //   gasPrice
+    // );
+
+    // await cwQueryApprovals(collection, token1);
+
+    await cwApproveAndStake(
+      owner,
+      STAKING_PLATFORM_CONTRACT.DATA.ADDRESS,
+      [
+        {
+          collection_address: collection,
+          staked_token_info_list: [
+            { token_id: `${token1}` },
+            { token_id: `${token2}` },
+          ],
+        },
+      ],
+      gasPrice
     );
+
+    await cwQueryApprovals(collection, token1);
+    await cwQueryNftOwner(collection, token1);
+
+    await cwUnstake(
+      [
+        {
+          collection_address: collection,
+          staked_token_info_list: [
+            { token_id: `${token1}` },
+            { token_id: `${token2}` },
+          ],
+        },
+      ],
+      gasPrice
+    );
+
+    await cwQueryApprovals(collection, token1);
+    await cwQueryNftOwner(collection, token1);
   } catch (error) {
     l(error);
   }

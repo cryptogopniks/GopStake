@@ -259,8 +259,6 @@ async function getCwExecHelpers(
     return tx;
   }
 
-  // staking-platform
-
   async function cwApproveCollection(
     collectionAddress: string,
     senderAddress: string,
@@ -269,6 +267,19 @@ async function getCwExecHelpers(
   ) {
     return await _msgWrapperWithGasPrice(
       [getApproveCollectionMsg(collectionAddress, senderAddress, operator)],
+      gasPrice
+    );
+  }
+
+  async function cwApprove(
+    collectionAddress: string,
+    tokenId: number,
+    senderAddress: string,
+    operator: string,
+    gasPrice: string
+  ) {
+    return await _msgWrapperWithGasPrice(
+      [getApproveNftMsg(collectionAddress, tokenId, senderAddress, operator)],
       gasPrice
     );
   }
@@ -285,15 +296,20 @@ async function getCwExecHelpers(
     );
   }
 
-  async function cwStake(
-    collectionsToStake: StakedCollectionInfoForString[],
+  async function cwRevoke(
+    collectionAddress: string,
+    tokenId: number,
+    senderAddress: string,
+    operator: string,
     gasPrice: string
   ) {
     return await _msgWrapperWithGasPrice(
-      [stakingPlatformMsgComposer.stake({ collectionsToStake })],
+      [getRevokeNftMsg(collectionAddress, tokenId, senderAddress, operator)],
       gasPrice
     );
   }
+
+  // staking-platform
 
   async function cwApproveAndStake(
     senderAddress: string,
@@ -332,35 +348,6 @@ async function getCwExecHelpers(
       [stakingPlatformMsgComposer.unstake({ collectionsToUnstake })],
       gasPrice
     );
-  }
-
-  async function cwUnstakeAndRevoke(
-    senderAddress: string,
-    operator: string,
-    collectionsToUnstake: StakedCollectionInfoForString[],
-    gasPrice: string
-  ) {
-    let msgList: MsgExecuteContractEncodeObject[] = [
-      stakingPlatformMsgComposer.unstake({ collectionsToUnstake }),
-    ];
-
-    for (const {
-      collection_address,
-      staked_token_info_list,
-    } of collectionsToUnstake) {
-      for (const { token_id } of staked_token_info_list) {
-        msgList.push(
-          getRevokeNftMsg(
-            collection_address,
-            +token_id,
-            senderAddress,
-            operator
-          )
-        );
-      }
-    }
-
-    return await _msgWrapperWithGasPrice(msgList, gasPrice);
   }
 
   async function cwClaimStakingRewards(gasPrice: string) {
@@ -564,11 +551,11 @@ async function getCwExecHelpers(
   return {
     // frontend
     cwApproveCollection,
+    cwApprove,
     cwRevokeCollection,
-    cwStake,
+    cwRevoke,
     cwApproveAndStake,
     cwUnstake,
-    cwUnstakeAndRevoke,
     cwClaimStakingRewards,
     cwDistributeFunds,
     cwRemoveCollection,

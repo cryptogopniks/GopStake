@@ -3,11 +3,11 @@ import { DirectSecp256k1HdWallet, OfflineSigner, OfflineDirectSigner } from "@co
 import { UpdateConfigStruct, ApprovalsResponse, NetworkName, TokensResponse, OwnerOfResponse } from "../interfaces";
 declare function getCwExecHelpers(network: NetworkName, rpc: string, owner: string, signer: (OfflineSigner & OfflineDirectSigner) | DirectSecp256k1HdWallet): Promise<{
     cwApproveCollection: (collectionAddress: string, senderAddress: string, operator: string, gasPrice: string) => Promise<import("@cosmjs/cosmwasm-stargate").DeliverTxResponse>;
+    cwApprove: (collectionAddress: string, tokenId: number, senderAddress: string, operator: string, gasPrice: string) => Promise<import("@cosmjs/cosmwasm-stargate").DeliverTxResponse>;
     cwRevokeCollection: (collectionAddress: string, senderAddress: string, operator: string, gasPrice: string) => Promise<import("@cosmjs/cosmwasm-stargate").DeliverTxResponse>;
-    cwStake: (collectionsToStake: StakedCollectionInfoForString[], gasPrice: string) => Promise<import("@cosmjs/cosmwasm-stargate").DeliverTxResponse>;
+    cwRevoke: (collectionAddress: string, tokenId: number, senderAddress: string, operator: string, gasPrice: string) => Promise<import("@cosmjs/cosmwasm-stargate").DeliverTxResponse>;
     cwApproveAndStake: (senderAddress: string, operator: string, collectionsToStake: StakedCollectionInfoForString[], gasPrice: string) => Promise<import("@cosmjs/cosmwasm-stargate").DeliverTxResponse>;
     cwUnstake: (collectionsToUnstake: StakedCollectionInfoForString[], gasPrice: string) => Promise<import("@cosmjs/cosmwasm-stargate").DeliverTxResponse>;
-    cwUnstakeAndRevoke: (senderAddress: string, operator: string, collectionsToUnstake: StakedCollectionInfoForString[], gasPrice: string) => Promise<import("@cosmjs/cosmwasm-stargate").DeliverTxResponse>;
     cwClaimStakingRewards: (gasPrice: string) => Promise<import("@cosmjs/cosmwasm-stargate").DeliverTxResponse>;
     cwDistributeFunds: (addressAndWeightList: [string, string][], gasPrice: string) => Promise<import("@cosmjs/cosmwasm-stargate").DeliverTxResponse>;
     cwRemoveCollection: (address: string, gasPrice: string) => Promise<import("@cosmjs/cosmwasm-stargate").DeliverTxResponse>;
