@@ -49,17 +49,6 @@ interface RevokeMsg {
   };
 }
 
-interface ApproveCollectionMsg {
-  approve_all: {
-    operator: string;
-    expires?: Expiration;
-  };
-}
-
-interface RevokeCollectionMsg {
-  revoke_all: { operator: string };
-}
-
 interface QueryApprovalsMsg {
   approvals: {
     token_id: string;
@@ -141,8 +130,6 @@ export {
   SetMetadataMsg,
   Metadata,
   UpdateConfigStruct,
-  ApproveCollectionMsg,
-  RevokeCollectionMsg,
   QueryApprovalsMsg,
   ApprovalsResponse,
   Cw20SendMsg,

@@ -81,14 +81,6 @@ async function queryInjContract(chainGrpcWasmApi, contractAddress, queryMsg) {
   } = await chainGrpcWasmApi.fetchSmartContractState(contractAddress, toBase64(toUtf8(JSON.stringify(queryMsg))));
   return fromUtf8(data);
 }
-function getApproveCollectionMsg(collectionAddress, senderAddress, operator) {
-  const approveCollectionMsg = {
-    approve_all: {
-      operator
-    }
-  };
-  return getSingleTokenExecMsg(getExecuteContractMsg(collectionAddress, senderAddress, approveCollectionMsg, []));
-}
 function getApproveNftMsg(collectionAddress, tokenId, senderAddress, operator) {
   const approveMsg = {
     approve: {
@@ -97,14 +89,6 @@ function getApproveNftMsg(collectionAddress, tokenId, senderAddress, operator) {
     }
   };
   return getSingleTokenExecMsg(getExecuteContractMsg(collectionAddress, senderAddress, approveMsg, []));
-}
-function getRevokeCollectionMsg(collectionAddress, senderAddress, operator) {
-  const revokeCollectionMsg = {
-    revoke_all: {
-      operator
-    }
-  };
-  return getSingleTokenExecMsg(getExecuteContractMsg(collectionAddress, senderAddress, revokeCollectionMsg, []));
 }
 function getRevokeNftMsg(collectionAddress, tokenId, senderAddress, operator) {
   const revokeMsg = {
@@ -156,27 +140,6 @@ async function getCwExecHelpers(network, owner, msgBroadcaster) {
   }
   const stakingPlatformMsgComposer = new StakingPlatformMsgComposer(owner, STAKING_PLATFORM_CONTRACT.DATA.ADDRESS);
   const minterMsgComposer = new MinterMsgComposer(owner, MINTER_CONTRACT.DATA.ADDRESS);
-  async function cwApproveCollection(collectionAddress, senderAddress, operator, _gasPrice) {
-    const [msg, sender] = getApproveCollectionMsg(collectionAddress, senderAddress, operator);
-    return await msgBroadcaster.broadcast({
-      msgs: [msg],
-      injectiveAddress: sender
-    });
-  }
-  async function cwApprove(collectionAddress, tokenId, senderAddress, operator, _gasPrice) {
-    const [msg, sender] = getApproveNftMsg(collectionAddress, tokenId, senderAddress, operator);
-    return await msgBroadcaster.broadcast({
-      msgs: [msg],
-      injectiveAddress: sender
-    });
-  }
-  async function cwRevokeCollection(collectionAddress, senderAddress, operator, _gasPrice) {
-    const [msg, sender] = getRevokeCollectionMsg(collectionAddress, senderAddress, operator);
-    return await msgBroadcaster.broadcast({
-      msgs: [msg],
-      injectiveAddress: sender
-    });
-  }
   async function cwRevoke(collectionAddress, tokenId, senderAddress, operator, _gasPrice) {
     const [msg, sender] = getRevokeNftMsg(collectionAddress, tokenId, senderAddress, operator);
     return await msgBroadcaster.broadcast({
@@ -373,10 +336,6 @@ async function getCwExecHelpers(network, owner, msgBroadcaster) {
   }
   return {
     // frontend
-    cwApproveCollection,
-    cwApprove,
-    cwRevokeCollection,
-    cwRevoke,
     cwApproveAndStake,
     cwUnstake,
     cwClaimStakingRewards,
@@ -388,10 +347,11 @@ async function getCwExecHelpers(network, owner, msgBroadcaster) {
     cwDepositTokens,
     cwWithdrawTokens,
     cwCreateDenom,
-    cwMintTokens,
-    cwBurnTokens,
     cwSetMetadata,
     // backend
+    cwRevoke,
+    cwMintTokens,
+    cwBurnTokens,
     cwUpdateConfig
   };
 }

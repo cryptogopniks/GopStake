@@ -41,14 +41,6 @@ function getSingleTokenExecMsg(contractAddress, senderAddress, msg, amount, toke
   };
   return getExecuteContractMsg(token.cw20.address, senderAddress, cw20SendMsg, []);
 }
-function getApproveCollectionMsg(collectionAddress, senderAddress, operator) {
-  const approveCollectionMsg = {
-    approve_all: {
-      operator
-    }
-  };
-  return getSingleTokenExecMsg(collectionAddress, senderAddress, approveCollectionMsg);
-}
 function getApproveNftMsg(collectionAddress, tokenId, senderAddress, operator) {
   const approveMsg = {
     approve: {
@@ -57,14 +49,6 @@ function getApproveNftMsg(collectionAddress, tokenId, senderAddress, operator) {
     }
   };
   return getSingleTokenExecMsg(collectionAddress, senderAddress, approveMsg);
-}
-function getRevokeCollectionMsg(collectionAddress, senderAddress, operator) {
-  const revokeCollectionMsg = {
-    revoke_all: {
-      operator
-    }
-  };
-  return getSingleTokenExecMsg(collectionAddress, senderAddress, revokeCollectionMsg);
 }
 function getRevokeNftMsg(collectionAddress, tokenId, senderAddress, operator) {
   const revokeMsg = {
@@ -124,15 +108,6 @@ async function getCwExecHelpers(network, rpc, owner, signer) {
     const tx = await _signAndBroadcast(msgs, gasPrice);
     l("\n", tx, "\n");
     return tx;
-  }
-  async function cwApproveCollection(collectionAddress, senderAddress, operator, gasPrice) {
-    return await _msgWrapperWithGasPrice([getApproveCollectionMsg(collectionAddress, senderAddress, operator)], gasPrice);
-  }
-  async function cwApprove(collectionAddress, tokenId, senderAddress, operator, gasPrice) {
-    return await _msgWrapperWithGasPrice([getApproveNftMsg(collectionAddress, tokenId, senderAddress, operator)], gasPrice);
-  }
-  async function cwRevokeCollection(collectionAddress, senderAddress, operator, gasPrice) {
-    return await _msgWrapperWithGasPrice([getRevokeCollectionMsg(collectionAddress, senderAddress, operator)], gasPrice);
   }
   async function cwRevoke(collectionAddress, tokenId, senderAddress, operator, gasPrice) {
     return await _msgWrapperWithGasPrice([getRevokeNftMsg(collectionAddress, tokenId, senderAddress, operator)], gasPrice);
@@ -262,10 +237,6 @@ async function getCwExecHelpers(network, rpc, owner, signer) {
   }
   return {
     // frontend
-    cwApproveCollection,
-    cwApprove,
-    cwRevokeCollection,
-    cwRevoke,
     cwApproveAndStake,
     cwUnstake,
     cwClaimStakingRewards,
@@ -277,10 +248,11 @@ async function getCwExecHelpers(network, rpc, owner, signer) {
     cwDepositTokens,
     cwWithdrawTokens,
     cwCreateDenom,
-    cwMintTokens,
-    cwBurnTokens,
     cwSetMetadata,
     // backend
+    cwRevoke,
+    cwMintTokens,
+    cwBurnTokens,
     cwUpdateConfig
   };
 }

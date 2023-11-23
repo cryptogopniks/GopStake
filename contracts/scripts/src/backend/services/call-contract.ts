@@ -68,10 +68,6 @@ async function main(network: NetworkName) {
       cwCreateDenom,
       cwMintTokens,
       cwBurnTokens,
-      cwApproveCollection,
-      cwApprove,
-      cwRevokeCollection,
-      cwRevoke,
       cwApproveAndStake,
       cwUnstake,
     } = await getCwExecHelpers(network, RPC, owner, signer);

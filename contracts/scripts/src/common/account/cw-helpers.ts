@@ -30,8 +30,6 @@ import {
   SetMetadataMsg,
   Metadata,
   UpdateConfigStruct,
-  ApproveCollectionMsg,
-  RevokeCollectionMsg,
   QueryApprovalsMsg,
   ApprovalsResponse,
   Cw20SendMsg,
@@ -102,22 +100,6 @@ function getSingleTokenExecMsg(
   );
 }
 
-function getApproveCollectionMsg(
-  collectionAddress: string,
-  senderAddress: string,
-  operator: string
-): MsgExecuteContractEncodeObject {
-  const approveCollectionMsg: ApproveCollectionMsg = {
-    approve_all: { operator },
-  };
-
-  return getSingleTokenExecMsg(
-    collectionAddress,
-    senderAddress,
-    approveCollectionMsg
-  );
-}
-
 function getApproveNftMsg(
   collectionAddress: string,
   tokenId: number,
@@ -132,22 +114,6 @@ function getApproveNftMsg(
   };
 
   return getSingleTokenExecMsg(collectionAddress, senderAddress, approveMsg);
-}
-
-function getRevokeCollectionMsg(
-  collectionAddress: string,
-  senderAddress: string,
-  operator: string
-): MsgExecuteContractEncodeObject {
-  const revokeCollectionMsg: RevokeCollectionMsg = {
-    revoke_all: { operator },
-  };
-
-  return getSingleTokenExecMsg(
-    collectionAddress,
-    senderAddress,
-    revokeCollectionMsg
-  );
 }
 
 function getRevokeNftMsg(
@@ -257,43 +223,6 @@ async function getCwExecHelpers(
     const tx = await _signAndBroadcast(msgs, gasPrice);
     l("\n", tx, "\n");
     return tx;
-  }
-
-  async function cwApproveCollection(
-    collectionAddress: string,
-    senderAddress: string,
-    operator: string,
-    gasPrice: string
-  ) {
-    return await _msgWrapperWithGasPrice(
-      [getApproveCollectionMsg(collectionAddress, senderAddress, operator)],
-      gasPrice
-    );
-  }
-
-  async function cwApprove(
-    collectionAddress: string,
-    tokenId: number,
-    senderAddress: string,
-    operator: string,
-    gasPrice: string
-  ) {
-    return await _msgWrapperWithGasPrice(
-      [getApproveNftMsg(collectionAddress, tokenId, senderAddress, operator)],
-      gasPrice
-    );
-  }
-
-  async function cwRevokeCollection(
-    collectionAddress: string,
-    senderAddress: string,
-    operator: string,
-    gasPrice: string
-  ) {
-    return await _msgWrapperWithGasPrice(
-      [getRevokeCollectionMsg(collectionAddress, senderAddress, operator)],
-      gasPrice
-    );
   }
 
   async function cwRevoke(
@@ -550,10 +479,6 @@ async function getCwExecHelpers(
 
   return {
     // frontend
-    cwApproveCollection,
-    cwApprove,
-    cwRevokeCollection,
-    cwRevoke,
     cwApproveAndStake,
     cwUnstake,
     cwClaimStakingRewards,
@@ -565,11 +490,12 @@ async function getCwExecHelpers(
     cwDepositTokens,
     cwWithdrawTokens,
     cwCreateDenom,
-    cwMintTokens,
-    cwBurnTokens,
     cwSetMetadata,
 
     // backend
+    cwRevoke,
+    cwMintTokens,
+    cwBurnTokens,
     cwUpdateConfig,
   };
 }

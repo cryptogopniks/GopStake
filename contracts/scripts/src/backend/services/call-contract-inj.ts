@@ -55,13 +55,8 @@ async function main(network: NetworkName) {
 
     const { getAllBalances } = await getSgQueryHelpers();
     const { cwQueryProposals } = await getCwQueryHelpers(network);
-    const {
-      cwCreateProposal,
-      cwMintTokens,
-      cwBurnTokens,
-      cwCreateDenom,
-      cwStake,
-    } = await getCwExecHelpers(network, injectiveAddress, msgBroadcasterWithPk);
+    const { cwCreateProposal, cwMintTokens, cwBurnTokens, cwCreateDenom } =
+      await getCwExecHelpers(network, injectiveAddress, msgBroadcasterWithPk);
 
     const alice = "inj1prmtvxpvdcmp3dtn6qn4hyq9gytj5ry4u28nqz";
     const denom = "upinj";

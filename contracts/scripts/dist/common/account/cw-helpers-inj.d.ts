@@ -4,10 +4,6 @@ import * as StakingPlatformTypes from "../codegen/StakingPlatform.types";
 import { MsgBroadcasterWithPk } from "@injectivelabs/sdk-ts";
 import { UpdateConfigStruct, ApprovalsResponse, NetworkName, TokensResponse, OwnerOfResponse } from "../interfaces";
 declare function getCwExecHelpers(network: NetworkName, owner: string, msgBroadcaster: MsgBroadcasterWithPk | MsgBroadcaster): Promise<{
-    cwApproveCollection: (collectionAddress: string, senderAddress: string, operator: string, _gasPrice?: string) => Promise<import("@injectivelabs/sdk-ts").TxResponse>;
-    cwApprove: (collectionAddress: string, tokenId: number, senderAddress: string, operator: string, _gasPrice?: string) => Promise<import("@injectivelabs/sdk-ts").TxResponse>;
-    cwRevokeCollection: (collectionAddress: string, senderAddress: string, operator: string, _gasPrice?: string) => Promise<import("@injectivelabs/sdk-ts").TxResponse>;
-    cwRevoke: (collectionAddress: string, tokenId: number, senderAddress: string, operator: string, _gasPrice?: string) => Promise<import("@injectivelabs/sdk-ts").TxResponse>;
     cwApproveAndStake: (senderAddress: string, operator: string, collectionsToStake: StakingPlatformTypes.StakedCollectionInfoForString[], _gasPrice?: string) => Promise<import("@injectivelabs/sdk-ts").TxResponse>;
     cwUnstake: (collectionsToUnstake: StakingPlatformTypes.StakedCollectionInfoForString[], _gasPrice?: string) => Promise<import("@injectivelabs/sdk-ts").TxResponse>;
     cwClaimStakingRewards: (_gasPrice?: string) => Promise<import("@injectivelabs/sdk-ts").TxResponse>;
@@ -19,9 +15,10 @@ declare function getCwExecHelpers(network: NetworkName, owner: string, msgBroadc
     cwDepositTokens: (collectionAddress: string, amount: number, token: StakingPlatformTypes.TokenUnverified, _gasPrice?: string) => Promise<import("@injectivelabs/sdk-ts").TxResponse>;
     cwWithdrawTokens: (collectionAddress: string, amount: number, _gasPrice?: string) => Promise<import("@injectivelabs/sdk-ts").TxResponse>;
     cwCreateDenom: (subdenom: string, paymentAmount: number, paymentDenom: string, _gasPrice?: string) => Promise<import("@injectivelabs/sdk-ts").TxResponse>;
+    cwSetMetadata: (creatorAddress: string, symbol: string, description: string, uri?: string, uriHash?: string, _gasPrice?: string) => Promise<import("@injectivelabs/sdk-ts").TxResponse>;
+    cwRevoke: (collectionAddress: string, tokenId: number, senderAddress: string, operator: string, _gasPrice?: string) => Promise<import("@injectivelabs/sdk-ts").TxResponse>;
     cwMintTokens: (denom: string, amount: number, mintToAddress: string, _gasPrice?: string) => Promise<import("@injectivelabs/sdk-ts").TxResponse>;
     cwBurnTokens: (denom: string, amount: number, _gasPrice?: string) => Promise<import("@injectivelabs/sdk-ts").TxResponse>;
-    cwSetMetadata: (creatorAddress: string, symbol: string, description: string, uri?: string, uriHash?: string, _gasPrice?: string) => Promise<import("@injectivelabs/sdk-ts").TxResponse>;
     cwUpdateConfig: (updateConfigStruct: UpdateConfigStruct, _gasPrice?: string) => Promise<import("@injectivelabs/sdk-ts").TxResponse>;
 }>;
 declare function getCwQueryHelpers(network: NetworkName): Promise<{

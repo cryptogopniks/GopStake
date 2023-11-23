@@ -43,17 +43,6 @@ interface RevokeMsg {
         token_id: string;
     };
 }
-interface ApproveCollectionMsg {
-    approve_all: {
-        operator: string;
-        expires?: Expiration;
-    };
-}
-interface RevokeCollectionMsg {
-    revoke_all: {
-        operator: string;
-    };
-}
 interface QueryApprovalsMsg {
     approvals: {
         token_id: string;
@@ -120,4 +109,4 @@ type ContractData = {
     ADDRESS: string;
 };
 export type { NetworkConfig, NetworkName, ContractsConfig };
-export { SetMetadataMsg, Metadata, UpdateConfigStruct, ApproveCollectionMsg, RevokeCollectionMsg, QueryApprovalsMsg, ApprovalsResponse, Cw20SendMsg, BaseNetworkConfig, ContractData, ApproveMsg, RevokeMsg, QueryTokens, TokensResponse, QueryOwnerOf, OwnerOfResponse, };
+export { SetMetadataMsg, Metadata, UpdateConfigStruct, QueryApprovalsMsg, ApprovalsResponse, Cw20SendMsg, BaseNetworkConfig, ContractData, ApproveMsg, RevokeMsg, QueryTokens, TokensResponse, QueryOwnerOf, OwnerOfResponse, };
