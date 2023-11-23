@@ -94,45 +94,6 @@ async function main(network: NetworkName) {
     const token2 = 679;
     const token3 = 851;
 
-    // await cwQueryBalanceInNft(owner, collection);
-    // await cwQueryNftOwner(collection, token1);
-
-    // // doesn't work
-    // await cwApproveCollection(
-    //   collection,
-    //   owner,
-    //   STAKING_PLATFORM_CONTRACT.DATA.ADDRESS,
-    //   gasPrice
-    // );
-
-    // // ok
-    // await cwApprove(
-    //   collection,
-    //   token1,
-    //   owner,
-    //   STAKING_PLATFORM_CONTRACT.DATA.ADDRESS,
-    //   gasPrice
-    // );
-
-    // await cwQueryApprovals(collection, token1);
-
-    // await cwRevokeCollection(
-    //   collection,
-    //   owner,
-    //   STAKING_PLATFORM_CONTRACT.DATA.ADDRESS,
-    //   gasPrice
-    // );
-
-    // await cwRevoke(
-    //   collection,
-    //   token1,
-    //   owner,
-    //   STAKING_PLATFORM_CONTRACT.DATA.ADDRESS,
-    //   gasPrice
-    // );
-
-    // await cwQueryApprovals(collection, token1);
-
     await cwApproveAndStake(
       owner,
       STAKING_PLATFORM_CONTRACT.DATA.ADDRESS,
