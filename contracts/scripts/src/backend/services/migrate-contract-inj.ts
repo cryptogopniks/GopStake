@@ -67,13 +67,13 @@ async function main(network: NetworkName) {
       simulateTx: true,
     });
 
-    const migrateMsg: MigrateMsg = "v1_1_0";
+    const migrateMsg: MigrateMsg = { version: "1.1.0" };
 
     const msg = MsgMigrateContract.fromJSON({
       sender: injectiveAddress,
       contract: STAKING_PLATFORM_CONTRACT.DATA.ADDRESS,
       codeId: STAKING_PLATFORM_CONTRACT.DATA.CODE,
-      msg: toUtf8(JSON.stringify(migrateMsg)),
+      msg: migrateMsg,
     });
 
     l(msg);

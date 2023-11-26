@@ -126,6 +126,6 @@ pub struct QueryCollectionsBalancesResponseItem {
 }
 
 #[cw_serde]
-pub enum MigrateMsg {
-    V1_1_0,
+pub struct MigrateMsg {
+    pub version: String,
 }

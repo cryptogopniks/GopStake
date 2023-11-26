@@ -146,7 +146,9 @@ export type QueryMsg = {
     addresses?: string[] | null;
   };
 };
-export type MigrateMsg = "v1_1_0";
+export interface MigrateMsg {
+  version: string;
+}
 export type Token = {
   native: {
     denom: string;

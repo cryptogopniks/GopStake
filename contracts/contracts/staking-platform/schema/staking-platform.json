@@ -801,10 +801,16 @@
   "migrate": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "MigrateMsg",
-    "type": "string",
-    "enum": [
-      "v1_1_0"
-    ]
+    "type": "object",
+    "required": [
+      "version"
+    ],
+    "properties": {
+      "version": {
+        "type": "string"
+      }
+    },
+    "additionalProperties": false
   },
   "sudo": null,
   "responses": {

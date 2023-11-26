@@ -3020,7 +3020,9 @@ fn migrate_staking_platform_default() -> StdResult<()> {
         ProjectAccount::Admin,
         project.get_staking_platform_address(),
         project.get_staking_platform_code_id(),
-        gopstake_base::staking_platform::msg::MigrateMsg::V1_1_0,
+        gopstake_base::staking_platform::msg::MigrateMsg {
+            version: "1.1.0".to_string(),
+        },
     )?;
 
     let proposals = project.staking_platform_query_proposals(None)?;
