@@ -1,7 +1,10 @@
-use cosmwasm_std::{Addr, Uint128};
-use cw_multi_test::ContractWrapper;
+use cosmwasm_std::{Addr, StdResult, Uint128};
+use cw_multi_test::{AppResponse, ContractWrapper, Executor};
 
+use serde::Serialize;
 use strum::IntoEnumIterator;
+
+use gopstake_base::error::parse_err;
 
 use crate::helpers::suite::{
     core::Project,
@@ -29,6 +32,14 @@ pub trait WithCodes {
         owner: &Option<Addr>,
         minter: &Option<Addr>,
     ) -> Addr;
+
+    fn migrate_contract(
+        &mut self,
+        sender: ProjectAccount,
+        contract_address: Addr,
+        contract_new_code_id: u64,
+        migrate_msg: impl Serialize,
+    ) -> StdResult<AppResponse>;
 }
 
 impl WithCodes for Project {
@@ -67,7 +78,8 @@ impl WithCodes for Project {
                 staking_platform::contract::instantiate,
                 staking_platform::contract::query,
             )
-            .with_reply(staking_platform::contract::reply),
+            .with_reply(staking_platform::contract::reply)
+            .with_migrate(staking_platform::contract::migrate),
         ))
     }
 
@@ -153,5 +165,22 @@ impl WithCodes for Project {
                 minter: minter.as_ref().map(|x| x.to_string()),
             },
         )
+    }
+
+    fn migrate_contract(
+        &mut self,
+        sender: ProjectAccount,
+        contract_address: Addr,
+        contract_new_code_id: u64,
+        migrate_msg: impl Serialize,
+    ) -> StdResult<AppResponse> {
+        self.app
+            .migrate_contract(
+                sender.into(),
+                contract_address,
+                &migrate_msg,
+                contract_new_code_id,
+            )
+            .map_err(parse_err)
     }
 }

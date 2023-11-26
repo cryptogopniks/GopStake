@@ -23,6 +23,7 @@ use crate::helpers::{
     minter::MinterExtension,
     staking_platform::StakingPlatformExtension,
     suite::{
+        codes::WithCodes,
         core::{assert_error, Project},
         types::{ProjectAccount, ProjectCoin, ProjectNft, ProjectToken},
     },
@@ -196,6 +197,80 @@ fn create_proposal_add_same_collection_twice() -> StdResult<()> {
         .staking_platform_try_create_proposal(ProjectAccount::Admin, proposal_c)
         .unwrap_err();
     assert_error(&res, ContractError::CollectionDuplication);
+
+    Ok(())
+}
+
+#[test]
+fn create_proposal_update_collection_default() -> StdResult<()> {
+    let mut project = Project::new(Some(CHAIN_ID_DEV));
+
+    // collection
+    let proposal_a: &Proposal<String, TokenUnverified> = &Proposal {
+        proposal_status: None,
+        price: Funds::new(
+            100u128,
+            &Currency::new(
+                &TokenUnverified::new_native(&ProjectCoin::Denom.to_string()),
+                6,
+            ),
+        ),
+        proposal_type: ProposalType::AddCollection {
+            collection_address: ProjectNft::Gopniks.to_string(),
+            collection: Collection {
+                name: ProjectNft::Gopniks.to_string(),
+                staking_currency: Currency::new(
+                    &TokenUnverified::new_native(&ProjectCoin::Noria.to_string()),
+                    6,
+                ),
+                daily_rewards: str_to_dec("86400000000000"),
+                emission_type: EmissionType::Spending,
+                owner: ProjectAccount::Owner.to_string(),
+            },
+        },
+    };
+
+    // new collection
+    let proposal_b: &Proposal<String, TokenUnverified> = &Proposal {
+        proposal_status: None,
+        price: Funds::new(
+            100u128,
+            &Currency::new(
+                &TokenUnverified::new_native(&ProjectCoin::Denom.to_string()),
+                6,
+            ),
+        ),
+        proposal_type: ProposalType::UpdateCollection {
+            collection_address: ProjectNft::Gopniks.to_string(),
+            new_collection_address: None,
+            new_collection: Collection {
+                name: ProjectNft::Gopniks.to_string(),
+                staking_currency: Currency::new(
+                    &TokenUnverified::new_native(&ProjectCoin::Noria.to_string()),
+                    6,
+                ),
+                daily_rewards: str_to_dec("86400"),
+                emission_type: EmissionType::Minting,
+                owner: ProjectAccount::Owner.to_string(),
+            },
+        },
+    };
+
+    project.staking_platform_try_create_proposal(ProjectAccount::Admin, proposal_a)?;
+    project.staking_platform_try_accept_proposal(
+        ProjectAccount::Owner,
+        1,
+        100,
+        ProjectCoin::Denom,
+    )?;
+
+    project.staking_platform_try_create_proposal(ProjectAccount::Admin, proposal_b)?;
+    project.staking_platform_try_accept_proposal(
+        ProjectAccount::Owner,
+        2,
+        100,
+        ProjectCoin::Denom,
+    )?;
 
     Ok(())
 }
@@ -2883,6 +2958,73 @@ fn accept_proposal_update_collection_change_staking_currency() -> StdResult<()> 
     assert_that(&owner_inj_balance).is_equal_to(999_999_999_999_750_000);
     // 1000 - 400
     assert_that(&owner_atom_balance).is_equal_to(600_000);
+
+    Ok(())
+}
+
+#[test]
+fn migrate_staking_platform_default() -> StdResult<()> {
+    let mut project = Project::new(Some(CHAIN_ID_DEV));
+
+    let proposal: &Proposal<String, TokenUnverified> = &Proposal {
+        proposal_status: None,
+        price: Funds::new(
+            100u128,
+            &Currency::new(
+                &TokenUnverified::new_native(&ProjectCoin::Denom.to_string()),
+                6,
+            ),
+        ),
+        proposal_type: ProposalType::AddCollection {
+            collection_address: ProjectNft::Gopniks.to_string(),
+            collection: Collection {
+                name: ProjectNft::Gopniks.to_string(),
+                staking_currency: Currency::new(
+                    &TokenUnverified::new_cw20(&ProjectToken::Atom.to_string()),
+                    6,
+                ),
+                daily_rewards: str_to_dec("86400000000000"),
+                emission_type: EmissionType::Spending,
+                owner: ProjectAccount::Owner.to_string(),
+            },
+        },
+    };
+
+    let expected: Vec<QueryProposalsResponseItem> = vec![QueryProposalsResponseItem {
+        id: Uint128::new(1),
+        proposal: Proposal {
+            proposal_status: Some(ProposalStatus::Active),
+            price: Funds::new(
+                100u128,
+                &Currency::new(&Token::new_native(&ProjectCoin::Denom.to_string()), 6),
+            ),
+            proposal_type: ProposalType::AddCollection {
+                collection_address: ProjectNft::Gopniks.into(),
+                collection: Collection {
+                    name: ProjectNft::Gopniks.to_string(),
+                    staking_currency: Currency::new(
+                        &Token::new_cw20(&ProjectToken::Atom.into()),
+                        6,
+                    ),
+                    daily_rewards: str_to_dec("86400000000000"),
+                    emission_type: EmissionType::Spending,
+                    owner: ProjectAccount::Owner.into(),
+                },
+            },
+        },
+    }];
+
+    project.staking_platform_try_create_proposal(ProjectAccount::Admin, proposal)?;
+
+    project.migrate_contract(
+        ProjectAccount::Admin,
+        project.get_staking_platform_address(),
+        project.get_staking_platform_code_id(),
+        gopstake_base::staking_platform::msg::MigrateMsg::V1_1_0,
+    )?;
+
+    let proposals = project.staking_platform_query_proposals(None)?;
+    assert_that(&proposals).is_equal_to(&expected);
 
     Ok(())
 }

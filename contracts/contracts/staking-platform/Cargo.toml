@@ -1,6 +1,6 @@
 [package]
 name = "staking-platform"
-version = "1.0.0"
+version = "1.1.0"
 authors = ["M. Daeva <embedmad@gmail.com>"]
 edition = "2021"
 
@@ -22,3 +22,4 @@ cw20 = { workspace = true }
 cw721 = { workspace = true }
 serde = { workspace = true }
 gopstake-base = { workspace = true }
+semver = { workspace = true }

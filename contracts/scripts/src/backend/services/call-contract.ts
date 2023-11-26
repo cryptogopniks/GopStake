@@ -94,39 +94,41 @@ async function main(network: NetworkName) {
     const token2 = 679;
     const token3 = 851;
 
-    await cwApproveAndStake(
-      owner,
-      STAKING_PLATFORM_CONTRACT.DATA.ADDRESS,
-      [
-        {
-          collection_address: collection,
-          staked_token_info_list: [
-            { token_id: `${token1}` },
-            { token_id: `${token2}` },
-          ],
-        },
-      ],
-      gasPrice
-    );
+    // await cwApproveAndStake(
+    //   owner,
+    //   STAKING_PLATFORM_CONTRACT.DATA.ADDRESS,
+    //   [
+    //     {
+    //       collection_address: collection,
+    //       staked_token_info_list: [
+    //         { token_id: `${token1}` },
+    //         { token_id: `${token2}` },
+    //       ],
+    //     },
+    //   ],
+    //   gasPrice
+    // );
 
-    await cwQueryApprovals(collection, token1);
-    await cwQueryNftOwner(collection, token1);
+    // await cwQueryApprovals(collection, token1);
+    // await cwQueryNftOwner(collection, token1);
 
-    await cwUnstake(
-      [
-        {
-          collection_address: collection,
-          staked_token_info_list: [
-            { token_id: `${token1}` },
-            { token_id: `${token2}` },
-          ],
-        },
-      ],
-      gasPrice
-    );
+    // await cwUnstake(
+    //   [
+    //     {
+    //       collection_address: collection,
+    //       staked_token_info_list: [
+    //         { token_id: `${token1}` },
+    //         { token_id: `${token2}` },
+    //       ],
+    //     },
+    //   ],
+    //   gasPrice
+    // );
 
-    await cwQueryApprovals(collection, token1);
-    await cwQueryNftOwner(collection, token1);
+    // await cwQueryApprovals(collection, token1);
+    // await cwQueryNftOwner(collection, token1);
+
+    await cwQueryBalanceInNft(owner, collection);
   } catch (error) {
     l(error);
   }

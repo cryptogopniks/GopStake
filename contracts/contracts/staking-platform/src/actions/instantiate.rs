@@ -5,13 +5,12 @@ use gopstake_base::{
     error::ContractError,
     staking_platform::{
         msg::InstantiateMsg,
-        state::{CONFIG, FUNDS, PROPOSAL_COUNTER},
+        state::{CONFIG, CONTRACT_NAME, FUNDS, PROPOSAL_COUNTER},
         types::Config,
     },
     utils::{validate_attr, Attrs},
 };
 
-const CONTRACT_NAME: &str = "crates.io:gopstake-staking-platform";
 const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
 
 pub fn try_instantiate(

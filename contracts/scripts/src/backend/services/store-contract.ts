@@ -2,7 +2,7 @@ import { l } from "../../common/utils";
 import { PATH, rootPath } from "../envs";
 import { calculateFee } from "@cosmjs/stargate";
 import { toUtf8 } from "@cosmjs/encoding";
-import { NETWORK_CONFIG } from "../../common/config";
+import { NETWORK_CONFIG, MINTER_WASM } from "../../common/config";
 import { gzip } from "pako";
 import { readFile, writeFile } from "fs/promises";
 import { getCwClient } from "../../common/account/clients";
@@ -43,7 +43,11 @@ function parseAddressList(rawLog: string): string[] {
   return [...new Set(addresses).values()];
 }
 
-async function main(network: NetworkName) {
+async function main(
+  network: NetworkName,
+  isMigrationRequired: boolean,
+  wasmIgnoreList: string[]
+) {
   try {
     const {
       BASE: {
@@ -76,6 +80,8 @@ async function main(network: NetworkName) {
     ][] = [];
 
     for (const CONTRACT of CONTRACTS) {
+      if (wasmIgnoreList.includes(CONTRACT.WASM)) continue;
+
       const wasmBinary = await readFile(
         rootPath(`../artifacts/${CONTRACT.WASM}`)
       );
@@ -110,6 +116,7 @@ async function main(network: NetworkName) {
       ContractsConfig,
       MsgInstantiateContractEncodeObject
     ][] = [];
+    let addressList: string[] = [];
 
     for (const i in contractConfigAndStoreCodeMsgList) {
       const [CONTRACT] = contractConfigAndStoreCodeMsgList[i];
@@ -142,28 +149,43 @@ async function main(network: NetworkName) {
     );
     const gasWantedSim = Math.ceil(1.2 * gasSimulated);
 
-    const res = await signingClient.signAndBroadcast(
-      owner,
-      contractConfigAndInitMsgList.map((x) => x[1]),
-      calculateFee(gasWantedSim, gasPrice)
-    );
+    if (!isMigrationRequired) {
+      const res = await signingClient.signAndBroadcast(
+        owner,
+        contractConfigAndInitMsgList.map((x) => x[1]),
+        calculateFee(gasWantedSim, gasPrice)
+      );
 
-    const addressList = parseAddressList(res.rawLog || "");
+      addressList = parseAddressList(res.rawLog || "");
+    }
 
     for (const i in contractConfigAndInitMsgList) {
       const [{ WASM }] = contractConfigAndInitMsgList[i];
       const codeId = codeIds[i];
-      const contractAddress = addressList[i];
+      const contractAddress = addressList[i] || "";
 
       const networkName = network.toLowerCase();
       const contractName = WASM.replace(".wasm", "").toLowerCase();
 
-      l(`"${contractName}" contract address is ${contractAddress}\n`);
-
-      const contractData: ContractData = {
+      let contractData: ContractData = {
         CODE: codeId,
-        ADDRESS: contractAddress,
+        ADDRESS: "",
       };
+
+      if (!isMigrationRequired) {
+        l(`"${contractName}" contract address is ${contractAddress}\n`);
+
+        contractData.ADDRESS = contractAddress;
+      } else {
+        const { ADDRESS }: ContractData = JSON.parse(
+          await readFile(
+            rootPath(`src/common/config/${networkName}-${contractName}.json`),
+            { encoding }
+          )
+        );
+
+        contractData.ADDRESS = ADDRESS;
+      }
 
       await writeFile(
         rootPath(`src/common/config/${networkName}-${contractName}.json`),
@@ -178,4 +200,4 @@ async function main(network: NetworkName) {
   }
 }
 
-main("STARGAZE");
+main("STARGAZE", true, [MINTER_WASM]);

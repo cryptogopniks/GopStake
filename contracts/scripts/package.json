@@ -10,6 +10,8 @@
   "scripts": {
     "store": "ts-node ./src/backend/services/store-contract.ts",
     "store-inj": "ts-node ./src/backend/services/store-contract-inj.ts",
+    "migrate": "ts-node ./src/backend/services/migrate-contract.ts",
+    "migrate-inj": "ts-node ./src/backend/services/migrate-contract-inj.ts",
     "call": "ts-node ./src/backend/services/call-contract.ts",
     "call-inj": "ts-node ./src/backend/services/call-contract-inj.ts",
     "config": "ts-node ./src/backend/services/update-config.ts",

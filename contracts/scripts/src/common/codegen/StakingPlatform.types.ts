@@ -146,7 +146,7 @@ export type QueryMsg = {
     addresses?: string[] | null;
   };
 };
-export type MigrateMsg = string;
+export type MigrateMsg = "v1_1_0";
 export type Token = {
   native: {
     denom: string;

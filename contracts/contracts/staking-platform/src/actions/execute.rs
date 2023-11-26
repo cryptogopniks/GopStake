@@ -629,8 +629,9 @@ pub fn try_create_proposal(
             let is_collection_found = COLLECTIONS
                 .range(deps.storage, None, None, Order::Ascending)
                 .flatten()
-                .any(|(current_address, current_collection)| {
-                    (current_address == collection_address) || (current_collection.name == name)
+                .any(|(current_address, _current_collection)| {
+                    new_collection_address.is_some()
+                        && (current_address == new_collection_address.clone().unwrap())
                 });
 
             if is_collection_found {

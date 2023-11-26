@@ -2,7 +2,7 @@ import { l } from "../../common/utils";
 import { PATH, rootPath } from "../envs";
 import { readFile, writeFile } from "fs/promises";
 import { getSeed } from "./get-seed";
-import { NETWORK_CONFIG } from "../../common/config";
+import { NETWORK_CONFIG, INJ_MINTER_WASM } from "../../common/config";
 import { getPrivateKey } from "../account/signer-inj";
 import { Network } from "@injectivelabs/networks";
 import {
@@ -34,7 +34,11 @@ function parseAddressList(rawLog: string): string[] {
   );
 }
 
-async function main(network: NetworkName) {
+async function main(
+  network: NetworkName,
+  isMigrationRequired: boolean,
+  wasmIgnoreList: string[]
+) {
   try {
     if (network !== "INJECTIVE") {
       throw new Error("The network is not INJECTIVE!");
@@ -61,6 +65,8 @@ async function main(network: NetworkName) {
       [];
 
     for (const CONTRACT of CONTRACTS) {
+      if (wasmIgnoreList.includes(CONTRACT.WASM)) continue;
+
       const wasmBinary = await readFile(
         rootPath(`../artifacts/${CONTRACT.WASM}`)
       );
@@ -84,6 +90,7 @@ async function main(network: NetworkName) {
       ContractsConfig,
       MsgInstantiateContract
     ][] = [];
+    let addressList: string[] = [];
 
     for (const i in contractConfigAndStoreCodeMsgList) {
       const [CONTRACT] = contractConfigAndStoreCodeMsgList[i];
@@ -107,28 +114,43 @@ async function main(network: NetworkName) {
       contractConfigAndInitMsgList.push([CONTRACT, msgInit]);
     }
 
-    const res = await msgBroadcasterWithPk.broadcast({
-      msgs: contractConfigAndInitMsgList.map((x) => x[1]),
-    });
+    if (!isMigrationRequired) {
+      const res = await msgBroadcasterWithPk.broadcast({
+        msgs: contractConfigAndInitMsgList.map((x) => x[1]),
+      });
 
-    const addressList = parseAddressList(res.rawLog);
+      addressList = parseAddressList(res.rawLog);
+    }
 
     for (const i in contractConfigAndInitMsgList) {
       const [{ WASM }] = contractConfigAndInitMsgList[i];
       const codeId = codeIds[i];
-      const contractAddress = addressList[i];
+      const contractAddress = addressList[i] || "";
 
       const networkName = network.toLowerCase();
       const contractName = WASM.replace(".wasm", "")
         .replace("_inj", "")
         .toLowerCase();
 
-      l(`"${contractName}" contract address is ${contractAddress}\n`);
-
-      const contractData: ContractData = {
+      let contractData: ContractData = {
         CODE: codeId,
-        ADDRESS: contractAddress,
+        ADDRESS: "",
       };
+
+      if (!isMigrationRequired) {
+        l(`"${contractName}" contract address is ${contractAddress}\n`);
+
+        contractData.ADDRESS = contractAddress;
+      } else {
+        const { ADDRESS }: ContractData = JSON.parse(
+          await readFile(
+            rootPath(`src/common/config/${networkName}-${contractName}.json`),
+            { encoding }
+          )
+        );
+
+        contractData.ADDRESS = ADDRESS;
+      }
 
       await writeFile(
         rootPath(`src/common/config/${networkName}-${contractName}.json`),
@@ -143,4 +165,4 @@ async function main(network: NetworkName) {
   }
 }
 
-main("INJECTIVE");
+main("INJECTIVE", true, [INJ_MINTER_WASM]);
