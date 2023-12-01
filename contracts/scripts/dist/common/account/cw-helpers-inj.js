@@ -378,12 +378,12 @@ async function getCwQueryHelpers(network) {
   }
   async function cwQueryBalanceInNft(owner, collectionAddress) {
     const MAX_LIMIT = 100;
+    const ITER_LIMIT = 50;
     let tokenList = [];
     let tokenAmountSum = 0;
     let i = 0;
     let lastToken = undefined;
-    while (!i || tokenAmountSum === MAX_LIMIT) {
-      tokenAmountSum = 0;
+    while ((!i || tokenAmountSum === MAX_LIMIT) && i < ITER_LIMIT) {
       i++;
       try {
         const msg = {
@@ -397,7 +397,7 @@ async function getCwQueryHelpers(network) {
           tokens
         } = JSON.parse(await queryInjContract(chainGrpcWasmApi, collectionAddress, msg));
         tokenList = [...tokenList, ...tokens];
-        tokenAmountSum += tokens.length;
+        tokenAmountSum = tokens.length;
         lastToken = getLast(tokens);
       } catch (error) {
         l(error);

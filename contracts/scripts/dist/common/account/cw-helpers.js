@@ -286,12 +286,12 @@ async function getCwQueryHelpers(network, rpc) {
   }
   async function cwQueryBalanceInNft(owner, collectionAddress) {
     const MAX_LIMIT = 100;
+    const ITER_LIMIT = 50;
     let tokenList = [];
     let tokenAmountSum = 0;
     let i = 0;
     let lastToken = undefined;
-    while (!i || tokenAmountSum === MAX_LIMIT) {
-      tokenAmountSum = 0;
+    while ((!i || tokenAmountSum === MAX_LIMIT) && i < ITER_LIMIT) {
       i++;
       try {
         const queryTokensMsg = {
@@ -305,7 +305,7 @@ async function getCwQueryHelpers(network, rpc) {
           tokens
         } = await cosmwasmQueryClient.queryContractSmart(collectionAddress, queryTokensMsg);
         tokenList = [...tokenList, ...tokens];
-        tokenAmountSum += tokens.length;
+        tokenAmountSum = tokens.length;
         lastToken = getLast(tokens);
       } catch (error) {
         l(error);

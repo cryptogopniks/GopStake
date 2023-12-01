@@ -618,14 +618,14 @@ async function getCwQueryHelpers(network: NetworkName) {
 
   async function cwQueryBalanceInNft(owner: string, collectionAddress: string) {
     const MAX_LIMIT = 100;
+    const ITER_LIMIT = 50;
 
     let tokenList: string[] = [];
     let tokenAmountSum: number = 0;
     let i: number = 0;
     let lastToken: string | undefined = undefined;
 
-    while (!i || tokenAmountSum === MAX_LIMIT) {
-      tokenAmountSum = 0;
+    while ((!i || tokenAmountSum === MAX_LIMIT) && i < ITER_LIMIT) {
       i++;
 
       try {
@@ -642,7 +642,7 @@ async function getCwQueryHelpers(network: NetworkName) {
         );
 
         tokenList = [...tokenList, ...tokens];
-        tokenAmountSum += tokens.length;
+        tokenAmountSum = tokens.length;
         lastToken = getLast(tokens);
       } catch (error) {
         l(error);
