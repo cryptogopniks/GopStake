@@ -128,7 +128,10 @@ async function main(network: NetworkName) {
     // await cwQueryApprovals(collection, token1);
     // await cwQueryNftOwner(collection, token1);
 
-    await cwQueryBalanceInNft(owner, collection);
+    await cwQueryBalanceInNft(
+      "stars1hvp3q00ypzrurd46h7c7c3hu86tx9uf8sg5lm3",
+      collection
+    );
   } catch (error) {
     l(error);
   }

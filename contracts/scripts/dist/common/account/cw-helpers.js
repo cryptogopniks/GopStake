@@ -1,4 +1,4 @@
-import { l } from "../utils";
+import { l, getLast } from "../utils";
 import { toBase64, fromUtf8 } from "@cosmjs/encoding";
 import { MinterMsgComposer } from "../codegen/Minter.message-composer";
 import { MinterQueryClient } from "../codegen/Minter.client";
@@ -285,12 +285,35 @@ async function getCwQueryHelpers(network, rpc) {
     return res;
   }
   async function cwQueryBalanceInNft(owner, collectionAddress) {
-    const queryTokensMsg = {
-      tokens: {
-        owner
+    const MAX_LIMIT = 100;
+    let tokenList = [];
+    let tokenAmountSum = 0;
+    let i = 0;
+    let lastToken = undefined;
+    while (!i || tokenAmountSum === MAX_LIMIT) {
+      tokenAmountSum = 0;
+      i++;
+      try {
+        const queryTokensMsg = {
+          tokens: {
+            owner,
+            start_after: lastToken,
+            limit: MAX_LIMIT
+          }
+        };
+        const {
+          tokens
+        } = await cosmwasmQueryClient.queryContractSmart(collectionAddress, queryTokensMsg);
+        tokenList = [...tokenList, ...tokens];
+        tokenAmountSum += tokens.length;
+        lastToken = getLast(tokens);
+      } catch (error) {
+        l(error);
       }
+    }
+    const res = {
+      tokens: Array.from(new Set(tokenList))
     };
-    const res = await cosmwasmQueryClient.queryContractSmart(collectionAddress, queryTokensMsg);
     l("\n", res, "\n");
     return res;
   }

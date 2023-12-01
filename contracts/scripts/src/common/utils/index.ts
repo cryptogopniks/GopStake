@@ -7,6 +7,10 @@ import axios, {
 
 const l = console.log.bind(console);
 
+function getLast<T>(arr: T[]) {
+  return arr[arr.length - 1];
+}
+
 class Request {
   private req: AxiosInstance;
 
@@ -37,4 +41,4 @@ function decrypt(encryptedData: string, key: string): string | undefined {
   }
 }
 
-export { Request, l, encrypt, decrypt };
+export { Request, l, getLast, encrypt, decrypt };

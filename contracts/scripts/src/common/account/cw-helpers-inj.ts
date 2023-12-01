@@ -1,4 +1,4 @@
-import { l } from "../utils";
+import { l, getLast } from "../utils";
 import { getExecuteContractMsg } from "./clients";
 import { toUtf8, toBase64, fromUtf8 } from "@cosmjs/encoding";
 import { getNetworkEndpoints, Network } from "@injectivelabs/networks";
@@ -617,14 +617,39 @@ async function getCwQueryHelpers(network: NetworkName) {
   }
 
   async function cwQueryBalanceInNft(owner: string, collectionAddress: string) {
-    const msg: QueryTokens = {
-      tokens: { owner },
-    };
+    const MAX_LIMIT = 100;
 
-    const res: TokensResponse = JSON.parse(
-      await queryInjContract(chainGrpcWasmApi, collectionAddress, msg)
-    );
+    let tokenList: string[] = [];
+    let tokenAmountSum: number = 0;
+    let i: number = 0;
+    let lastToken: string | undefined = undefined;
 
+    while (!i || tokenAmountSum === MAX_LIMIT) {
+      tokenAmountSum = 0;
+      i++;
+
+      try {
+        const msg: QueryTokens = {
+          tokens: {
+            owner,
+            start_after: lastToken,
+            limit: MAX_LIMIT,
+          },
+        };
+
+        const { tokens }: TokensResponse = JSON.parse(
+          await queryInjContract(chainGrpcWasmApi, collectionAddress, msg)
+        );
+
+        tokenList = [...tokenList, ...tokens];
+        tokenAmountSum += tokens.length;
+        lastToken = getLast(tokens);
+      } catch (error) {
+        l(error);
+      }
+    }
+
+    const res: TokensResponse = { tokens: Array.from(new Set(tokenList)) };
     l("\n", res, "\n");
     return res;
   }

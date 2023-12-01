@@ -1,6 +1,9 @@
 import { AES, enc } from "crypto-js";
 import axios from "axios";
 const l = console.log.bind(console);
+function getLast(arr) {
+  return arr[arr.length - 1];
+}
 class Request {
   constructor(config = {}) {
     this.req = axios.create(config);
@@ -24,4 +27,4 @@ function decrypt(encryptedData, key) {
     return;
   }
 }
-export { Request, l, encrypt, decrypt };
+export { Request, l, getLast, encrypt, decrypt };
