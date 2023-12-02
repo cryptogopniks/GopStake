@@ -404,7 +404,7 @@ async function getCwQueryHelpers(network) {
       }
     }
     const res = {
-      tokens: Array.from(new Set(tokenList))
+      tokens: tokenList
     };
     l("\n", res, "\n");
     return res;

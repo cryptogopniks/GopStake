@@ -312,7 +312,7 @@ async function getCwQueryHelpers(network, rpc) {
       }
     }
     const res = {
-      tokens: Array.from(new Set(tokenList))
+      tokens: tokenList
     };
     l("\n", res, "\n");
     return res;

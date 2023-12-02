@@ -649,7 +649,7 @@ async function getCwQueryHelpers(network: NetworkName) {
       }
     }
 
-    const res: TokensResponse = { tokens: Array.from(new Set(tokenList)) };
+    const res: TokensResponse = { tokens: tokenList };
     l("\n", res, "\n");
     return res;
   }

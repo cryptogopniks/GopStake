@@ -577,7 +577,7 @@ async function getCwQueryHelpers(network: NetworkName, rpc: string) {
       }
     }
 
-    const res: TokensResponse = { tokens: Array.from(new Set(tokenList)) };
+    const res: TokensResponse = { tokens: tokenList };
     l("\n", res, "\n");
     return res;
   }
