@@ -43,6 +43,7 @@ To interact with both `staking-platform` and `minter` contracts following functi
 | `cwQueryFunds(): Promise<ArrayOfFundsForToken>` | - | Return the account balance for contributions when listing collections |
 | `cwQueryStakers(addresses?: string[]): Promise<ArrayOfQueryStakersResponseItem>` | - | Return the list of stakers for specified (or all) staking addresses |
 | `cwQueryStakingRewards(address: string): Promise<BalancesResponseItem>` | - | Return, for a specified address, a list of staking awards summarized across all collections and NFTs |
+| `cwQueryStakingRewardsPerCollection(staker: string, collection: string): Promise<BalancesResponseItem>` | - | Return, for a specified staker and collection, a list of staking awards summarized across all NFTs |
 | `cwQueryAssociatedBalances(address: string): Promise<BalancesResponseItem>` | - | Return for the specified address the list of balances of tokens of registered collections (associated balances) |
 | `cwQueryProposals(lastAmount?: number): Promise<ArrayOfQueryProposalsResponseItem>` | - | Return a list of the specified number of recent proposals (or all proposals) for the specified address |
 | `cwQueryCollections(addresses?: string[]): Promise<ArrayOfQueryCollectionsResponseItem>` | - | Return a list of collections at the specified (or all) collection addresses |
