@@ -21,6 +21,13 @@ export interface StakingPlatformReadOnlyInterface {
   }: {
     address: string;
   }) => Promise<BalancesResponseItem>;
+  queryStakingRewardsPerCollection: ({
+    collection,
+    staker
+  }: {
+    collection: string;
+    staker: string;
+  }) => Promise<BalancesResponseItem>;
   queryAssociatedBalances: ({
     address
   }: {
@@ -53,6 +60,7 @@ export class StakingPlatformQueryClient implements StakingPlatformReadOnlyInterf
     this.queryFunds = this.queryFunds.bind(this);
     this.queryStakers = this.queryStakers.bind(this);
     this.queryStakingRewards = this.queryStakingRewards.bind(this);
+    this.queryStakingRewardsPerCollection = this.queryStakingRewardsPerCollection.bind(this);
     this.queryAssociatedBalances = this.queryAssociatedBalances.bind(this);
     this.queryProposals = this.queryProposals.bind(this);
     this.queryCollections = this.queryCollections.bind(this);
@@ -88,6 +96,20 @@ export class StakingPlatformQueryClient implements StakingPlatformReadOnlyInterf
     return this.client.queryContractSmart(this.contractAddress, {
       query_staking_rewards: {
         address
+      }
+    });
+  };
+  queryStakingRewardsPerCollection = async ({
+    collection,
+    staker
+  }: {
+    collection: string;
+    staker: string;
+  }): Promise<BalancesResponseItem> => {
+    return this.client.queryContractSmart(this.contractAddress, {
+      query_staking_rewards_per_collection: {
+        collection,
+        staker
       }
     });
   };

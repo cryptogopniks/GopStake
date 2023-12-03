@@ -351,6 +351,14 @@ async function getCwQueryHelpers(network, rpc) {
     l("\n", res, "\n");
     return res;
   }
+  async function cwQueryStakingRewardsPerCollection(staker, collection) {
+    const res = await stakingPlatformQueryClient.queryStakingRewardsPerCollection({
+      staker,
+      collection
+    });
+    l("\n", res, "\n");
+    return res;
+  }
   async function cwQueryAssociatedBalances(address) {
     const res = await stakingPlatformQueryClient.queryAssociatedBalances({
       address
@@ -402,6 +410,7 @@ async function getCwQueryHelpers(network, rpc) {
     cwQueryFunds,
     cwQueryStakers,
     cwQueryStakingRewards,
+    cwQueryStakingRewardsPerCollection,
     cwQueryAssociatedBalances,
     cwQueryProposals,
     cwQueryCollections,

@@ -22,6 +22,7 @@ use crate::actions::{
     query::{
         query_associated_balances, query_collections, query_collections_balances, query_config,
         query_funds, query_proposals, query_stakers, query_staking_rewards,
+        query_staking_rewards_per_collection,
     },
 };
 
@@ -102,6 +103,9 @@ pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> StdResult<Binary> {
         QueryMsg::QueryStakingRewards { address } => {
             to_json_binary(&query_staking_rewards(deps, env, address)?)
         }
+        QueryMsg::QueryStakingRewardsPerCollection { staker, collection } => to_json_binary(
+            &query_staking_rewards_per_collection(deps, env, staker, collection)?,
+        ),
         QueryMsg::QueryAssociatedBalances { address } => {
             to_json_binary(&query_associated_balances(deps, env, address)?)
         }

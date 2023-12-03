@@ -106,6 +106,12 @@ pub trait StakingPlatformExtension {
         address: ProjectAccount,
     ) -> StdResult<BalancesResponseItem>;
 
+    fn staking_platform_query_staking_rewards_per_collection(
+        &self,
+        staker: ProjectAccount,
+        collection: ProjectNft,
+    ) -> StdResult<BalancesResponseItem>;
+
     fn staking_platform_query_associated_balances(
         &self,
         address: ProjectAccount,
@@ -362,6 +368,21 @@ impl StakingPlatformExtension for Project {
             self.get_staking_platform_address(),
             &QueryMsg::QueryStakingRewards {
                 address: address.to_string(),
+            },
+        )
+    }
+
+    #[track_caller]
+    fn staking_platform_query_staking_rewards_per_collection(
+        &self,
+        staker: ProjectAccount,
+        collection: ProjectNft,
+    ) -> StdResult<BalancesResponseItem> {
+        self.app.wrap().query_wasm_smart(
+            self.get_staking_platform_address(),
+            &QueryMsg::QueryStakingRewardsPerCollection {
+                collection: collection.to_string(),
+                staker: staker.to_string(),
             },
         )
     }

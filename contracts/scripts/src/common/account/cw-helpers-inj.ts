@@ -752,6 +752,30 @@ async function getCwQueryHelpers(network: NetworkName) {
     return res;
   }
 
+  async function cwQueryStakingRewardsPerCollection(
+    staker: string,
+    collection: string
+  ) {
+    if (!STAKING_PLATFORM_CONTRACT) {
+      throw new Error("STAKING_PLATFORM_CONTRACT in not found!");
+    }
+
+    const msg: StakingPlatformTypes.QueryMsg = {
+      query_staking_rewards_per_collection: { staker, collection },
+    };
+
+    const res: StakingPlatformTypes.BalancesResponseItem = JSON.parse(
+      await queryInjContract(
+        chainGrpcWasmApi,
+        STAKING_PLATFORM_CONTRACT.DATA.ADDRESS,
+        msg
+      )
+    );
+
+    l("\n", res, "\n");
+    return res;
+  }
+
   async function cwQueryAssociatedBalances(address: string) {
     if (!STAKING_PLATFORM_CONTRACT) {
       throw new Error("STAKING_PLATFORM_CONTRACT in not found!");
@@ -889,6 +913,7 @@ async function getCwQueryHelpers(network: NetworkName) {
     cwQueryFunds,
     cwQueryStakers,
     cwQueryStakingRewards,
+    cwQueryStakingRewardsPerCollection,
     cwQueryAssociatedBalances,
     cwQueryProposals,
     cwQueryCollections,

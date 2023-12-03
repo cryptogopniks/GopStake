@@ -1525,6 +1525,25 @@ fn stake_2_users_2_collections() -> StdResult<()> {
     // 3 nft * 0.5 noria * 10 days
     assert_that(&bob_rewards_noria).is_equal_to(15_000_000);
 
+    let gopniks_rewards = project.staking_platform_query_staking_rewards_per_collection(
+        ProjectAccount::Bob,
+        ProjectNft::Gopniks,
+    )?;
+    let pinjeons_rewards = project.staking_platform_query_staking_rewards_per_collection(
+        ProjectAccount::Bob,
+        ProjectNft::Pinjeons,
+    )?;
+
+    assert_that(&gopniks_rewards.funds_list).is_equal_to(vec![Funds::new(
+        60_000_000u128,
+        &Currency::new(&ProjectToken::Atom.into(), 6),
+    )]);
+
+    assert_that(&pinjeons_rewards.funds_list).is_equal_to(vec![Funds::new(
+        15_000_000u128,
+        &Currency::new(&ProjectCoin::Noria.into(), 6),
+    )]);
+
     Ok(())
 }
 
@@ -3021,7 +3040,7 @@ fn migrate_staking_platform_default() -> StdResult<()> {
         project.get_staking_platform_address(),
         project.get_staking_platform_code_id(),
         gopstake_base::staking_platform::msg::MigrateMsg {
-            version: "1.1.0".to_string(),
+            version: "1.2.0".to_string(),
         },
     )?;
 

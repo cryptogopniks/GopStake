@@ -62,6 +62,7 @@ async function main(network: NetworkName) {
       cwQueryApprovals,
       cwQueryNftOwner,
       cwQueryBalanceInNft,
+      cwQueryStakingRewardsPerCollection,
     } = await getCwQueryHelpers(network, RPC);
 
     const {
@@ -129,6 +130,11 @@ async function main(network: NetworkName) {
     // await cwQueryNftOwner(collection, token1);
 
     await cwQueryBalanceInNft(
+      "stars1hvp3q00ypzrurd46h7c7c3hu86tx9uf8sg5lm3",
+      collection
+    );
+
+    await cwQueryStakingRewardsPerCollection(
       "stars1hvp3q00ypzrurd46h7c7c3hu86tx9uf8sg5lm3",
       collection
     );

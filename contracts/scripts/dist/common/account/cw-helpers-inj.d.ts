@@ -29,6 +29,7 @@ declare function getCwQueryHelpers(network: NetworkName): Promise<{
     cwQueryFunds: () => Promise<StakingPlatformTypes.ArrayOfFundsForToken>;
     cwQueryStakers: (addresses?: string[]) => Promise<StakingPlatformTypes.ArrayOfQueryStakersResponseItem>;
     cwQueryStakingRewards: (address: string) => Promise<StakingPlatformTypes.BalancesResponseItem>;
+    cwQueryStakingRewardsPerCollection: (staker: string, collection: string) => Promise<StakingPlatformTypes.BalancesResponseItem>;
     cwQueryAssociatedBalances: (address: string) => Promise<StakingPlatformTypes.BalancesResponseItem>;
     cwQueryProposals: (lastAmount?: number) => Promise<StakingPlatformTypes.ArrayOfQueryProposalsResponseItem>;
     cwQueryCollections: (addresses?: string[]) => Promise<StakingPlatformTypes.ArrayOfQueryCollectionsResponseItem>;

@@ -129,6 +129,11 @@ export type QueryMsg = {
         address: string;
     };
 } | {
+    query_staking_rewards_per_collection: {
+        collection: string;
+        staker: string;
+    };
+} | {
     query_associated_balances: {
         address: string;
     };

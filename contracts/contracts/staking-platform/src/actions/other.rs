@@ -22,9 +22,7 @@ pub fn migrate_contract(
         .parse()
         .map_err(|_| StdError::generic_err("Parsing new version error!"))?;
 
-    let version_from_msg = &msg.version;
-
-    if &version_new.to_string() != version_from_msg {
+    if version_new.to_string() != msg.version {
         Err(StdError::generic_err(
             "Msg version is not equal contract new version!",
         ))?;

@@ -4,6 +4,7 @@ use gopstake_base::{
     assets::{Currency, Funds, Token},
     constants::{MINS_PER_DAY, NANOS_PER_MIN},
     converters::{dec256_to_uint128, dec_to_dec256, u128_to_dec256},
+    error::ContractError,
     staking_platform::{
         msg::{
             BalancesResponseItem, QueryCollectionsBalancesResponseItem,
@@ -89,6 +90,65 @@ pub fn query_staking_rewards(
                 if funds.currency.token == staking_currency.token {
                     funds.amount += amount;
                 }
+            }
+        }
+    }
+
+    Ok(BalancesResponseItem {
+        staker_address,
+        funds_list,
+    })
+}
+
+pub fn query_staking_rewards_per_collection(
+    deps: Deps,
+    env: Env,
+    staker: String,
+    collection: String,
+) -> StdResult<BalancesResponseItem> {
+    // There is no reason to update rewards every 1 ns. We will use 1 min timeframe
+    let time_in_nanos: u128 = env.block.time.nanos().into();
+    let mins_per_day = u128_to_dec256(MINS_PER_DAY);
+
+    let staker_address = deps.api.addr_validate(&staker)?;
+    let collection_address = deps.api.addr_validate(&collection)?;
+    let collection_list = STAKERS.load(deps.storage, &staker_address)?;
+    let collection_info = collection_list
+        .iter()
+        .find(|x| x.collection_address == collection_address)
+        .ok_or(ContractError::CollectionIsNotFound)?;
+
+    let mut funds_list: Vec<Funds<Token>> = vec![];
+
+    let Collection {
+        staking_currency,
+        daily_rewards,
+        ..
+    } = COLLECTIONS.load(deps.storage, &collection_info.collection_address)?;
+
+    for token in &collection_info.staked_token_info_list {
+        let last_claim_date_in_nanos: u128 =
+            unwrap_field(token.last_claim_date, "last_claim_date")?
+                .nanos()
+                .into();
+
+        let time_diff_in_mins = u128_to_dec256(time_in_nanos - last_claim_date_in_nanos)
+            / u128_to_dec256(NANOS_PER_MIN);
+        let amount =
+            dec256_to_uint128(time_diff_in_mins * dec_to_dec256(daily_rewards) / mins_per_day);
+
+        let token_list: Vec<Token> = funds_list
+            .iter()
+            .map(|x| x.currency.token.to_owned())
+            .collect();
+
+        if !token_list.contains(&staking_currency.token) {
+            funds_list.push(Funds::new(Uint128::zero(), &staking_currency));
+        }
+
+        for funds in funds_list.iter_mut() {
+            if funds.currency.token == staking_currency.token {
+                funds.amount += amount;
             }
         }
     }

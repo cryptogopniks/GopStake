@@ -63,7 +63,7 @@ async function main(network: NetworkName) {
 
     const signingClient = cwClient.client as SigningCosmWasmClient;
 
-    const migrateMsg: MigrateMsg = { version: "1.1.0" };
+    const migrateMsg: MigrateMsg = { version: "1.2.0" };
 
     const msg: MsgMigrateContractEncodeObject = {
       typeUrl: "/cosmwasm.wasm.v1.MsgMigrateContract",

@@ -12,6 +12,7 @@ export class StakingPlatformQueryClient {
     this.queryFunds = this.queryFunds.bind(this);
     this.queryStakers = this.queryStakers.bind(this);
     this.queryStakingRewards = this.queryStakingRewards.bind(this);
+    this.queryStakingRewardsPerCollection = this.queryStakingRewardsPerCollection.bind(this);
     this.queryAssociatedBalances = this.queryAssociatedBalances.bind(this);
     this.queryProposals = this.queryProposals.bind(this);
     this.queryCollections = this.queryCollections.bind(this);
@@ -42,6 +43,17 @@ export class StakingPlatformQueryClient {
     return this.client.queryContractSmart(this.contractAddress, {
       query_staking_rewards: {
         address
+      }
+    });
+  };
+  queryStakingRewardsPerCollection = async ({
+    collection,
+    staker
+  }) => {
+    return this.client.queryContractSmart(this.contractAddress, {
+      query_staking_rewards_per_collection: {
+        collection,
+        staker
       }
     });
   };

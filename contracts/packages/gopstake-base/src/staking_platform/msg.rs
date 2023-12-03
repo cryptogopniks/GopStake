@@ -83,6 +83,9 @@ pub enum QueryMsg {
     QueryStakingRewards { address: String },
 
     #[returns(BalancesResponseItem)]
+    QueryStakingRewardsPerCollection { staker: String, collection: String },
+
+    #[returns(BalancesResponseItem)]
     QueryAssociatedBalances { address: String },
 
     #[returns(Vec<QueryProposalsResponseItem>)]

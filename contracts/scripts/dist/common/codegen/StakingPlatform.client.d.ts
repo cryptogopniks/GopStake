@@ -16,6 +16,10 @@ export interface StakingPlatformReadOnlyInterface {
     queryStakingRewards: ({ address }: {
         address: string;
     }) => Promise<BalancesResponseItem>;
+    queryStakingRewardsPerCollection: ({ collection, staker }: {
+        collection: string;
+        staker: string;
+    }) => Promise<BalancesResponseItem>;
     queryAssociatedBalances: ({ address }: {
         address: string;
     }) => Promise<BalancesResponseItem>;
@@ -40,6 +44,10 @@ export declare class StakingPlatformQueryClient implements StakingPlatformReadOn
     }) => Promise<ArrayOfQueryStakersResponseItem>;
     queryStakingRewards: ({ address }: {
         address: string;
+    }) => Promise<BalancesResponseItem>;
+    queryStakingRewardsPerCollection: ({ collection, staker }: {
+        collection: string;
+        staker: string;
     }) => Promise<BalancesResponseItem>;
     queryAssociatedBalances: ({ address }: {
         address: string;
