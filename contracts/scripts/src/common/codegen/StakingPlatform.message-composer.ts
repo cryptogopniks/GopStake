@@ -22,7 +22,11 @@ export interface StakingPlatformMsg {
   }: {
     collectionsToUnstake: StakedCollectionInfoForString[];
   }, _funds?: Coin[]) => MsgExecuteContractEncodeObject;
-  claimStakingRewards: (_funds?: Coin[]) => MsgExecuteContractEncodeObject;
+  claimStakingRewards: ({
+    collection
+  }: {
+    collection?: string;
+  }, _funds?: Coin[]) => MsgExecuteContractEncodeObject;
   updateConfig: ({
     minter,
     owner
@@ -136,14 +140,20 @@ export class StakingPlatformMsgComposer implements StakingPlatformMsg {
       })
     };
   };
-  claimStakingRewards = (_funds?: Coin[]): MsgExecuteContractEncodeObject => {
+  claimStakingRewards = ({
+    collection
+  }: {
+    collection?: string;
+  }, _funds?: Coin[]): MsgExecuteContractEncodeObject => {
     return {
       typeUrl: "/cosmwasm.wasm.v1.MsgExecuteContract",
       value: MsgExecuteContract.fromPartial({
         sender: this.sender,
         contract: this.contractAddress,
         msg: toUtf8(JSON.stringify({
-          claim_staking_rewards: {}
+          claim_staking_rewards: {
+            collection
+          }
         })),
         funds: _funds
       })

@@ -67,7 +67,7 @@ async function main(network: NetworkName) {
       simulateTx: true,
     });
 
-    const migrateMsg: MigrateMsg = { version: "1.2.0" };
+    const migrateMsg: MigrateMsg = { version: "1.3.0" };
 
     const msg = MsgMigrateContract.fromJSON({
       sender: injectiveAddress,

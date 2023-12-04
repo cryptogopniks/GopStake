@@ -36,6 +36,7 @@ pub trait StakingPlatformExtension {
     fn staking_platform_try_claim_staking_rewards(
         &mut self,
         sender: ProjectAccount,
+        collection: &Option<ProjectNft>,
     ) -> StdResult<AppResponse>;
 
     fn staking_platform_try_update_config<A: ToString>(
@@ -174,12 +175,15 @@ impl StakingPlatformExtension for Project {
     fn staking_platform_try_claim_staking_rewards(
         &mut self,
         sender: ProjectAccount,
+        collection: &Option<ProjectNft>,
     ) -> StdResult<AppResponse> {
         self.app
             .execute_contract(
                 sender.into(),
                 self.get_staking_platform_address(),
-                &ExecuteMsg::ClaimStakingRewards {},
+                &ExecuteMsg::ClaimStakingRewards {
+                    collection: collection.as_ref().map(|x| x.to_string()),
+                },
                 &[],
             )
             .map_err(parse_err)

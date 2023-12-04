@@ -17,7 +17,9 @@ export type ExecuteMsg = {
     collections_to_unstake: StakedCollectionInfoForString[];
   };
 } | {
-  claim_staking_rewards: {};
+  claim_staking_rewards: {
+    collection?: string | null;
+  };
 } | {
   update_config: {
     minter?: string | null;

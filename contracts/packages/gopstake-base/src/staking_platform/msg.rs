@@ -25,7 +25,9 @@ pub enum ExecuteMsg {
         collections_to_unstake: Vec<StakedCollectionInfo<String>>,
     },
 
-    ClaimStakingRewards {},
+    ClaimStakingRewards {
+        collection: Option<String>,
+    },
 
     // admin
     UpdateConfig {

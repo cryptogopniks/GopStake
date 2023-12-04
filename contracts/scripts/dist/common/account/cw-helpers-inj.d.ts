@@ -6,7 +6,9 @@ import { UpdateConfigStruct, ApprovalsResponse, NetworkName, TokensResponse, Own
 declare function getCwExecHelpers(network: NetworkName, owner: string, msgBroadcaster: MsgBroadcasterWithPk | MsgBroadcaster): Promise<{
     cwApproveAndStake: (senderAddress: string, operator: string, collectionsToStake: StakingPlatformTypes.StakedCollectionInfoForString[], _gasPrice?: string) => Promise<import("@injectivelabs/sdk-ts").TxResponse>;
     cwUnstake: (collectionsToUnstake: StakingPlatformTypes.StakedCollectionInfoForString[], _gasPrice?: string) => Promise<import("@injectivelabs/sdk-ts").TxResponse>;
-    cwClaimStakingRewards: (_gasPrice?: string) => Promise<import("@injectivelabs/sdk-ts").TxResponse>;
+    cwClaimStakingRewards: ({ collection }: {
+        collection: string | undefined;
+    }, _gasPrice?: string) => Promise<import("@injectivelabs/sdk-ts").TxResponse>;
     cwDistributeFunds: (addressAndWeightList: [string, string][], _gasPrice?: string) => Promise<import("@injectivelabs/sdk-ts").TxResponse>;
     cwRemoveCollection: (address: string, _gasPrice?: string) => Promise<import("@injectivelabs/sdk-ts").TxResponse>;
     cwCreateProposal: (proposal: StakingPlatformTypes.ProposalForStringAndTokenUnverified, _gasPrice?: string) => Promise<import("@injectivelabs/sdk-ts").TxResponse>;

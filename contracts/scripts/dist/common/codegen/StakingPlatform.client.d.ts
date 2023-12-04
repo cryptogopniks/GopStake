@@ -71,7 +71,9 @@ export interface StakingPlatformInterface extends StakingPlatformReadOnlyInterfa
     unstake: ({ collectionsToUnstake }: {
         collectionsToUnstake: StakedCollectionInfoForString[];
     }, fee?: number | StdFee | "auto", memo?: string, _funds?: Coin[]) => Promise<ExecuteResult>;
-    claimStakingRewards: (fee?: number | StdFee | "auto", memo?: string, _funds?: Coin[]) => Promise<ExecuteResult>;
+    claimStakingRewards: ({ collection }: {
+        collection?: string;
+    }, fee?: number | StdFee | "auto", memo?: string, _funds?: Coin[]) => Promise<ExecuteResult>;
     updateConfig: ({ minter, owner }: {
         minter?: string;
         owner?: string;
@@ -115,7 +117,9 @@ export declare class StakingPlatformClient extends StakingPlatformQueryClient im
     unstake: ({ collectionsToUnstake }: {
         collectionsToUnstake: StakedCollectionInfoForString[];
     }, fee?: number | StdFee | "auto", memo?: string, _funds?: Coin[]) => Promise<ExecuteResult>;
-    claimStakingRewards: (fee?: number | StdFee | "auto", memo?: string, _funds?: Coin[]) => Promise<ExecuteResult>;
+    claimStakingRewards: ({ collection }: {
+        collection?: string | undefined;
+    }, fee?: number | StdFee | "auto", memo?: string, _funds?: Coin[]) => Promise<ExecuteResult>;
     updateConfig: ({ minter, owner }: {
         minter?: string | undefined;
         owner?: string | undefined;

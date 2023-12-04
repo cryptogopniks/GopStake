@@ -179,8 +179,12 @@ async function getCwExecHelpers(network, owner, msgBroadcaster) {
       injectiveAddress: sender
     });
   }
-  async function cwClaimStakingRewards(_gasPrice) {
-    const [msg, sender] = getInjExecMsgFromComposerObj(stakingPlatformMsgComposer.claimStakingRewards());
+  async function cwClaimStakingRewards({
+    collection
+  }, _gasPrice) {
+    const [msg, sender] = getInjExecMsgFromComposerObj(stakingPlatformMsgComposer.claimStakingRewards({
+      collection
+    }));
     return await msgBroadcaster.broadcast({
       msgs: [msg],
       injectiveAddress: sender

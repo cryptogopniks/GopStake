@@ -57,14 +57,18 @@ export class StakingPlatformMsgComposer {
       })
     };
   };
-  claimStakingRewards = _funds => {
+  claimStakingRewards = ({
+    collection
+  }, _funds) => {
     return {
       typeUrl: "/cosmwasm.wasm.v1.MsgExecuteContract",
       value: MsgExecuteContract.fromPartial({
         sender: this.sender,
         contract: this.contractAddress,
         msg: toUtf8(JSON.stringify({
-          claim_staking_rewards: {}
+          claim_staking_rewards: {
+            collection
+          }
         })),
         funds: _funds
       })

@@ -279,9 +279,12 @@ async function getCwExecHelpers(
     );
   }
 
-  async function cwClaimStakingRewards(gasPrice: string) {
+  async function cwClaimStakingRewards(
+    { collection }: { collection: string | undefined },
+    gasPrice: string
+  ) {
     return await _msgWrapperWithGasPrice(
-      [stakingPlatformMsgComposer.claimStakingRewards()],
+      [stakingPlatformMsgComposer.claimStakingRewards({ collection })],
       gasPrice
     );
   }

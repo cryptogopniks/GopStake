@@ -319,9 +319,12 @@ async function getCwExecHelpers(
     });
   }
 
-  async function cwClaimStakingRewards(_gasPrice?: string) {
+  async function cwClaimStakingRewards(
+    { collection }: { collection: string | undefined },
+    _gasPrice?: string
+  ) {
     const [msg, sender] = getInjExecMsgFromComposerObj(
-      stakingPlatformMsgComposer.claimStakingRewards()
+      stakingPlatformMsgComposer.claimStakingRewards({ collection })
     );
 
     return await msgBroadcaster.broadcast({

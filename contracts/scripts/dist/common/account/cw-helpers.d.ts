@@ -4,7 +4,9 @@ import { UpdateConfigStruct, ApprovalsResponse, NetworkName, TokensResponse, Own
 declare function getCwExecHelpers(network: NetworkName, rpc: string, owner: string, signer: (OfflineSigner & OfflineDirectSigner) | DirectSecp256k1HdWallet): Promise<{
     cwApproveAndStake: (senderAddress: string, operator: string, collectionsToStake: StakedCollectionInfoForString[], gasPrice: string) => Promise<import("@cosmjs/cosmwasm-stargate").DeliverTxResponse>;
     cwUnstake: (collectionsToUnstake: StakedCollectionInfoForString[], gasPrice: string) => Promise<import("@cosmjs/cosmwasm-stargate").DeliverTxResponse>;
-    cwClaimStakingRewards: (gasPrice: string) => Promise<import("@cosmjs/cosmwasm-stargate").DeliverTxResponse>;
+    cwClaimStakingRewards: ({ collection }: {
+        collection: string | undefined;
+    }, gasPrice: string) => Promise<import("@cosmjs/cosmwasm-stargate").DeliverTxResponse>;
     cwDistributeFunds: (addressAndWeightList: [string, string][], gasPrice: string) => Promise<import("@cosmjs/cosmwasm-stargate").DeliverTxResponse>;
     cwRemoveCollection: (address: string, gasPrice: string) => Promise<import("@cosmjs/cosmwasm-stargate").DeliverTxResponse>;
     cwCreateProposal: (proposal: ProposalForStringAndTokenUnverified, gasPrice: string) => Promise<import("@cosmjs/cosmwasm-stargate").DeliverTxResponse>;

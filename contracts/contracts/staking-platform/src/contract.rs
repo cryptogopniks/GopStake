@@ -52,7 +52,9 @@ pub fn execute(
         ExecuteMsg::Unstake {
             collections_to_unstake,
         } => try_unstake(deps, env, info, collections_to_unstake),
-        ExecuteMsg::ClaimStakingRewards {} => try_claim_staking_rewards(deps, env, info),
+        ExecuteMsg::ClaimStakingRewards { collection } => {
+            try_claim_staking_rewards(deps, env, info, collection)
+        }
         ExecuteMsg::UpdateConfig { owner, minter } => {
             try_update_config(deps, env, info, owner, minter)
         }

@@ -171,7 +171,11 @@ export interface StakingPlatformInterface extends StakingPlatformReadOnlyInterfa
   }: {
     collectionsToUnstake: StakedCollectionInfoForString[];
   }, fee?: number | StdFee | "auto", memo?: string, _funds?: Coin[]) => Promise<ExecuteResult>;
-  claimStakingRewards: (fee?: number | StdFee | "auto", memo?: string, _funds?: Coin[]) => Promise<ExecuteResult>;
+  claimStakingRewards: ({
+    collection
+  }: {
+    collection?: string;
+  }, fee?: number | StdFee | "auto", memo?: string, _funds?: Coin[]) => Promise<ExecuteResult>;
   updateConfig: ({
     minter,
     owner
@@ -272,9 +276,15 @@ export class StakingPlatformClient extends StakingPlatformQueryClient implements
       }
     }, fee, memo, _funds);
   };
-  claimStakingRewards = async (fee: number | StdFee | "auto" = "auto", memo?: string, _funds?: Coin[]): Promise<ExecuteResult> => {
+  claimStakingRewards = async ({
+    collection
+  }: {
+    collection?: string;
+  }, fee: number | StdFee | "auto" = "auto", memo?: string, _funds?: Coin[]): Promise<ExecuteResult> => {
     return await this.client.execute(this.sender, this.contractAddress, {
-      claim_staking_rewards: {}
+      claim_staking_rewards: {
+        collection
+      }
     }, fee, memo, _funds);
   };
   updateConfig = async ({

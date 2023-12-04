@@ -15,7 +15,9 @@ export interface StakingPlatformMsg {
     unstake: ({ collectionsToUnstake }: {
         collectionsToUnstake: StakedCollectionInfoForString[];
     }, _funds?: Coin[]) => MsgExecuteContractEncodeObject;
-    claimStakingRewards: (_funds?: Coin[]) => MsgExecuteContractEncodeObject;
+    claimStakingRewards: ({ collection }: {
+        collection?: string;
+    }, _funds?: Coin[]) => MsgExecuteContractEncodeObject;
     updateConfig: ({ minter, owner }: {
         minter?: string;
         owner?: string;
@@ -58,7 +60,9 @@ export declare class StakingPlatformMsgComposer implements StakingPlatformMsg {
     unstake: ({ collectionsToUnstake }: {
         collectionsToUnstake: StakedCollectionInfoForString[];
     }, _funds?: Coin[]) => MsgExecuteContractEncodeObject;
-    claimStakingRewards: (_funds?: Coin[]) => MsgExecuteContractEncodeObject;
+    claimStakingRewards: ({ collection }: {
+        collection?: string | undefined;
+    }, _funds?: Coin[]) => MsgExecuteContractEncodeObject;
     updateConfig: ({ minter, owner }: {
         minter?: string | undefined;
         owner?: string | undefined;

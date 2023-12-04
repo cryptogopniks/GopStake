@@ -1763,7 +1763,7 @@ fn claim_staking_rewards_default() -> StdResult<()> {
     let delay = (12 * 60 * NANOS_PER_MIN) as u64;
     project.wait(delay);
 
-    project.staking_platform_try_claim_staking_rewards(ProjectAccount::Alice)?;
+    project.staking_platform_try_claim_staking_rewards(ProjectAccount::Alice, &None)?;
 
     let alice_rewards = project.staking_platform_query_staking_rewards(ProjectAccount::Alice)?;
     let alice_rewards_atom = alice_rewards
@@ -2016,7 +2016,7 @@ fn claim_staking_rewards_with_minter_default() -> StdResult<()> {
     let delay = (MINS_PER_DAY * NANOS_PER_MIN) as u64;
     project.wait(delay);
 
-    project.staking_platform_try_claim_staking_rewards(ProjectAccount::Alice)?;
+    project.staking_platform_try_claim_staking_rewards(ProjectAccount::Alice, &None)?;
 
     let alice_associated_balances =
         project.staking_platform_query_associated_balances(ProjectAccount::Alice)?;
@@ -2177,7 +2177,7 @@ fn claim_staking_rewards_with_minter_and_empty_spender() -> StdResult<()> {
     // 2 nft * 0.5 noria * 0.5 days
     assert_that(&alice_rewards_noria).is_equal_to(500_000);
 
-    project.staking_platform_try_claim_staking_rewards(ProjectAccount::Alice)?;
+    project.staking_platform_try_claim_staking_rewards(ProjectAccount::Alice, &None)?;
 
     let alice_associated_balances =
         project.staking_platform_query_associated_balances(ProjectAccount::Alice)?;
@@ -2519,7 +2519,7 @@ fn claim_staking_rewards_and_unstake_all() -> StdResult<()> {
     // 2 nft * 0.5 noria * 0.5 days
     assert_that(&alice_rewards_noria).is_equal_to(500_000);
 
-    project.staking_platform_try_claim_staking_rewards(ProjectAccount::Alice)?;
+    project.staking_platform_try_claim_staking_rewards(ProjectAccount::Alice, &None)?;
 
     project.staking_platform_try_unstake(
         ProjectAccount::Alice,
@@ -2573,6 +2573,173 @@ fn claim_staking_rewards_and_unstake_all() -> StdResult<()> {
     let staker = project.staking_platform_query_stakers(&Some(vec![ProjectAccount::Alice]))?;
     assert_that(&(staker.len() == 1 && staker[0].staked_collection_info_list.is_empty()))
         .is_equal_to(true);
+
+    Ok(())
+}
+
+#[test]
+fn claim_staking_rewards_for_specified_collection() -> StdResult<()> {
+    let mut project = Project::new(Some(CHAIN_ID_DEV));
+
+    project.minter_try_create_denom(
+        ProjectAccount::Owner,
+        ProjectCoin::Noria,
+        (1, ProjectCoin::Denom),
+    )?;
+
+    let proposal_a: &Proposal<String, TokenUnverified> = &Proposal {
+        proposal_status: None,
+        price: Funds::new(
+            100u128,
+            &Currency::new(
+                &TokenUnverified::new_native(&ProjectCoin::Denom.to_string()),
+                6,
+            ),
+        ),
+        proposal_type: ProposalType::AddCollection {
+            collection_address: ProjectNft::Gopniks.to_string(),
+            collection: Collection {
+                name: ProjectNft::Gopniks.to_string(),
+                staking_currency: Currency::new(
+                    &TokenUnverified::new_cw20(&ProjectToken::Atom.to_string()),
+                    6,
+                ),
+                daily_rewards: str_to_dec("120000"),
+                emission_type: EmissionType::Spending,
+                owner: ProjectAccount::Owner.to_string(),
+            },
+        },
+    };
+
+    let proposal_b: &Proposal<String, TokenUnverified> = &Proposal {
+        proposal_status: None,
+        price: Funds::new(
+            222u128,
+            &Currency::new(
+                &TokenUnverified::new_cw20(&ProjectToken::Inj.to_string()),
+                18,
+            ),
+        ),
+        proposal_type: ProposalType::AddCollection {
+            collection_address: ProjectNft::Pinjeons.to_string(),
+            collection: Collection {
+                name: ProjectNft::Pinjeons.to_string(),
+                staking_currency: Currency::new(
+                    &TokenUnverified::new_cw20(&ProjectToken::Atom.to_string()),
+                    6,
+                ),
+                daily_rewards: str_to_dec("120000"),
+                emission_type: EmissionType::Spending,
+                owner: ProjectAccount::Owner.to_string(),
+            },
+        },
+    };
+
+    project.staking_platform_try_create_proposal(ProjectAccount::Admin, proposal_a)?;
+    project.staking_platform_try_create_proposal(ProjectAccount::Admin, proposal_b)?;
+
+    project.staking_platform_try_accept_proposal(
+        ProjectAccount::Owner,
+        1,
+        100,
+        ProjectCoin::Denom,
+    )?;
+    project.staking_platform_try_accept_proposal(
+        ProjectAccount::Owner,
+        2,
+        222,
+        ProjectToken::Inj,
+    )?;
+
+    project.staking_platform_try_deposit_tokens(
+        ProjectAccount::Owner,
+        ProjectNft::Gopniks,
+        100_000u128,
+        ProjectToken::Atom,
+    )?;
+    project.staking_platform_try_deposit_tokens(
+        ProjectAccount::Owner,
+        ProjectNft::Pinjeons,
+        100_000u128,
+        ProjectToken::Atom,
+    )?;
+
+    project.increase_allowances_nft(
+        ProjectAccount::Alice,
+        project.get_staking_platform_address(),
+        ProjectNft::Gopniks,
+    );
+    project.increase_allowances_nft(
+        ProjectAccount::Alice,
+        project.get_staking_platform_address(),
+        ProjectNft::Pinjeons,
+    );
+
+    project.staking_platform_try_stake(
+        ProjectAccount::Alice,
+        &[
+            StakedCollectionInfo {
+                collection_address: ProjectNft::Gopniks.to_string(),
+                staked_token_info_list: vec![StakedTokenInfo {
+                    token_id: Uint128::new(1),
+                    staking_start_date: None,
+                    last_claim_date: None,
+                }],
+            },
+            StakedCollectionInfo {
+                collection_address: ProjectNft::Pinjeons.to_string(),
+                staked_token_info_list: vec![
+                    StakedTokenInfo {
+                        token_id: Uint128::new(1),
+                        staking_start_date: None,
+                        last_claim_date: None,
+                    },
+                    StakedTokenInfo {
+                        token_id: Uint128::new(2),
+                        staking_start_date: None,
+                        last_claim_date: None,
+                    },
+                ],
+            },
+        ],
+    )?;
+
+    let delay = (60 * NANOS_PER_MIN) as u64;
+    project.wait(delay);
+
+    project.staking_platform_try_claim_staking_rewards(
+        ProjectAccount::Alice,
+        &Some(ProjectNft::Gopniks),
+    )?;
+
+    let alice_associated_balances =
+        project.staking_platform_query_associated_balances(ProjectAccount::Alice)?;
+    let alice_atom_associated_balance = alice_associated_balances
+        .funds_list
+        .iter()
+        .find(|x| x.currency.token == Token::new_cw20(&ProjectToken::Atom.into()))
+        .unwrap()
+        .amount
+        .u128();
+
+    assert_that(&alice_atom_associated_balance).is_equal_to(1_005_000);
+
+    project.staking_platform_try_claim_staking_rewards(
+        ProjectAccount::Alice,
+        &Some(ProjectNft::Pinjeons),
+    )?;
+
+    let alice_associated_balances =
+        project.staking_platform_query_associated_balances(ProjectAccount::Alice)?;
+    let alice_atom_associated_balance = alice_associated_balances
+        .funds_list
+        .iter()
+        .find(|x| x.currency.token == Token::new_cw20(&ProjectToken::Atom.into()))
+        .unwrap()
+        .amount
+        .u128();
+
+    assert_that(&alice_atom_associated_balance).is_equal_to(1_015_000);
 
     Ok(())
 }
@@ -2678,7 +2845,7 @@ fn accept_proposal_update_collection_change_daily_rewards() -> StdResult<()> {
 
     project.wait(delay);
 
-    project.staking_platform_try_claim_staking_rewards(ProjectAccount::Alice)?;
+    project.staking_platform_try_claim_staking_rewards(ProjectAccount::Alice, &None)?;
 
     let alice_associated_balances =
         project.staking_platform_query_associated_balances(ProjectAccount::Alice)?;
@@ -2905,7 +3072,7 @@ fn accept_proposal_update_collection_change_staking_currency() -> StdResult<()> 
 
     project.wait(delay);
 
-    project.staking_platform_try_claim_staking_rewards(ProjectAccount::Alice)?;
+    project.staking_platform_try_claim_staking_rewards(ProjectAccount::Alice, &None)?;
 
     let alice_balances = project.query_all_balances(ProjectAccount::Alice)?;
     let alice_denom_balance = alice_balances
@@ -3040,7 +3207,7 @@ fn migrate_staking_platform_default() -> StdResult<()> {
         project.get_staking_platform_address(),
         project.get_staking_platform_code_id(),
         gopstake_base::staking_platform::msg::MigrateMsg {
-            version: "1.2.0".to_string(),
+            version: "1.3.0".to_string(),
         },
     )?;
 

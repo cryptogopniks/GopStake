@@ -131,9 +131,13 @@ export class StakingPlatformClient extends StakingPlatformQueryClient {
       }
     }, fee, memo, _funds);
   };
-  claimStakingRewards = async (fee = "auto", memo, _funds) => {
+  claimStakingRewards = async ({
+    collection
+  }, fee = "auto", memo, _funds) => {
     return await this.client.execute(this.sender, this.contractAddress, {
-      claim_staking_rewards: {}
+      claim_staking_rewards: {
+        collection
+      }
     }, fee, memo, _funds);
   };
   updateConfig = async ({

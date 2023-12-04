@@ -299,6 +299,7 @@ pub fn try_claim_staking_rewards(
     deps: DepsMut,
     env: Env,
     info: MessageInfo,
+    collection: Option<String>,
 ) -> Result<Response, ContractError> {
     // verify funds
     nonpayable(&info)?;
@@ -309,7 +310,19 @@ pub fn try_claim_staking_rewards(
     let mut collection_list = STAKERS.load(deps.storage, &info.sender)?;
     let mut staking_rewards_and_emission_type_list: Vec<(Funds<Token>, EmissionType)> = vec![];
 
+    let collection = collection
+        .as_ref()
+        .map(|x| -> StdResult<Addr> { deps.api.addr_validate(x) })
+        .transpose()?;
+
     for collection_info in collection_list.iter_mut() {
+        // claim rewards for specified collection or for all collections
+        if let Some(x) = &collection {
+            if collection_info.collection_address != x {
+                continue;
+            }
+        }
+
         let Collection {
             staking_currency,
             daily_rewards,
