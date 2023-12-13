@@ -205,6 +205,12 @@ fn create_proposal_add_same_collection_twice() -> StdResult<()> {
 fn create_proposal_update_collection_default() -> StdResult<()> {
     let mut project = Project::new(Some(CHAIN_ID_DEV));
 
+    project.minter_try_create_denom(
+        ProjectAccount::Owner,
+        ProjectCoin::Noria,
+        (1, ProjectCoin::Denom),
+    )?;
+
     // collection
     let proposal_a: &Proposal<String, TokenUnverified> = &Proposal {
         proposal_status: None,
@@ -455,6 +461,53 @@ fn create_proposal_authorization() -> StdResult<()> {
 
     let proposals = project.staking_platform_query_proposals(None)?;
     assert_that(&proposals).is_equal_to(&expected);
+
+    Ok(())
+}
+
+#[test]
+fn create_proposal_unowned_minter_token() -> StdResult<()> {
+    let mut project = Project::new(Some(CHAIN_ID_DEV));
+
+    let proposal: &Proposal<String, TokenUnverified> = &Proposal {
+        proposal_status: None,
+        price: Funds::new(
+            100u128,
+            &Currency::new(
+                &TokenUnverified::new_native(&ProjectCoin::Denom.to_string()),
+                6,
+            ),
+        ),
+        proposal_type: ProposalType::AddCollection {
+            collection_address: ProjectNft::Gopniks.to_string(),
+            collection: Collection {
+                name: ProjectNft::Gopniks.to_string(),
+                staking_currency: Currency::new(
+                    &TokenUnverified::new_native(ProjectCoin::Denom.into()),
+                    6,
+                ),
+                daily_rewards: str_to_dec("1000000"),
+                emission_type: EmissionType::Minting,
+                owner: ProjectAccount::Owner.to_string(),
+            },
+        },
+    };
+
+    let res = project
+        .staking_platform_try_create_proposal(ProjectAccount::Admin, proposal)
+        .unwrap_err();
+    assert_error(&res, ContractError::UnownedStakingCurrency);
+
+    project.minter_try_create_denom(
+        ProjectAccount::Admin,
+        ProjectCoin::Denom,
+        (1, ProjectCoin::Denom),
+    )?;
+
+    let res = project
+        .staking_platform_try_create_proposal(ProjectAccount::Admin, proposal)
+        .unwrap_err();
+    assert_error(&res, ContractError::UnownedStakingCurrency);
 
     Ok(())
 }
@@ -1172,6 +1225,12 @@ fn deposit_tokens_unauth_default() -> StdResult<()> {
 #[test]
 fn deposit_tokens_improper_emission_type() -> StdResult<()> {
     let mut project = Project::new(Some(CHAIN_ID_DEV));
+
+    project.minter_try_create_denom(
+        ProjectAccount::Owner,
+        ProjectCoin::Noria,
+        (1, ProjectCoin::Denom),
+    )?;
 
     let proposal: &Proposal<String, TokenUnverified> = &Proposal {
         proposal_status: None,

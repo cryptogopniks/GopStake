@@ -586,8 +586,26 @@ pub fn try_create_proposal(
             );
             let owner = deps.api.addr_validate(&owner)?;
 
-            if !emission_type.is_spending() && !staking_currency.token.is_native() {
-                Err(ContractError::WrongMinterTokenType)?;
+            if !emission_type.is_spending() {
+                if !staking_currency.token.is_native() {
+                    Err(ContractError::WrongMinterTokenType)?;
+                }
+
+                // check if minter token was created by collection owner
+                let Config { minter, .. } = CONFIG.load(deps.storage)?;
+                let minter = unwrap_field(minter, "minter")?;
+
+                let gopstake_base::minter::types::QueryDenomsFromCreatorResponse { denoms } =
+                    deps.querier.query_wasm_smart(
+                        &minter,
+                        &gopstake_base::minter::msg::QueryMsg::DenomsByCreator {
+                            creator: owner.to_string(),
+                        },
+                    )?;
+
+                if !denoms.contains(&staking_currency.token.try_get_native()?) {
+                    Err(ContractError::UnownedStakingCurrency)?;
+                }
             }
 
             let is_collection_found = COLLECTIONS
@@ -635,8 +653,26 @@ pub fn try_create_proposal(
             );
             let owner = deps.api.addr_validate(&owner)?;
 
-            if !emission_type.is_spending() && !staking_currency.token.is_native() {
-                Err(ContractError::WrongMinterTokenType)?;
+            if !emission_type.is_spending() {
+                if !staking_currency.token.is_native() {
+                    Err(ContractError::WrongMinterTokenType)?;
+                }
+
+                // check if minter token was created by collection owner
+                let Config { minter, .. } = CONFIG.load(deps.storage)?;
+                let minter = unwrap_field(minter, "minter")?;
+
+                let gopstake_base::minter::types::QueryDenomsFromCreatorResponse { denoms } =
+                    deps.querier.query_wasm_smart(
+                        &minter,
+                        &gopstake_base::minter::msg::QueryMsg::DenomsByCreator {
+                            creator: owner.to_string(),
+                        },
+                    )?;
+
+                if !denoms.contains(&staking_currency.token.try_get_native()?) {
+                    Err(ContractError::UnownedStakingCurrency)?;
+                }
             }
 
             let is_collection_found = COLLECTIONS

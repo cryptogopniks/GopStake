@@ -11,7 +11,7 @@ pub fn query_denoms_by_creator(
     creator: String,
 ) -> StdResult<QueryDenomsFromCreatorResponse> {
     let creator = deps.api.addr_validate(&creator)?;
-    let denoms = TOKENS.load(deps.storage, &creator)?;
+    let denoms = TOKENS.load(deps.storage, &creator).unwrap_or_default();
     Ok(QueryDenomsFromCreatorResponse { denoms })
 }
 

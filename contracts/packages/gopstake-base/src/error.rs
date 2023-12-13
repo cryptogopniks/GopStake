@@ -79,6 +79,9 @@ pub enum ContractError {
     #[error("{value:?} config is not found!")]
     ParameterIsNotFound { value: String },
 
+    #[error("This staking currency doesn't belong this owner!")]
+    UnownedStakingCurrency,
+
     // minter
     #[error("Denom already exists!")]
     DenomExists,
