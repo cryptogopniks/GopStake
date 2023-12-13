@@ -38,10 +38,10 @@ async function main(network: NetworkName) {
     }
 
     const testWallets: {
-      SEED_DAPP: string;
+      SEED_ADMIN: string;
     } = JSON.parse(await readFile(PATH.TO_TEST_WALLETS, { encoding: "utf8" }));
 
-    const seed = await getSeed(testWallets.SEED_DAPP);
+    const seed = await getSeed(testWallets.SEED_ADMIN);
     if (!seed) throw new Error("Seed is not found!");
 
     const chain = chains.find((x) => x.chain_id == CHAIN_ID);

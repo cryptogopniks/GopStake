@@ -61,10 +61,10 @@ async function main(
     } = NETWORK_CONFIG[network];
 
     const testWallets: {
-      SEED_DAPP: string;
+      SEED_ADMIN: string;
     } = JSON.parse(await readFile(PATH.TO_TEST_WALLETS, { encoding }));
 
-    const seed = await getSeed(testWallets.SEED_DAPP);
+    const seed = await getSeed(testWallets.SEED_ADMIN);
     if (!seed) throw new Error("Seed is not found!");
 
     const { signer, owner } = await getSigner(PREFIX, seed);
