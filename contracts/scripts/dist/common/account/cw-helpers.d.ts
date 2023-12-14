@@ -7,6 +7,8 @@ declare function getCwExecHelpers(network: NetworkName, rpc: string, owner: stri
     cwClaimStakingRewards: ({ collection }: {
         collection: string | undefined;
     }, gasPrice: string) => Promise<import("@cosmjs/cosmwasm-stargate").DeliverTxResponse>;
+    cwLock: (gasPrice: string) => Promise<import("@cosmjs/cosmwasm-stargate").DeliverTxResponse>;
+    cwUnlock: (gasPrice: string) => Promise<import("@cosmjs/cosmwasm-stargate").DeliverTxResponse>;
     cwDistributeFunds: (addressAndWeightList: [string, string][], gasPrice: string) => Promise<import("@cosmjs/cosmwasm-stargate").DeliverTxResponse>;
     cwRemoveCollection: (address: string, gasPrice: string) => Promise<import("@cosmjs/cosmwasm-stargate").DeliverTxResponse>;
     cwCreateProposal: (proposal: ProposalForStringAndTokenUnverified, gasPrice: string) => Promise<import("@cosmjs/cosmwasm-stargate").DeliverTxResponse>;

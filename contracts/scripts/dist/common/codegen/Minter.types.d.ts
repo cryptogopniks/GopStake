@@ -50,13 +50,14 @@ export type QueryMsg = {
 } | {
     query_config: {};
 };
-export type MigrateMsg = string;
+export interface MigrateMsg {
+    version: string;
+}
 export interface QueryDenomsFromCreatorResponse {
     denoms: string[];
 }
 export type Addr = string;
 export interface Config {
     admin: Addr;
-    chain_id_dev: string;
     staking_platform?: Addr | null;
 }

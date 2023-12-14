@@ -19,7 +19,7 @@ const NETWORK_CONFIG = {
     },
     CONTRACTS: [{
       WASM: MINTER_WASM,
-      LABEL: "minter-dev-1.0",
+      LABEL: "cryptogopniks-minter",
       INIT_MSG: minterInitMsg,
       DATA: {
         CODE: STARGAZE_MINTER.CODE,
@@ -27,7 +27,7 @@ const NETWORK_CONFIG = {
       }
     }, {
       WASM: STAKING_PLATFORM_WASM,
-      LABEL: "staking_platform-dev-1.0",
+      LABEL: "cryptogopniks-staking_platform",
       INIT_MSG: stakingPlatformInitMsg,
       DATA: {
         CODE: STARGAZE_STAKING_PLATFORM.CODE,
@@ -35,6 +35,36 @@ const NETWORK_CONFIG = {
       }
     }]
   },
+  // INJECTIVE: {
+  //   BASE: {
+  //     PREFIX: "inj",
+  //     DENOM: "inj",
+  //     CHAIN_ID: "injective-1",
+  //     RPC_LIST: ["https://injective-rpc.polkachu.com:443"],
+  //     GAS_PRICE_AMOUNT: 700000000,
+  //     STORE_CODE_GAS_MULTIPLIER: 1,
+  //   },
+  //   CONTRACTS: [
+  //     {
+  //       WASM: INJ_MINTER_WASM,
+  //       LABEL: "cryptogopniks-minter",
+  //       INIT_MSG: minterInitMsg,
+  //       DATA: {
+  //         CODE: INJECTIVE_MINTER.CODE,
+  //         ADDRESS: INJECTIVE_MINTER.ADDRESS,
+  //       },
+  //     },
+  //     {
+  //       WASM: STAKING_PLATFORM_WASM,
+  //       LABEL: "cryptogopniks-staking_platform",
+  //       INIT_MSG: stakingPlatformInitMsg,
+  //       DATA: {
+  //         CODE: INJECTIVE_STAKING_PLATFORM.CODE,
+  //         ADDRESS: INJECTIVE_STAKING_PLATFORM.ADDRESS,
+  //       },
+  //     },
+  //   ],
+  // },
   INJECTIVE: {
     BASE: {
       PREFIX: "inj",
@@ -46,7 +76,7 @@ const NETWORK_CONFIG = {
     },
     CONTRACTS: [{
       WASM: INJ_MINTER_WASM,
-      LABEL: "minter-dev-1.0",
+      LABEL: "cryptogopniks-minter",
       INIT_MSG: minterInitMsg,
       DATA: {
         CODE: INJECTIVE_MINTER.CODE,
@@ -54,7 +84,7 @@ const NETWORK_CONFIG = {
       }
     }, {
       WASM: STAKING_PLATFORM_WASM,
-      LABEL: "staking_platform-dev-1.0",
+      LABEL: "cryptogopniks-staking_platform",
       INIT_MSG: stakingPlatformInitMsg,
       DATA: {
         CODE: INJECTIVE_STAKING_PLATFORM.CODE,

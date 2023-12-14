@@ -9,6 +9,8 @@ declare function getCwExecHelpers(network: NetworkName, owner: string, msgBroadc
     cwClaimStakingRewards: ({ collection }: {
         collection: string | undefined;
     }, _gasPrice?: string) => Promise<import("@injectivelabs/sdk-ts").TxResponse>;
+    cwLock: (_gasPrice?: string) => Promise<import("@injectivelabs/sdk-ts").TxResponse>;
+    cwUnlock: (_gasPrice?: string) => Promise<import("@injectivelabs/sdk-ts").TxResponse>;
     cwDistributeFunds: (addressAndWeightList: [string, string][], _gasPrice?: string) => Promise<import("@injectivelabs/sdk-ts").TxResponse>;
     cwRemoveCollection: (address: string, _gasPrice?: string) => Promise<import("@injectivelabs/sdk-ts").TxResponse>;
     cwCreateProposal: (proposal: StakingPlatformTypes.ProposalForStringAndTokenUnverified, _gasPrice?: string) => Promise<import("@injectivelabs/sdk-ts").TxResponse>;

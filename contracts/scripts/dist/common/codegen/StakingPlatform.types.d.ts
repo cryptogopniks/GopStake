@@ -25,6 +25,10 @@ export type ExecuteMsg = {
         owner?: string | null;
     };
 } | {
+    lock: {};
+} | {
+    unlock: {};
+} | {
     distribute_funds: {
         address_and_weight_list: [string, Decimal][];
     };
@@ -196,7 +200,6 @@ export interface QueryCollectionsBalancesResponseItem {
 }
 export interface Config {
     admin: Addr;
-    chain_id_dev: string;
     minter?: Addr | null;
     owner?: Addr | null;
 }

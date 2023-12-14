@@ -104,6 +104,8 @@ export class StakingPlatformClient extends StakingPlatformQueryClient {
     this.unstake = this.unstake.bind(this);
     this.claimStakingRewards = this.claimStakingRewards.bind(this);
     this.updateConfig = this.updateConfig.bind(this);
+    this.lock = this.lock.bind(this);
+    this.unlock = this.unlock.bind(this);
     this.distributeFunds = this.distributeFunds.bind(this);
     this.removeCollection = this.removeCollection.bind(this);
     this.createProposal = this.createProposal.bind(this);
@@ -149,6 +151,16 @@ export class StakingPlatformClient extends StakingPlatformQueryClient {
         minter,
         owner
       }
+    }, fee, memo, _funds);
+  };
+  lock = async (fee = "auto", memo, _funds) => {
+    return await this.client.execute(this.sender, this.contractAddress, {
+      lock: {}
+    }, fee, memo, _funds);
+  };
+  unlock = async (fee = "auto", memo, _funds) => {
+    return await this.client.execute(this.sender, this.contractAddress, {
+      unlock: {}
     }, fee, memo, _funds);
   };
   distributeFunds = async ({

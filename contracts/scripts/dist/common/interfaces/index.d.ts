@@ -73,6 +73,9 @@ interface QueryTokens {
 interface TokensResponse {
     tokens: string[];
 }
+interface TokensResponseInj {
+    ids: string[];
+}
 interface QueryOwnerOf {
     owner_of: {
         token_id: string;
@@ -109,4 +112,4 @@ type ContractData = {
     ADDRESS: string;
 };
 export type { NetworkConfig, NetworkName, ContractsConfig };
-export { SetMetadataMsg, Metadata, UpdateConfigStruct, QueryApprovalsMsg, ApprovalsResponse, Cw20SendMsg, BaseNetworkConfig, ContractData, ApproveMsg, RevokeMsg, QueryTokens, TokensResponse, QueryOwnerOf, OwnerOfResponse, };
+export { SetMetadataMsg, Metadata, UpdateConfigStruct, QueryApprovalsMsg, ApprovalsResponse, Cw20SendMsg, BaseNetworkConfig, ContractData, ApproveMsg, RevokeMsg, QueryTokens, TokensResponse, TokensResponseInj, QueryOwnerOf, OwnerOfResponse, };

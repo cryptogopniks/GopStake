@@ -190,6 +190,20 @@ async function getCwExecHelpers(network, owner, msgBroadcaster) {
       injectiveAddress: sender
     });
   }
+  async function cwLock(_gasPrice) {
+    const [msg, sender] = getInjExecMsgFromComposerObj(stakingPlatformMsgComposer.lock());
+    return await msgBroadcaster.broadcast({
+      msgs: [msg],
+      injectiveAddress: sender
+    });
+  }
+  async function cwUnlock(_gasPrice) {
+    const [msg, sender] = getInjExecMsgFromComposerObj(stakingPlatformMsgComposer.unlock());
+    return await msgBroadcaster.broadcast({
+      msgs: [msg],
+      injectiveAddress: sender
+    });
+  }
   async function cwDistributeFunds(addressAndWeightList, _gasPrice) {
     const [msg, sender] = getInjExecMsgFromComposerObj(stakingPlatformMsgComposer.distributeFunds({
       addressAndWeightList
@@ -343,6 +357,8 @@ async function getCwExecHelpers(network, owner, msgBroadcaster) {
     cwApproveAndStake,
     cwUnstake,
     cwClaimStakingRewards,
+    cwLock,
+    cwUnlock,
     cwDistributeFunds,
     cwRemoveCollection,
     cwCreateProposal,
@@ -363,7 +379,7 @@ async function getCwQueryHelpers(network) {
   const {
     CONTRACTS
   } = NETWORK_CONFIG[network];
-  const MINTER_CONTRACT = CONTRACTS.find(x => x.WASM === MINTER_WASM);
+  const MINTER_CONTRACT = CONTRACTS.find(x => x.WASM === (network === "INJECTIVE" ? INJ_MINTER_WASM : MINTER_WASM));
   const STAKING_PLATFORM_CONTRACT = CONTRACTS.find(x => x.WASM === STAKING_PLATFORM_WASM);
   const endpoints = getNetworkEndpoints(networkType);
   const chainGrpcWasmApi = new ChainGrpcWasmApi(endpoints.grpc);
@@ -398,11 +414,11 @@ async function getCwQueryHelpers(network) {
           }
         };
         const {
-          tokens
+          ids
         } = JSON.parse(await queryInjContract(chainGrpcWasmApi, collectionAddress, msg));
-        tokenList = [...tokenList, ...tokens];
-        tokenAmountSum = tokens.length;
-        lastToken = getLast(tokens);
+        tokenList = [...tokenList, ...ids];
+        tokenAmountSum = ids.length;
+        lastToken = getLast(ids);
       } catch (error) {
         l(error);
       }

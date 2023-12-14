@@ -144,6 +144,12 @@ async function getCwExecHelpers(network, rpc, owner, signer) {
       collection
     })], gasPrice);
   }
+  async function cwLock(gasPrice) {
+    return await _msgWrapperWithGasPrice([stakingPlatformMsgComposer.lock()], gasPrice);
+  }
+  async function cwUnlock(gasPrice) {
+    return await _msgWrapperWithGasPrice([stakingPlatformMsgComposer.unlock()], gasPrice);
+  }
   async function cwDistributeFunds(addressAndWeightList, gasPrice) {
     return await _msgWrapperWithGasPrice([stakingPlatformMsgComposer.distributeFunds({
       addressAndWeightList
@@ -244,6 +250,8 @@ async function getCwExecHelpers(network, rpc, owner, signer) {
     cwApproveAndStake,
     cwUnstake,
     cwClaimStakingRewards,
+    cwLock,
+    cwUnlock,
     cwDistributeFunds,
     cwRemoveCollection,
     cwCreateProposal,

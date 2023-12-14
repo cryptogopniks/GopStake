@@ -22,6 +22,8 @@ export interface StakingPlatformMsg {
         minter?: string;
         owner?: string;
     }, _funds?: Coin[]) => MsgExecuteContractEncodeObject;
+    lock: (_funds?: Coin[]) => MsgExecuteContractEncodeObject;
+    unlock: (_funds?: Coin[]) => MsgExecuteContractEncodeObject;
     distributeFunds: ({ addressAndWeightList }: {
         addressAndWeightList: string[][];
     }, _funds?: Coin[]) => MsgExecuteContractEncodeObject;
@@ -67,6 +69,8 @@ export declare class StakingPlatformMsgComposer implements StakingPlatformMsg {
         minter?: string | undefined;
         owner?: string | undefined;
     }, _funds?: Coin[]) => MsgExecuteContractEncodeObject;
+    lock: (_funds?: Coin[]) => MsgExecuteContractEncodeObject;
+    unlock: (_funds?: Coin[]) => MsgExecuteContractEncodeObject;
     distributeFunds: ({ addressAndWeightList }: {
         addressAndWeightList: string[][];
     }, _funds?: Coin[]) => MsgExecuteContractEncodeObject;

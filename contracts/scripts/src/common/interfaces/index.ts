@@ -82,6 +82,10 @@ interface TokensResponse {
   tokens: string[];
 }
 
+interface TokensResponseInj {
+  ids: string[];
+}
+
 interface QueryOwnerOf {
   owner_of: {
     token_id: string;
@@ -139,6 +143,7 @@ export {
   RevokeMsg,
   QueryTokens,
   TokensResponse,
+  TokensResponseInj,
   QueryOwnerOf,
   OwnerOfResponse,
 };

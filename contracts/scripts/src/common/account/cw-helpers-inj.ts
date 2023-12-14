@@ -31,6 +31,7 @@ import {
   RevokeMsg,
   QueryTokens,
   TokensResponse,
+  TokensResponseInj,
   QueryOwnerOf,
   OwnerOfResponse,
 } from "../interfaces";
@@ -666,13 +667,13 @@ async function getCwQueryHelpers(network: NetworkName) {
           },
         };
 
-        const { tokens }: TokensResponse = JSON.parse(
+        const { ids }: TokensResponseInj = JSON.parse(
           await queryInjContract(chainGrpcWasmApi, collectionAddress, msg)
         );
 
-        tokenList = [...tokenList, ...tokens];
-        tokenAmountSum = tokens.length;
-        lastToken = getLast(tokens);
+        tokenList = [...tokenList, ...ids];
+        tokenAmountSum = ids.length;
+        lastToken = getLast(ids);
       } catch (error) {
         l(error);
       }

@@ -78,6 +78,8 @@ export interface StakingPlatformInterface extends StakingPlatformReadOnlyInterfa
         minter?: string;
         owner?: string;
     }, fee?: number | StdFee | "auto", memo?: string, _funds?: Coin[]) => Promise<ExecuteResult>;
+    lock: (fee?: number | StdFee | "auto", memo?: string, _funds?: Coin[]) => Promise<ExecuteResult>;
+    unlock: (fee?: number | StdFee | "auto", memo?: string, _funds?: Coin[]) => Promise<ExecuteResult>;
     distributeFunds: ({ addressAndWeightList }: {
         addressAndWeightList: string[][];
     }, fee?: number | StdFee | "auto", memo?: string, _funds?: Coin[]) => Promise<ExecuteResult>;
@@ -124,6 +126,8 @@ export declare class StakingPlatformClient extends StakingPlatformQueryClient im
         minter?: string | undefined;
         owner?: string | undefined;
     }, fee?: number | StdFee | "auto", memo?: string, _funds?: Coin[]) => Promise<ExecuteResult>;
+    lock: (fee?: number | StdFee | "auto", memo?: string, _funds?: Coin[]) => Promise<ExecuteResult>;
+    unlock: (fee?: number | StdFee | "auto", memo?: string, _funds?: Coin[]) => Promise<ExecuteResult>;
     distributeFunds: ({ addressAndWeightList }: {
         addressAndWeightList: string[][];
     }, fee?: number | StdFee | "auto", memo?: string, _funds?: Coin[]) => Promise<ExecuteResult>;
