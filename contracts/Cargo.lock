@@ -777,6 +777,7 @@ dependencies = [
  "cw2 1.1.1",
  "gopstake-base",
  "osmosis-std",
+ "semver",
  "serde",
 ]
 
@@ -789,6 +790,7 @@ dependencies = [
  "cw-storage-plus 1.1.0",
  "cw2 1.1.1",
  "gopstake-base",
+ "semver",
  "serde",
 ]
 

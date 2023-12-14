@@ -6,8 +6,9 @@ use crate::{
     staking_platform::types::{Collection, Config, Proposal, StakedCollectionInfo},
 };
 
-pub const CONTRACT_NAME: &str = "crates.io:gopstake-staking-platform";
+pub const CONTRACT_NAME: &str = "crates.io:cryptogopniks-staking-platform";
 
+pub const IS_LOCKED: Item<bool> = Item::new("is_locked");
 pub const CONFIG: Item<Config> = Item::new("config");
 pub const FUNDS: Item<Vec<Funds<Token>>> = Item::new("funds");
 pub const PROPOSAL_COUNTER: Item<u128> = Item::new("proposal counter");

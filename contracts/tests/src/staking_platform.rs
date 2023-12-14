@@ -4,7 +4,7 @@ use speculoos::assert_that;
 
 use gopstake_base::{
     assets::{Currency, Funds, Token, TokenUnverified},
-    constants::{CHAIN_ID_DEV, MINS_PER_DAY, NANOS_PER_MIN},
+    constants::{MINS_PER_DAY, NANOS_PER_MIN},
     converters::str_to_dec,
     error::ContractError,
     staking_platform::{
@@ -31,7 +31,7 @@ use crate::helpers::{
 
 #[test]
 fn create_proposal_default_and_query_last_proposals() -> StdResult<()> {
-    let mut project = Project::new(Some(CHAIN_ID_DEV));
+    let mut project = Project::new();
 
     let proposals = project.staking_platform_query_proposals(None)?;
     assert_that(&proposals).is_equal_to(vec![]);
@@ -106,7 +106,7 @@ fn create_proposal_default_and_query_last_proposals() -> StdResult<()> {
 
 #[test]
 fn create_proposal_add_same_collection_twice() -> StdResult<()> {
-    let mut project = Project::new(Some(CHAIN_ID_DEV));
+    let mut project = Project::new();
 
     let proposal_a: &Proposal<String, TokenUnverified> = &Proposal {
         proposal_status: None,
@@ -203,7 +203,7 @@ fn create_proposal_add_same_collection_twice() -> StdResult<()> {
 
 #[test]
 fn create_proposal_update_collection_default() -> StdResult<()> {
-    let mut project = Project::new(Some(CHAIN_ID_DEV));
+    let mut project = Project::new();
 
     project.minter_try_create_denom(
         ProjectAccount::Owner,
@@ -283,7 +283,7 @@ fn create_proposal_update_collection_default() -> StdResult<()> {
 
 #[test]
 fn create_proposal_update_collection_to_replace_it() -> StdResult<()> {
-    let mut project = Project::new(Some(CHAIN_ID_DEV));
+    let mut project = Project::new();
 
     // good collection
     let proposal_a: &Proposal<String, TokenUnverified> = &Proposal {
@@ -387,7 +387,7 @@ fn create_proposal_update_collection_to_replace_it() -> StdResult<()> {
 
 #[test]
 fn create_proposal_authorization() -> StdResult<()> {
-    let mut project = Project::new(Some(CHAIN_ID_DEV));
+    let mut project = Project::new();
 
     let proposal: &Proposal<String, TokenUnverified> = &Proposal {
         proposal_status: None,
@@ -467,7 +467,7 @@ fn create_proposal_authorization() -> StdResult<()> {
 
 #[test]
 fn create_proposal_unowned_minter_token() -> StdResult<()> {
-    let mut project = Project::new(Some(CHAIN_ID_DEV));
+    let mut project = Project::new();
 
     let proposal: &Proposal<String, TokenUnverified> = &Proposal {
         proposal_status: None,
@@ -514,7 +514,7 @@ fn create_proposal_unowned_minter_token() -> StdResult<()> {
 
 #[test]
 fn reject_proposal_unauth_default_twice() -> StdResult<()> {
-    let mut project = Project::new(Some(CHAIN_ID_DEV));
+    let mut project = Project::new();
 
     let proposal: &Proposal<String, TokenUnverified> = &Proposal {
         proposal_status: None,
@@ -586,7 +586,7 @@ fn reject_proposal_unauth_default_twice() -> StdResult<()> {
 
 #[test]
 fn accept_proposal_unauth_underfunded_default_twice() -> StdResult<()> {
-    let mut project = Project::new(Some(CHAIN_ID_DEV));
+    let mut project = Project::new();
 
     let proposal: &Proposal<String, TokenUnverified> = &Proposal {
         proposal_status: None,
@@ -679,7 +679,7 @@ fn accept_proposal_unauth_underfunded_default_twice() -> StdResult<()> {
 
 #[test]
 fn accept_proposal_add_same_collection_twice() -> StdResult<()> {
-    let mut project = Project::new(Some(CHAIN_ID_DEV));
+    let mut project = Project::new();
 
     let proposal_a: &Proposal<String, TokenUnverified> = &Proposal {
         proposal_status: None,
@@ -779,7 +779,7 @@ fn accept_proposal_add_same_collection_twice() -> StdResult<()> {
 
 #[test]
 fn accept_proposal_update_collection_to_replace_it() -> StdResult<()> {
-    let mut project = Project::new(Some(CHAIN_ID_DEV));
+    let mut project = Project::new();
 
     // good collection
     let proposal_a: &Proposal<String, TokenUnverified> = &Proposal {
@@ -894,7 +894,7 @@ fn accept_proposal_update_collection_to_replace_it() -> StdResult<()> {
 
 #[test]
 fn accept_proposal_and_pay_with_cw20_tokens() -> StdResult<()> {
-    let mut project = Project::new(Some(CHAIN_ID_DEV));
+    let mut project = Project::new();
 
     let proposal: &Proposal<String, TokenUnverified> = &Proposal {
         proposal_status: None,
@@ -971,8 +971,60 @@ fn accept_proposal_and_pay_with_cw20_tokens() -> StdResult<()> {
 }
 
 #[test]
+fn lock_unlock() -> StdResult<()> {
+    let mut project = Project::new();
+
+    let res = project
+        .staking_platform_try_lock(ProjectAccount::Alice)
+        .unwrap_err();
+    assert_error(&res, ContractError::Unauthorized);
+
+    project.staking_platform_try_lock(ProjectAccount::Admin)?;
+
+    let proposal: &Proposal<String, TokenUnverified> = &Proposal {
+        proposal_status: None,
+        price: Funds::new(
+            100u128,
+            &Currency::new(
+                &TokenUnverified::new_cw20(&ProjectToken::Luna.to_string()),
+                6,
+            ),
+        ),
+        proposal_type: ProposalType::AddCollection {
+            collection_address: ProjectNft::Gopniks.to_string(),
+            collection: Collection {
+                name: ProjectNft::Gopniks.to_string(),
+                staking_currency: Currency::new(
+                    &TokenUnverified::new_cw20(&ProjectToken::Atom.to_string()),
+                    6,
+                ),
+                daily_rewards: str_to_dec("86400000000000"),
+                emission_type: EmissionType::Spending,
+                owner: ProjectAccount::Owner.to_string(),
+            },
+        },
+    };
+
+    let res = project
+        .staking_platform_try_create_proposal(ProjectAccount::Admin, proposal)
+        .unwrap_err();
+    assert_error(&res, ContractError::ContractIsLocked);
+
+    let res = project
+        .staking_platform_try_unlock(ProjectAccount::Alice)
+        .unwrap_err();
+    assert_error(&res, ContractError::Unauthorized);
+
+    project.staking_platform_try_unlock(ProjectAccount::Admin)?;
+
+    project.staking_platform_try_create_proposal(ProjectAccount::Admin, proposal)?;
+
+    Ok(())
+}
+
+#[test]
 fn distribute_funds_unauth_weights_default() -> StdResult<()> {
-    let mut project = Project::new(Some(CHAIN_ID_DEV));
+    let mut project = Project::new();
 
     let proposal_a: &Proposal<String, TokenUnverified> = &Proposal {
         proposal_status: None,
@@ -1108,7 +1160,7 @@ fn distribute_funds_unauth_weights_default() -> StdResult<()> {
 
 #[test]
 fn remove_collection_unauth_default() -> StdResult<()> {
-    let mut project = Project::new(Some(CHAIN_ID_DEV));
+    let mut project = Project::new();
 
     let proposal: &Proposal<String, TokenUnverified> = &Proposal {
         proposal_status: None,
@@ -1158,7 +1210,7 @@ fn remove_collection_unauth_default() -> StdResult<()> {
 
 #[test]
 fn deposit_tokens_unauth_default() -> StdResult<()> {
-    let mut project = Project::new(Some(CHAIN_ID_DEV));
+    let mut project = Project::new();
 
     let proposal: &Proposal<String, TokenUnverified> = &Proposal {
         proposal_status: None,
@@ -1224,7 +1276,7 @@ fn deposit_tokens_unauth_default() -> StdResult<()> {
 
 #[test]
 fn deposit_tokens_improper_emission_type() -> StdResult<()> {
-    let mut project = Project::new(Some(CHAIN_ID_DEV));
+    let mut project = Project::new();
 
     project.minter_try_create_denom(
         ProjectAccount::Owner,
@@ -1280,7 +1332,7 @@ fn deposit_tokens_improper_emission_type() -> StdResult<()> {
 
 #[test]
 fn withdraw_tokens_unauth_default() -> StdResult<()> {
-    let mut project = Project::new(Some(CHAIN_ID_DEV));
+    let mut project = Project::new();
 
     let proposal: &Proposal<String, TokenUnverified> = &Proposal {
         proposal_status: None,
@@ -1357,7 +1409,7 @@ fn withdraw_tokens_unauth_default() -> StdResult<()> {
 
 #[test]
 fn stake_2_users_2_collections() -> StdResult<()> {
-    let mut project = Project::new(Some(CHAIN_ID_DEV));
+    let mut project = Project::new();
 
     let proposal_a: &Proposal<String, TokenUnverified> = &Proposal {
         proposal_status: None,
@@ -1608,7 +1660,7 @@ fn stake_2_users_2_collections() -> StdResult<()> {
 
 #[test]
 fn stake_unlisted_collection() -> StdResult<()> {
-    let mut project = Project::new(Some(CHAIN_ID_DEV));
+    let mut project = Project::new();
 
     let proposal_a: &Proposal<String, TokenUnverified> = &Proposal {
         proposal_status: None,
@@ -1663,7 +1715,7 @@ fn stake_unlisted_collection() -> StdResult<()> {
 
 #[test]
 fn stake_unallowed_unfunded_delayed() -> StdResult<()> {
-    let mut project = Project::new(Some(CHAIN_ID_DEV));
+    let mut project = Project::new();
 
     let proposal_a: &Proposal<String, TokenUnverified> = &Proposal {
         proposal_status: None,
@@ -1759,7 +1811,7 @@ fn stake_unallowed_unfunded_delayed() -> StdResult<()> {
 
 #[test]
 fn claim_staking_rewards_default() -> StdResult<()> {
-    let mut project = Project::new(Some(CHAIN_ID_DEV));
+    let mut project = Project::new();
 
     let proposal_a: &Proposal<String, TokenUnverified> = &Proposal {
         proposal_status: None,
@@ -1866,7 +1918,7 @@ fn claim_staking_rewards_default() -> StdResult<()> {
 
 #[test]
 fn unstake_improper_collection_and_id_default() -> StdResult<()> {
-    let mut project = Project::new(Some(CHAIN_ID_DEV));
+    let mut project = Project::new();
 
     let proposal_a: &Proposal<String, TokenUnverified> = &Proposal {
         proposal_status: None,
@@ -2013,7 +2065,7 @@ fn unstake_improper_collection_and_id_default() -> StdResult<()> {
 
 #[test]
 fn claim_staking_rewards_with_minter_default() -> StdResult<()> {
-    let mut project = Project::new(Some(CHAIN_ID_DEV));
+    let mut project = Project::new();
 
     project.minter_try_create_denom(
         ProjectAccount::Owner,
@@ -2093,7 +2145,7 @@ fn claim_staking_rewards_with_minter_default() -> StdResult<()> {
 
 #[test]
 fn claim_staking_rewards_with_minter_and_empty_spender() -> StdResult<()> {
-    let mut project = Project::new(Some(CHAIN_ID_DEV));
+    let mut project = Project::new();
 
     project.minter_try_create_denom(
         ProjectAccount::Owner,
@@ -2263,7 +2315,7 @@ fn claim_staking_rewards_with_minter_and_empty_spender() -> StdResult<()> {
 
 #[test]
 fn unstake_with_minter_and_empty_spender() -> StdResult<()> {
-    let mut project = Project::new(Some(CHAIN_ID_DEV));
+    let mut project = Project::new();
 
     project.minter_try_create_denom(
         ProjectAccount::Owner,
@@ -2435,7 +2487,7 @@ fn unstake_with_minter_and_empty_spender() -> StdResult<()> {
 
 #[test]
 fn claim_staking_rewards_and_unstake_all() -> StdResult<()> {
-    let mut project = Project::new(Some(CHAIN_ID_DEV));
+    let mut project = Project::new();
 
     project.minter_try_create_denom(
         ProjectAccount::Owner,
@@ -2638,7 +2690,7 @@ fn claim_staking_rewards_and_unstake_all() -> StdResult<()> {
 
 #[test]
 fn claim_staking_rewards_for_specified_collection() -> StdResult<()> {
-    let mut project = Project::new(Some(CHAIN_ID_DEV));
+    let mut project = Project::new();
 
     project.minter_try_create_denom(
         ProjectAccount::Owner,
@@ -2805,7 +2857,7 @@ fn claim_staking_rewards_for_specified_collection() -> StdResult<()> {
 
 #[test]
 fn accept_proposal_update_collection_change_daily_rewards() -> StdResult<()> {
-    let mut project = Project::new(Some(CHAIN_ID_DEV));
+    let mut project = Project::new();
 
     let proposal_a: &Proposal<String, TokenUnverified> = &Proposal {
         proposal_status: None,
@@ -2936,7 +2988,7 @@ fn accept_proposal_update_collection_change_daily_rewards() -> StdResult<()> {
 
 #[test]
 fn accept_proposal_update_collection_change_staking_currency() -> StdResult<()> {
-    let mut project = Project::new(Some(CHAIN_ID_DEV));
+    let mut project = Project::new();
 
     project.minter_try_create_denom(
         ProjectAccount::Owner,
@@ -3209,7 +3261,7 @@ fn accept_proposal_update_collection_change_staking_currency() -> StdResult<()> 
 
 #[test]
 fn migrate_staking_platform_default() -> StdResult<()> {
-    let mut project = Project::new(Some(CHAIN_ID_DEV));
+    let mut project = Project::new();
 
     let proposal: &Proposal<String, TokenUnverified> = &Proposal {
         proposal_status: None,

@@ -1,5 +1,3 @@
-pub const CHAIN_ID_DEV: &str = "devnet-1";
-
 pub const DECIMALS_DEFAULT: u8 = 6;
 
 pub const MINS_PER_DAY: u128 = 24 * 60;

@@ -9,7 +9,7 @@ use gopstake_base::{
         state::{CONFIG, TOKENS},
         types::{Config, Metadata},
     },
-    utils::{nonpayable, one_coin, unwrap_field, validate_attr, Attrs},
+    utils::{nonpayable, one_coin, unwrap_field, Attrs},
 };
 
 pub fn try_create_denom(
@@ -152,7 +152,6 @@ pub fn try_update_config(
     nonpayable(&info)?;
 
     let mut attrs = Attrs::init("try_update_config");
-    let api = deps.api;
 
     CONFIG.update(deps.storage, |mut config| -> StdResult<Config> {
         // verify sender
@@ -160,8 +159,10 @@ pub fn try_update_config(
             Err(ContractError::Unauthorized)?;
         }
 
-        config.staking_platform =
-            validate_attr(&mut attrs, api, "staking_platform", &staking_platform)?;
+        if let Some(x) = staking_platform {
+            config.staking_platform = Some(deps.api.addr_validate(&x)?);
+            attrs.push(("staking_platform".to_string(), x));
+        }
 
         Ok(config)
     })?;

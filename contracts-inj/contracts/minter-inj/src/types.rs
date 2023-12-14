@@ -1,8 +1,6 @@
 use cosmwasm_schema::cw_serde;
 use cosmwasm_std::Addr;
 
-use crate::constants::CHAIN_ID_DEV;
-
 #[cw_serde]
 pub struct DenomUnit {
     pub denom: String,
@@ -26,7 +24,6 @@ pub struct Metadata {
 pub struct Config {
     pub admin: Addr,
     pub staking_platform: Option<Addr>,
-    chain_id_dev: String,
 }
 
 impl Config {
@@ -34,12 +31,7 @@ impl Config {
         Self {
             admin: admin.to_owned(),
             staking_platform: staking_platform.to_owned(),
-            chain_id_dev: String::from(CHAIN_ID_DEV),
         }
-    }
-
-    pub fn get_chain_id(&self) -> String {
-        self.chain_id_dev.clone()
     }
 }
 

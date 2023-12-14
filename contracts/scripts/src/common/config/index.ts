@@ -26,7 +26,7 @@ const NETWORK_CONFIG: NetworkConfig = {
     CONTRACTS: [
       {
         WASM: MINTER_WASM,
-        LABEL: "minter-dev-1.0",
+        LABEL: "cryptogopniks-minter",
         INIT_MSG: minterInitMsg,
         DATA: {
           CODE: STARGAZE_MINTER.CODE,
@@ -35,7 +35,7 @@ const NETWORK_CONFIG: NetworkConfig = {
       },
       {
         WASM: STAKING_PLATFORM_WASM,
-        LABEL: "staking_platform-dev-1.0",
+        LABEL: "cryptogopniks-staking_platform",
         INIT_MSG: stakingPlatformInitMsg,
         DATA: {
           CODE: STARGAZE_STAKING_PLATFORM.CODE,

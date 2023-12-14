@@ -3,11 +3,14 @@ use cw2::set_contract_version;
 
 use gopstake_base::{
     error::ContractError,
-    minter::{msg::InstantiateMsg, state::CONFIG, types::Config},
+    minter::{
+        msg::InstantiateMsg,
+        state::{CONFIG, CONTRACT_NAME},
+        types::Config,
+    },
     utils::{validate_attr, Attrs},
 };
 
-const CONTRACT_NAME: &str = "crates.io:gopstake-minter";
 const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
 
 pub fn try_instantiate(

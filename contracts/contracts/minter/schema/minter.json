@@ -248,8 +248,16 @@
   "migrate": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "MigrateMsg",
-    "type": "string",
-    "enum": []
+    "type": "object",
+    "required": [
+      "version"
+    ],
+    "properties": {
+      "version": {
+        "type": "string"
+      }
+    },
+    "additionalProperties": false
   },
   "sudo": null,
   "responses": {
@@ -275,15 +283,11 @@
       "title": "Config",
       "type": "object",
       "required": [
-        "admin",
-        "chain_id_dev"
+        "admin"
       ],
       "properties": {
         "admin": {
           "$ref": "#/definitions/Addr"
-        },
-        "chain_id_dev": {
-          "type": "string"
         },
         "staking_platform": {
           "anyOf": [

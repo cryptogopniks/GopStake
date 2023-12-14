@@ -166,4 +166,4 @@ async function main(
   }
 }
 
-main("INJECTIVE", true, [INJ_MINTER_WASM]);
+main("INJECTIVE", false, []);

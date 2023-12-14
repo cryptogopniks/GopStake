@@ -21,3 +21,4 @@ cw2 = { workspace = true }
 osmosis-std = { workspace = true }
 serde = { workspace = true }
 gopstake-base = { workspace = true }
+semver = { workspace = true }

@@ -289,6 +289,20 @@ async function getCwExecHelpers(
     );
   }
 
+  async function cwLock(gasPrice: string) {
+    return await _msgWrapperWithGasPrice(
+      [stakingPlatformMsgComposer.lock()],
+      gasPrice
+    );
+  }
+
+  async function cwUnlock(gasPrice: string) {
+    return await _msgWrapperWithGasPrice(
+      [stakingPlatformMsgComposer.unlock()],
+      gasPrice
+    );
+  }
+
   async function cwDistributeFunds(
     addressAndWeightList: [string, string][],
     gasPrice: string
@@ -485,6 +499,8 @@ async function getCwExecHelpers(
     cwApproveAndStake,
     cwUnstake,
     cwClaimStakingRewards,
+    cwLock,
+    cwUnlock,
     cwDistributeFunds,
     cwRemoveCollection,
     cwCreateProposal,

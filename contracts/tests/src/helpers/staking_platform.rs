@@ -46,6 +46,10 @@ pub trait StakingPlatformExtension {
         minter: &Option<A>,
     ) -> StdResult<AppResponse>;
 
+    fn staking_platform_try_lock(&mut self, sender: ProjectAccount) -> StdResult<AppResponse>;
+
+    fn staking_platform_try_unlock(&mut self, sender: ProjectAccount) -> StdResult<AppResponse>;
+
     fn staking_platform_try_distribute_funds(
         &mut self,
         sender: ProjectAccount,
@@ -204,6 +208,30 @@ impl StakingPlatformExtension for Project {
                     owner: owner.as_ref().map(|x| x.to_string()),
                     minter: minter.as_ref().map(|x| x.to_string()),
                 },
+                &[],
+            )
+            .map_err(parse_err)
+    }
+
+    #[track_caller]
+    fn staking_platform_try_lock(&mut self, sender: ProjectAccount) -> StdResult<AppResponse> {
+        self.app
+            .execute_contract(
+                sender.into(),
+                self.get_staking_platform_address(),
+                &ExecuteMsg::Lock {},
+                &[],
+            )
+            .map_err(parse_err)
+    }
+
+    #[track_caller]
+    fn staking_platform_try_unlock(&mut self, sender: ProjectAccount) -> StdResult<AppResponse> {
+        self.app
+            .execute_contract(
+                sender.into(),
+                self.get_staking_platform_address(),
+                &ExecuteMsg::Unlock {},
                 &[],
             )
             .map_err(parse_err)

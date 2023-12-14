@@ -16,7 +16,6 @@ library = []
 [dependencies]
 cosmwasm-std = { version = "1.2.7", features = [ "abort", "iterator", "stargate" ] }
 schemars = "0.8.8"
-# injective-std = "0.1.4"
 injective-cosmwasm = "0.2.17"
 cosmwasm-schema = "1.2.7"
 cw-storage-plus = "1.1.0"
@@ -27,3 +26,4 @@ strum_macros = "0.24.3"
 thiserror = "1.0.40"
 anyhow = "1.0.71"
 getrandom = { version = "0.2.9", features = ["js"] }
+semver = "1.0.20"

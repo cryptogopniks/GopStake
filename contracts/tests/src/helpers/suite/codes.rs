@@ -66,7 +66,8 @@ impl WithCodes for Project {
                 minter_mocks::contract::instantiate,
                 minter_mocks::contract::query,
             )
-            .with_reply(minter_mocks::contract::reply),
+            .with_reply(minter_mocks::contract::reply)
+            .with_migrate(minter_mocks::contract::migrate),
         ))
     }
 

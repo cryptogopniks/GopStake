@@ -6,12 +6,11 @@ use injective_cosmwasm::InjectiveMsgWrapper;
 use crate::{
     error::ContractError,
     msg::InstantiateMsg,
-    state::CONFIG,
+    state::{CONFIG, CONTRACT_NAME},
     types::Config,
     utils::{validate_attr, Attrs},
 };
 
-const CONTRACT_NAME: &str = "crates.io:gopstake-minter-inj";
 const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
 
 pub fn try_instantiate(

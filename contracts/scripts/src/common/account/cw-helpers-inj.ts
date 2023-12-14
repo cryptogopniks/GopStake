@@ -333,6 +333,28 @@ async function getCwExecHelpers(
     });
   }
 
+  async function cwLock(_gasPrice?: string) {
+    const [msg, sender] = getInjExecMsgFromComposerObj(
+      stakingPlatformMsgComposer.lock()
+    );
+
+    return await msgBroadcaster.broadcast({
+      msgs: [msg],
+      injectiveAddress: sender,
+    });
+  }
+
+  async function cwUnlock(_gasPrice?: string) {
+    const [msg, sender] = getInjExecMsgFromComposerObj(
+      stakingPlatformMsgComposer.unlock()
+    );
+
+    return await msgBroadcaster.broadcast({
+      msgs: [msg],
+      injectiveAddress: sender,
+    });
+  }
+
   async function cwDistributeFunds(
     addressAndWeightList: [string, string][],
     _gasPrice?: string
@@ -574,6 +596,8 @@ async function getCwExecHelpers(
     cwApproveAndStake,
     cwUnstake,
     cwClaimStakingRewards,
+    cwLock,
+    cwUnlock,
     cwDistributeFunds,
     cwRemoveCollection,
     cwCreateProposal,
@@ -594,7 +618,9 @@ async function getCwExecHelpers(
 
 async function getCwQueryHelpers(network: NetworkName) {
   const { CONTRACTS } = NETWORK_CONFIG[network];
-  const MINTER_CONTRACT = CONTRACTS.find((x) => x.WASM === MINTER_WASM);
+  const MINTER_CONTRACT = CONTRACTS.find(
+    (x) => x.WASM === (network === "INJECTIVE" ? INJ_MINTER_WASM : MINTER_WASM)
+  );
   const STAKING_PLATFORM_CONTRACT = CONTRACTS.find(
     (x) => x.WASM === STAKING_PLATFORM_WASM
   );

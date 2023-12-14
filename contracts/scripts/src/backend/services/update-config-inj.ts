@@ -65,17 +65,15 @@ async function main(network: NetworkName) {
       msgBroadcasterWithPk
     );
 
-    await cwUpdateConfig({
+    const res = await cwUpdateConfig({
       stakingPlatform: STAKING_PLATFORM_CONTRACT.DATA.ADDRESS,
       minter: MINTER_CONTRACT.DATA.ADDRESS,
       owner: "inj1u9jles5s3nw29726frttn007h9880n2zyfwf6c",
     });
+    l("\n", res, "\n");
 
-    const minterConfig = await cwQueryMinterConfig();
-    l("\n", minterConfig, "\n");
-
-    const stakingPlatformConfig = await cwQueryStakingPlatformConfig();
-    l("\n", stakingPlatformConfig, "\n");
+    await cwQueryMinterConfig();
+    await cwQueryStakingPlatformConfig();
   } catch (error) {
     l(error);
   }

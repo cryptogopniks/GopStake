@@ -54,7 +54,9 @@ async function main(network: NetworkName) {
     });
 
     const { getAllBalances } = await getSgQueryHelpers();
-    const { cwQueryProposals } = await getCwQueryHelpers(network);
+    const { cwQueryProposals, cwQueryBalanceInNft } = await getCwQueryHelpers(
+      network
+    );
     const { cwCreateProposal, cwMintTokens, cwBurnTokens, cwCreateDenom } =
       await getCwExecHelpers(network, injectiveAddress, msgBroadcasterWithPk);
 
@@ -71,7 +73,11 @@ async function main(network: NetworkName) {
     //await cwMintTokens(fullDenom, 100, alice);
     // await cwBurnTokens(fullDenom, 100);
 
-    await getAllBalances(alice);
+    // await getAllBalances(alice);
+
+    const collectionAddress = "inj1dyrtccs6dg8j9v9v5y64fdxsxaxhq77qx0z0w8";
+
+    await cwQueryBalanceInNft(injectiveAddress, collectionAddress);
   } catch (error) {
     l(error);
   }

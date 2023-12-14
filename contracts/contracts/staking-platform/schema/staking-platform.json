@@ -125,6 +125,32 @@
       {
         "type": "object",
         "required": [
+          "lock"
+        ],
+        "properties": {
+          "lock": {
+            "type": "object",
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": [
+          "unlock"
+        ],
+        "properties": {
+          "unlock": {
+            "type": "object",
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": [
           "distribute_funds"
         ],
         "properties": {
@@ -1230,15 +1256,11 @@
       "title": "Config",
       "type": "object",
       "required": [
-        "admin",
-        "chain_id_dev"
+        "admin"
       ],
       "properties": {
         "admin": {
           "$ref": "#/definitions/Addr"
-        },
-        "chain_id_dev": {
-          "type": "string"
         },
         "minter": {
           "anyOf": [

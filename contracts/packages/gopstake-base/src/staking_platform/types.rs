@@ -1,10 +1,7 @@
 use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{Addr, Decimal, Timestamp, Uint128};
 
-use crate::{
-    assets::{Currency, Funds, Token},
-    constants::CHAIN_ID_DEV,
-};
+use crate::assets::{Currency, Funds, Token};
 
 #[cw_serde]
 pub struct Collection<A: ToString, T: From<Token>> {
@@ -84,7 +81,6 @@ pub struct Config {
     pub admin: Addr,
     pub owner: Option<Addr>,
     pub minter: Option<Addr>,
-    chain_id_dev: String,
 }
 
 impl Config {
@@ -93,11 +89,6 @@ impl Config {
             admin: admin.to_owned(),
             owner: owner.to_owned(),
             minter: minter.to_owned(),
-            chain_id_dev: String::from(CHAIN_ID_DEV),
         }
-    }
-
-    pub fn get_chain_id(&self) -> String {
-        self.chain_id_dev.clone()
     }
 }

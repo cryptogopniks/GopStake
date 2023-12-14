@@ -14,8 +14,8 @@ use gopstake_base::{
 use crate::actions::{
     execute::{
         try_accept_proposal, try_claim_staking_rewards, try_create_proposal, try_deposit_tokens,
-        try_distribute_funds, try_reject_proposal, try_remove_collection, try_stake, try_unstake,
-        try_update_config, try_withdraw_tokens,
+        try_distribute_funds, try_lock, try_reject_proposal, try_remove_collection, try_stake,
+        try_unlock, try_unstake, try_update_config, try_withdraw_tokens,
     },
     instantiate::try_instantiate,
     other::migrate_contract,
@@ -58,6 +58,8 @@ pub fn execute(
         ExecuteMsg::UpdateConfig { owner, minter } => {
             try_update_config(deps, env, info, owner, minter)
         }
+        ExecuteMsg::Lock {} => try_lock(deps, env, info),
+        ExecuteMsg::Unlock {} => try_unlock(deps, env, info),
         ExecuteMsg::DistributeFunds {
             address_and_weight_list,
         } => try_distribute_funds(deps, env, info, address_and_weight_list),

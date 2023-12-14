@@ -66,15 +66,9 @@ impl Project {
         }
     }
 
-    pub fn new(chain_id_mocked: Option<&str>) -> Self {
+    pub fn new() -> Self {
         // create app and distribute coins to accounts
         let mut project = Self::create_project_with_balances();
-
-        // set specific chain_id to prevent execution of mocked actions on real networks
-        let chain_id = chain_id_mocked.unwrap_or(gopstake_base::constants::CHAIN_ID_DEV);
-        project
-            .app
-            .update_block(|block| block.chain_id = String::from(chain_id));
 
         // register contracts code
         // packages
@@ -369,6 +363,12 @@ impl Project {
                     .unwrap();
             }
         })
+    }
+}
+
+impl Default for Project {
+    fn default() -> Self {
+        Self::new()
     }
 }
 

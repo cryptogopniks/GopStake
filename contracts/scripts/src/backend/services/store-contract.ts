@@ -200,4 +200,4 @@ async function main(
   }
 }
 
-main("STARGAZE", true, [MINTER_WASM]);
+main("STARGAZE", false, []);

@@ -34,6 +34,8 @@ export interface StakingPlatformMsg {
     minter?: string;
     owner?: string;
   }, _funds?: Coin[]) => MsgExecuteContractEncodeObject;
+  lock: (_funds?: Coin[]) => MsgExecuteContractEncodeObject;
+  unlock: (_funds?: Coin[]) => MsgExecuteContractEncodeObject;
   distributeFunds: ({
     addressAndWeightList
   }: {
@@ -92,6 +94,8 @@ export class StakingPlatformMsgComposer implements StakingPlatformMsg {
     this.unstake = this.unstake.bind(this);
     this.claimStakingRewards = this.claimStakingRewards.bind(this);
     this.updateConfig = this.updateConfig.bind(this);
+    this.lock = this.lock.bind(this);
+    this.unlock = this.unlock.bind(this);
     this.distributeFunds = this.distributeFunds.bind(this);
     this.removeCollection = this.removeCollection.bind(this);
     this.createProposal = this.createProposal.bind(this);
@@ -176,6 +180,32 @@ export class StakingPlatformMsgComposer implements StakingPlatformMsg {
             minter,
             owner
           }
+        })),
+        funds: _funds
+      })
+    };
+  };
+  lock = (_funds?: Coin[]): MsgExecuteContractEncodeObject => {
+    return {
+      typeUrl: "/cosmwasm.wasm.v1.MsgExecuteContract",
+      value: MsgExecuteContract.fromPartial({
+        sender: this.sender,
+        contract: this.contractAddress,
+        msg: toUtf8(JSON.stringify({
+          lock: {}
+        })),
+        funds: _funds
+      })
+    };
+  };
+  unlock = (_funds?: Coin[]): MsgExecuteContractEncodeObject => {
+    return {
+      typeUrl: "/cosmwasm.wasm.v1.MsgExecuteContract",
+      value: MsgExecuteContract.fromPartial({
+        sender: this.sender,
+        contract: this.contractAddress,
+        msg: toUtf8(JSON.stringify({
+          unlock: {}
         })),
         funds: _funds
       })

@@ -1,13 +1,35 @@
-use cosmwasm_std::{DepsMut, Env, Response};
+use cosmwasm_std::{DepsMut, Env, Response, StdError};
+use cw2::{get_contract_version, set_contract_version};
+
+use semver::Version;
 
 use injective_cosmwasm::InjectiveMsgWrapper;
 
-use crate::{error::ContractError, msg::MigrateMsg};
+use crate::{error::ContractError, msg::MigrateMsg, state};
 
 pub fn migrate_contract(
-    _deps: DepsMut,
+    deps: DepsMut,
     _env: Env,
-    _msg: MigrateMsg,
+    msg: MigrateMsg,
 ) -> Result<Response<InjectiveMsgWrapper>, ContractError> {
+    let version_previous: Version = get_contract_version(deps.storage)?
+        .version
+        .parse()
+        .map_err(|_| StdError::generic_err("Parsing previous version error!"))?;
+
+    let version_new: Version = env!("CARGO_PKG_VERSION")
+        .parse()
+        .map_err(|_| StdError::generic_err("Parsing new version error!"))?;
+
+    if version_new.to_string() != msg.version {
+        Err(StdError::generic_err(
+            "Msg version is not equal contract new version!",
+        ))?;
+    }
+
+    if version_new >= version_previous {
+        set_contract_version(deps.storage, state::CONTRACT_NAME, version_new.to_string())?;
+    }
+
     Ok(Response::new())
 }

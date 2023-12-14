@@ -36,6 +36,10 @@ pub enum ExecuteMsg {
     },
 
     // admin, owner
+    Lock {},
+
+    Unlock {},
+
     DistributeFunds {
         address_and_weight_list: Vec<(String, Decimal)>,
     },

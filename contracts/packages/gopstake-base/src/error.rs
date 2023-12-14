@@ -82,6 +82,9 @@ pub enum ContractError {
     #[error("This staking currency doesn't belong this owner!")]
     UnownedStakingCurrency,
 
+    #[error("The contract is temporary locked to stop bad guys")]
+    ContractIsLocked,
+
     // minter
     #[error("Denom already exists!")]
     DenomExists,

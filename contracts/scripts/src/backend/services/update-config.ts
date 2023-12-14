@@ -70,11 +70,8 @@ async function main(network: NetworkName) {
       gasPrice
     );
 
-    const minterConfig = await cwQueryMinterConfig();
-    l("\n", minterConfig, "\n");
-
-    const stakingPlatformConfig = await cwQueryStakingPlatformConfig();
-    l("\n", stakingPlatformConfig, "\n");
+    await cwQueryMinterConfig();
+    await cwQueryStakingPlatformConfig();
   } catch (error) {
     l(error);
   }

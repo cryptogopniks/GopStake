@@ -12,14 +12,15 @@ use gopstake_base::{
     error::ContractError,
     staking_platform::{
         state::{
-            COLLECTIONS, COLLECTIONS_BALANCES, CONFIG, FUNDS, PROPOSALS, PROPOSAL_COUNTER, STAKERS,
+            COLLECTIONS, COLLECTIONS_BALANCES, CONFIG, FUNDS, IS_LOCKED, PROPOSALS,
+            PROPOSAL_COUNTER, STAKERS,
         },
         types::{
             Collection, Config, EmissionType, Proposal, ProposalStatus, ProposalType,
             StakedCollectionInfo, StakedTokenInfo,
         },
     },
-    utils::{get_funds, get_transfer_msg, nonpayable, unwrap_field, validate_attr, Attrs},
+    utils::{get_funds, get_transfer_msg, nonpayable, unwrap_field, Attrs},
 };
 
 pub fn try_stake(
@@ -28,6 +29,8 @@ pub fn try_stake(
     info: MessageInfo,
     collections_to_stake: Vec<StakedCollectionInfo<String>>,
 ) -> Result<Response, ContractError> {
+    check_is_locked_flag(deps.as_ref())?;
+
     // verify funds
     nonpayable(&info)?;
 
@@ -96,6 +99,8 @@ pub fn try_unstake(
     info: MessageInfo,
     collections_to_unstake: Vec<StakedCollectionInfo<String>>,
 ) -> Result<Response, ContractError> {
+    check_is_locked_flag(deps.as_ref())?;
+
     // verify funds
     nonpayable(&info)?;
 
@@ -301,6 +306,8 @@ pub fn try_claim_staking_rewards(
     info: MessageInfo,
     collection: Option<String>,
 ) -> Result<Response, ContractError> {
+    check_is_locked_flag(deps.as_ref())?;
+
     // verify funds
     nonpayable(&info)?;
 
@@ -445,11 +452,12 @@ pub fn try_update_config(
     owner: Option<String>,
     minter: Option<String>,
 ) -> Result<Response, ContractError> {
+    check_is_locked_flag(deps.as_ref())?;
+
     // verify funds
     nonpayable(&info)?;
 
     let mut attrs = Attrs::init("try_update_config");
-    let api = deps.api;
 
     CONFIG.update(deps.storage, |mut config| -> StdResult<Config> {
         // verify sender
@@ -457,13 +465,44 @@ pub fn try_update_config(
             Err(ContractError::Unauthorized)?;
         }
 
-        config.owner = validate_attr(&mut attrs, api, "owner", &owner)?;
-        config.minter = validate_attr(&mut attrs, api, "minter", &minter)?;
+        if let Some(x) = owner {
+            config.owner = Some(deps.api.addr_validate(&x)?);
+            attrs.push(("owner".to_string(), x));
+        }
+
+        if let Some(x) = minter {
+            config.minter = Some(deps.api.addr_validate(&x)?);
+            attrs.push(("minter".to_string(), x));
+        }
 
         Ok(config)
     })?;
 
     Ok(Response::new().add_attributes(attrs))
+}
+
+pub fn try_lock(deps: DepsMut, _env: Env, info: MessageInfo) -> Result<Response, ContractError> {
+    // verify funds
+    nonpayable(&info)?;
+
+    // verify sender
+    verify_admin_and_owner(deps.as_ref(), &info)?;
+
+    IS_LOCKED.update(deps.storage, |_| -> StdResult<bool> { Ok(true) })?;
+
+    Ok(Response::new().add_attributes([("action", "try_lock")]))
+}
+
+pub fn try_unlock(deps: DepsMut, _env: Env, info: MessageInfo) -> Result<Response, ContractError> {
+    // verify funds
+    nonpayable(&info)?;
+
+    // verify sender
+    verify_admin_and_owner(deps.as_ref(), &info)?;
+
+    IS_LOCKED.update(deps.storage, |_| -> StdResult<bool> { Ok(false) })?;
+
+    Ok(Response::new().add_attributes([("action", "try_unlock")]))
 }
 
 pub fn try_distribute_funds(
@@ -472,6 +511,8 @@ pub fn try_distribute_funds(
     info: MessageInfo,
     address_and_weight_list: Vec<(String, Decimal)>,
 ) -> Result<Response, ContractError> {
+    check_is_locked_flag(deps.as_ref())?;
+
     // verify funds
     nonpayable(&info)?;
 
@@ -535,6 +576,8 @@ pub fn try_remove_collection(
     info: MessageInfo,
     address: String,
 ) -> Result<Response, ContractError> {
+    check_is_locked_flag(deps.as_ref())?;
+
     // verify funds
     nonpayable(&info)?;
 
@@ -554,6 +597,8 @@ pub fn try_create_proposal(
     info: MessageInfo,
     proposal: Proposal<String, TokenUnverified>,
 ) -> Result<Response, ContractError> {
+    check_is_locked_flag(deps.as_ref())?;
+
     // verify funds
     nonpayable(&info)?;
 
@@ -597,7 +642,7 @@ pub fn try_create_proposal(
 
                 let gopstake_base::minter::types::QueryDenomsFromCreatorResponse { denoms } =
                     deps.querier.query_wasm_smart(
-                        &minter,
+                        minter,
                         &gopstake_base::minter::msg::QueryMsg::DenomsByCreator {
                             creator: owner.to_string(),
                         },
@@ -664,7 +709,7 @@ pub fn try_create_proposal(
 
                 let gopstake_base::minter::types::QueryDenomsFromCreatorResponse { denoms } =
                     deps.querier.query_wasm_smart(
-                        &minter,
+                        minter,
                         &gopstake_base::minter::msg::QueryMsg::DenomsByCreator {
                             creator: owner.to_string(),
                         },
@@ -728,6 +773,8 @@ pub fn try_reject_proposal(
     info: MessageInfo,
     id: Uint128,
 ) -> Result<Response, ContractError> {
+    check_is_locked_flag(deps.as_ref())?;
+
     // verify funds
     nonpayable(&info)?;
 
@@ -762,6 +809,8 @@ pub fn try_accept_proposal(
     sender: Option<String>,
     amount: Option<Uint128>,
 ) -> Result<Response, ContractError> {
+    check_is_locked_flag(deps.as_ref())?;
+
     let id = id.u128();
     let (user_address, asset_amount, asset_info) = get_funds(deps.api, &info, &sender, &amount)?;
     let proposal = PROPOSALS.load(deps.storage, id)?;
@@ -1015,6 +1064,8 @@ pub fn try_deposit_tokens(
     sender: Option<String>,
     amount: Option<Uint128>,
 ) -> Result<Response, ContractError> {
+    check_is_locked_flag(deps.as_ref())?;
+
     let (user_address, asset_amount, asset_info) = get_funds(deps.api, &info, &sender, &amount)?;
     let collection_address = &deps.api.addr_validate(&collection_address)?;
     let collection = COLLECTIONS.load(deps.storage, collection_address)?;
@@ -1057,6 +1108,8 @@ pub fn try_withdraw_tokens(
     collection_address: String,
     amount: Uint128,
 ) -> Result<Response, ContractError> {
+    check_is_locked_flag(deps.as_ref())?;
+
     let collection_address = &deps.api.addr_validate(&collection_address)?;
     let collection = COLLECTIONS.load(deps.storage, collection_address)?;
 
@@ -1086,6 +1139,14 @@ pub fn try_withdraw_tokens(
     Ok(Response::new()
         .add_message(msg)
         .add_attributes([("action", "try_withdraw_tokens")]))
+}
+
+fn check_is_locked_flag(deps: Deps) -> StdResult<()> {
+    if IS_LOCKED.load(deps.storage)? {
+        Err(ContractError::ContractIsLocked)?;
+    }
+
+    Ok(())
 }
 
 fn verify_proposal_status(

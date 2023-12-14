@@ -5,7 +5,7 @@ use gopstake_base::{
     error::ContractError,
     staking_platform::{
         msg::InstantiateMsg,
-        state::{CONFIG, CONTRACT_NAME, FUNDS, PROPOSAL_COUNTER},
+        state::{CONFIG, CONTRACT_NAME, FUNDS, IS_LOCKED, PROPOSAL_COUNTER},
         types::Config,
     },
     utils::{validate_attr, Attrs},
@@ -35,6 +35,7 @@ pub fn try_instantiate(
 
     PROPOSAL_COUNTER.save(deps.storage, &1)?;
     FUNDS.save(deps.storage, &vec![])?;
+    IS_LOCKED.save(deps.storage, &false)?;
 
     Ok(Response::new().add_attributes(attrs))
 }
