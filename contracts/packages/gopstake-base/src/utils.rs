@@ -2,11 +2,30 @@ use std::fmt::Debug;
 
 use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{
-    coin, to_json_binary, Addr, Api, BankMsg, Coin, CosmosMsg, MessageInfo, StdError, StdResult,
-    Uint128, WasmMsg,
+    coin, to_json_binary, Addr, Api, BankMsg, Coin, CosmosMsg, Deps, MessageInfo, StdError,
+    StdResult, Uint128, WasmMsg,
 };
 
 use crate::{assets::Token, error::ContractError};
+
+#[cw_serde]
+pub enum FundsType {
+    Empty,
+    Single {
+        sender: Option<String>,
+        amount: Option<Uint128>,
+    },
+}
+
+#[cw_serde]
+pub enum AuthType {
+    Any,
+    Admin,
+    AdminOrOwner,
+    Specified { allowlist: Vec<Option<Addr>> },
+    AdminOrOwnerOrSpecified { allowlist: Vec<Option<Addr>> },
+    AdminOrSpecified { allowlist: Vec<Option<Addr>> },
+}
 
 #[cw_serde]
 pub struct Attrs {}
@@ -124,31 +143,44 @@ pub fn get_transfer_msg(recipient: &Addr, amount: Uint128, token: &Token) -> Std
     })
 }
 
-/// returns (sender_address, asset_amount, asset_info) supporting both native and cw20 tokens
-pub fn get_funds(
-    api: &dyn Api,
+/// Returns (sender_address, asset_amount, asset_info) supporting both native and cw20 tokens \
+/// Use FundsType::Empty to check if info.funds is empty \
+/// Use FundsType::Single { sender: None, amount: None } to check native token \
+/// Use FundsType::Single { sender: Some(msg.sender), amount: Some(msg.amount) } to check cw20 token
+pub fn check_funds(
+    deps: Deps,
     info: &MessageInfo,
-    sender: &Option<String>,
-    amount: &Option<Uint128>,
+    funds_type: FundsType,
 ) -> StdResult<(Addr, Uint128, Token)> {
-    let (sender_address, asset_amount, asset_info) = if sender.is_some() && amount.is_some() {
-        (
-            api.addr_validate(&sender.to_owned().unwrap())?,
-            amount.unwrap(),
-            Token::new_cw20(&info.sender),
-        )
-    } else {
-        let Coin { denom, amount } = one_coin(info)?;
+    match funds_type {
+        FundsType::Empty => {
+            nonpayable(info)?;
 
-        (info.sender.clone(), amount, Token::new_native(&denom))
-    };
+            Ok((
+                info.sender.clone(),
+                Uint128::default(),
+                Token::new_native(&String::default()),
+            ))
+        }
+        FundsType::Single { sender, amount } => {
+            if sender.is_none() || amount.is_none() {
+                let Coin { denom, amount } = one_coin(info)?;
 
-    Ok((sender_address, asset_amount, asset_info))
+                Ok((info.sender.clone(), amount, Token::new_native(&denom)))
+            } else {
+                Ok((
+                    deps.api.addr_validate(&sender.unwrap_or_default())?,
+                    amount.unwrap_or_default(),
+                    Token::new_cw20(&info.sender),
+                ))
+            }
+        }
+    }
 }
 
 /// If exactly one coin was sent, returns it regardless of denom.
 /// Returns error if 0 or 2+ coins were sent
-pub fn one_coin(info: &MessageInfo) -> StdResult<Coin> {
+fn one_coin(info: &MessageInfo) -> StdResult<Coin> {
     if info.funds.len() == 1 {
         let coin = &info.funds[0];
 
@@ -163,7 +195,7 @@ pub fn one_coin(info: &MessageInfo) -> StdResult<Coin> {
 }
 
 /// returns an error if any coins were sent
-pub fn nonpayable(info: &MessageInfo) -> StdResult<()> {
+fn nonpayable(info: &MessageInfo) -> StdResult<()> {
     if !info.funds.is_empty() {
         Err(StdError::generic_err("This message does no accept funds!"))?;
     }
@@ -190,14 +222,4 @@ pub fn filter_by_address_list<T: Clone>(
     }
 
     Ok(list.to_owned())
-}
-
-#[cw_serde]
-pub enum AuthType {
-    Any,
-    Admin,
-    AdminOrOwner,
-    Specified { allowlist: Vec<Option<Addr>> },
-    AdminOrOwnerOrSpecified { allowlist: Vec<Option<Addr>> },
-    AdminOrSpecified { allowlist: Vec<Option<Addr>> },
 }

@@ -20,10 +20,10 @@ const minterInitMsg: MinterInitMsg = {};
 const stakingPlatformInitMsg: StakingPlatformInitMsg = {};
 
 const minterMigrateMsg: MinterMigrateMsg = {
-  version: "1.1.0",
+  version: "1.1.1",
 };
 const stakingPlatformMigrateMsg: StakingPlatformMigrateMsg = {
-  version: "1.3.0",
+  version: "1.3.1",
 };
 
 const NETWORK_CONFIG: NetworkConfig = {

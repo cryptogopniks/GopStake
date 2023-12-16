@@ -1,6 +1,6 @@
 use cosmwasm_std::{
-    coin, Addr, BankMsg, Coin, CosmosMsg, Deps, DepsMut, Env, MessageInfo, Order, Response,
-    StdResult, Uint128,
+    coin, Addr, BankMsg, CosmosMsg, Deps, DepsMut, Env, MessageInfo, Order, Response, StdResult,
+    Uint128,
 };
 
 use injective_cosmwasm::{
@@ -12,7 +12,7 @@ use crate::{
     error::ContractError,
     state::{CONFIG, TOKENS},
     types::{Config, Metadata},
-    utils::{nonpayable, one_coin, unwrap_field, Attrs, AuthType},
+    utils::{check_funds, unwrap_field, Attrs, AuthType, FundsType},
 };
 
 pub fn try_create_denom(
@@ -22,10 +22,15 @@ pub fn try_create_denom(
     token_owner: String,
     subdenom: String,
 ) -> Result<Response<InjectiveMsgWrapper>, ContractError> {
-    check_authorization(deps.as_ref(), &info, AuthType::AdminOrOwner)?;
-
-    // verify funds
-    one_coin(&info)?;
+    let (sender_address, ..) = check_funds(
+        deps.as_ref(),
+        &info,
+        FundsType::Single {
+            sender: None,
+            amount: None,
+        },
+    )?;
+    check_authorization(deps.as_ref(), &sender_address, AuthType::AdminOrOwner)?;
 
     let owner = deps.api.addr_validate(&token_owner)?;
     let creator = env.contract.address;
@@ -68,8 +73,7 @@ pub fn try_mint_tokens(
     amount: Uint128,
     mint_to_address: String,
 ) -> Result<Response<InjectiveMsgWrapper>, ContractError> {
-    // verify funds
-    nonpayable(&info)?;
+    let (sender_address, ..) = check_funds(deps.as_ref(), &info, FundsType::Empty)?;
 
     let owner_and_denoms = TOKENS
         .range(deps.storage, None, None, Order::Ascending)
@@ -77,20 +81,22 @@ pub fn try_mint_tokens(
         .find(|(_, tokens)| tokens.contains(&denom));
     let owner_and_denoms = unwrap_field(owner_and_denoms, "owner_and_denoms");
 
-    let Config {
-        staking_platform, ..
-    } = CONFIG.load(deps.storage)?;
-    let staking_platform = unwrap_field(staking_platform, "staking_platform");
-
     if owner_and_denoms.is_err() {
         Err(ContractError::AssetIsNotFound)?;
     }
 
-    if (staking_platform.is_ok() && (info.sender != staking_platform?))
-        && (owner_and_denoms.is_ok() && (info.sender != owner_and_denoms?.0))
-    {
-        Err(ContractError::Unauthorized)?;
-    }
+    let (token_owner, _) = owner_and_denoms?;
+
+    check_authorization(
+        deps.as_ref(),
+        &sender_address,
+        AuthType::Specified {
+            allowlist: vec![
+                CONFIG.load(deps.storage)?.staking_platform,
+                Some(token_owner),
+            ],
+        },
+    )?;
 
     let creator = &env.contract.address;
     let amount = coin(amount.u128(), denom);
@@ -113,8 +119,16 @@ pub fn try_burn_tokens(
     env: Env,
     info: MessageInfo,
 ) -> Result<Response<InjectiveMsgWrapper>, ContractError> {
-    // verify funds
-    let Coin { amount, denom } = one_coin(&info)?;
+    let (sender_address, amount, asset_info) = check_funds(
+        deps.as_ref(),
+        &info,
+        FundsType::Single {
+            sender: None,
+            amount: None,
+        },
+    )?;
+    check_authorization(deps.as_ref(), &sender_address, AuthType::Any)?;
+    let denom = asset_info.try_get_native()?;
 
     let owner_and_denoms = TOKENS
         .range(deps.storage, None, None, Order::Ascending)
@@ -141,8 +155,7 @@ pub fn try_set_metadata(
     info: MessageInfo,
     metadata: Metadata,
 ) -> Result<Response<InjectiveMsgWrapper>, ContractError> {
-    // verify funds
-    nonpayable(&info)?;
+    let (sender_address, ..) = check_funds(deps.as_ref(), &info, FundsType::Empty)?;
 
     let Metadata { base: denom, .. } = &metadata;
 
@@ -156,11 +169,13 @@ pub fn try_set_metadata(
         Err(ContractError::AssetIsNotFound)?;
     }
 
+    let (token_owner, _) = owner_and_denoms?;
+
     check_authorization(
         deps.as_ref(),
-        &info,
+        &sender_address,
         AuthType::AdminOrOwnerOrSpecified {
-            allowlist: vec![Some(owner_and_denoms?.0)],
+            allowlist: vec![Some(token_owner)],
         },
     )?;
 
@@ -194,17 +209,12 @@ pub fn try_update_config(
     owner: Option<String>,
     staking_platform: Option<String>,
 ) -> Result<Response<InjectiveMsgWrapper>, ContractError> {
-    // verify funds
-    nonpayable(&info)?;
+    let (sender_address, ..) = check_funds(deps.as_ref(), &info, FundsType::Empty)?;
+    check_authorization(deps.as_ref(), &sender_address, AuthType::Admin)?;
 
     let mut attrs = Attrs::init("try_update_config");
 
     CONFIG.update(deps.storage, |mut config| -> StdResult<Config> {
-        // verify sender
-        if info.sender != config.admin {
-            Err(ContractError::Unauthorized)?;
-        }
-
         if let Some(x) = owner {
             config.owner = Some(deps.api.addr_validate(&x)?);
             attrs.push(("owner".to_string(), x));
@@ -227,7 +237,7 @@ fn get_full_denom(creator: &Addr, subdenom: &str) -> String {
 
 fn check_authorization(
     deps: Deps<InjectiveQueryWrapper>,
-    info: &MessageInfo,
+    sender: &Addr,
     auth_type: AuthType,
 ) -> StdResult<()> {
     let Config { admin, owner, .. } = CONFIG.load(deps.storage)?;
@@ -236,19 +246,19 @@ fn check_authorization(
     match auth_type {
         AuthType::Any => {}
         AuthType::Admin => {
-            if info.sender != admin {
+            if sender != admin {
                 Err(ContractError::Unauthorized)?;
             }
         }
         AuthType::AdminOrOwner => {
-            if !((info.sender == admin) || (owner.is_ok() && info.sender == owner?)) {
+            if !((sender == admin) || (owner.is_ok() && sender == owner?)) {
                 Err(ContractError::Unauthorized)?;
             }
         }
         AuthType::Specified { allowlist } => {
             let is_included = allowlist.iter().any(|some_address| {
                 if let Some(x) = some_address {
-                    if info.sender == x {
+                    if sender == x {
                         return true;
                     }
                 }
@@ -263,7 +273,7 @@ fn check_authorization(
         AuthType::AdminOrOwnerOrSpecified { allowlist } => {
             let is_included = allowlist.iter().any(|some_address| {
                 if let Some(x) = some_address {
-                    if info.sender == x {
+                    if sender == x {
                         return true;
                     }
                 }
@@ -271,15 +281,14 @@ fn check_authorization(
                 false
             });
 
-            if !((info.sender == admin) || (owner.is_ok() && info.sender == owner?) || is_included)
-            {
+            if !((sender == admin) || (owner.is_ok() && sender == owner?) || is_included) {
                 Err(ContractError::Unauthorized)?;
             }
         }
         AuthType::AdminOrSpecified { allowlist } => {
             let is_included = allowlist.iter().any(|some_address| {
                 if let Some(x) = some_address {
-                    if info.sender == x {
+                    if sender == x {
                         return true;
                     }
                 }
@@ -287,7 +296,7 @@ fn check_authorization(
                 false
             });
 
-            if !((info.sender == admin) || is_included) {
+            if !((sender == admin) || is_included) {
                 Err(ContractError::Unauthorized)?;
             }
         }

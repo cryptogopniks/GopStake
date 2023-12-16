@@ -3279,7 +3279,7 @@ fn migrate_minter_default() -> StdResult<()> {
         project.get_minter_address(),
         project.get_minter_code_id(),
         gopstake_base::minter::msg::MigrateMsg {
-            version: "1.1.0".to_string(),
+            version: "1.1.1".to_string(),
         },
     )?;
 
@@ -3345,7 +3345,7 @@ fn migrate_staking_platform_default() -> StdResult<()> {
         project.get_staking_platform_address(),
         project.get_staking_platform_code_id(),
         gopstake_base::staking_platform::msg::MigrateMsg {
-            version: "1.3.0".to_string(),
+            version: "1.3.1".to_string(),
         },
     )?;
 

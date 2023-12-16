@@ -20,7 +20,7 @@ use gopstake_base::{
             StakedCollectionInfo, StakedTokenInfo,
         },
     },
-    utils::{get_funds, get_transfer_msg, nonpayable, unwrap_field, Attrs, AuthType},
+    utils::{check_funds, get_transfer_msg, unwrap_field, Attrs, AuthType, FundsType},
 };
 
 pub fn try_stake(
@@ -29,12 +29,13 @@ pub fn try_stake(
     info: MessageInfo,
     collections_to_stake: Vec<StakedCollectionInfo<String>>,
 ) -> Result<Response, ContractError> {
-    check_is_locked_flag(deps.as_ref())?;
+    check_lockout(deps.as_ref())?;
+    let (sender_address, ..) = check_funds(deps.as_ref(), &info, FundsType::Empty)?;
+    check_authorization(deps.as_ref(), &sender_address, AuthType::Any)?;
 
-    // verify funds
-    nonpayable(&info)?;
-
-    let mut staker = STAKERS.load(deps.storage, &info.sender).unwrap_or_default();
+    let mut staker = STAKERS
+        .load(deps.storage, &sender_address)
+        .unwrap_or_default();
     let mut msg_list: Vec<CosmosMsg> = vec![];
 
     for StakedCollectionInfo {
@@ -86,7 +87,7 @@ pub fn try_stake(
         }
     }
 
-    STAKERS.save(deps.storage, &info.sender, &staker)?;
+    STAKERS.save(deps.storage, &sender_address, &staker)?;
 
     Ok(Response::new()
         .add_messages(msg_list)
@@ -99,10 +100,9 @@ pub fn try_unstake(
     info: MessageInfo,
     collections_to_unstake: Vec<StakedCollectionInfo<String>>,
 ) -> Result<Response, ContractError> {
-    check_is_locked_flag(deps.as_ref())?;
-
-    // verify funds
-    nonpayable(&info)?;
+    check_lockout(deps.as_ref())?;
+    let (sender_address, ..) = check_funds(deps.as_ref(), &info, FundsType::Empty)?;
+    check_authorization(deps.as_ref(), &sender_address, AuthType::Any)?;
 
     let mut msg_list: Vec<CosmosMsg> = vec![];
     let time_in_nanos: u128 = env.block.time.nanos().into();
@@ -112,7 +112,7 @@ pub fn try_unstake(
         .iter()
         .map(|x| x.collection_address.to_owned())
         .collect();
-    let current_collection_list = STAKERS.load(deps.storage, &info.sender)?;
+    let current_collection_list = STAKERS.load(deps.storage, &sender_address)?;
     let mut new_collection_list: Vec<StakedCollectionInfo<Addr>> = vec![];
     let mut staking_rewards_and_emission_type_list: Vec<(Funds<Token>, EmissionType)> = vec![];
 
@@ -242,7 +242,7 @@ pub fn try_unstake(
 
             // create message to send NFT
             let cw721_msg = Cw721ExecuteMsg::TransferNft {
-                recipient: info.sender.to_string(),
+                recipient: sender_address.to_string(),
                 token_id: token.token_id.to_string(),
             };
 
@@ -265,7 +265,7 @@ pub fn try_unstake(
         }
     }
 
-    STAKERS.save(deps.storage, &info.sender, &new_collection_list)?;
+    STAKERS.save(deps.storage, &sender_address, &new_collection_list)?;
 
     let minter = unwrap_field(CONFIG.load(deps.storage)?.minter, "minter")?;
 
@@ -276,12 +276,12 @@ pub fn try_unstake(
         }
 
         let msg = match emission {
-            EmissionType::Spending => get_transfer_msg(&info.sender, amount, &currency.token)?,
+            EmissionType::Spending => get_transfer_msg(&sender_address, amount, &currency.token)?,
             EmissionType::Minting => {
                 let mint_msg = gopstake_base::minter::msg::ExecuteMsg::MintTokens {
                     denom: currency.token.try_get_native()?,
                     amount,
-                    mint_to_address: info.sender.to_string(),
+                    mint_to_address: sender_address.to_string(),
                 };
 
                 CosmosMsg::Wasm(WasmMsg::Execute {
@@ -306,15 +306,14 @@ pub fn try_claim_staking_rewards(
     info: MessageInfo,
     collection: Option<String>,
 ) -> Result<Response, ContractError> {
-    check_is_locked_flag(deps.as_ref())?;
-
-    // verify funds
-    nonpayable(&info)?;
+    check_lockout(deps.as_ref())?;
+    let (sender_address, ..) = check_funds(deps.as_ref(), &info, FundsType::Empty)?;
+    check_authorization(deps.as_ref(), &sender_address, AuthType::Any)?;
 
     let time_in_nanos: u128 = env.block.time.nanos().into();
     let mins_per_day = u128_to_dec256(MINS_PER_DAY);
 
-    let mut collection_list = STAKERS.load(deps.storage, &info.sender)?;
+    let mut collection_list = STAKERS.load(deps.storage, &sender_address)?;
     let mut staking_rewards_and_emission_type_list: Vec<(Funds<Token>, EmissionType)> = vec![];
 
     let collection = collection
@@ -408,7 +407,7 @@ pub fn try_claim_staking_rewards(
         }
     }
 
-    STAKERS.save(deps.storage, &info.sender, &collection_list)?;
+    STAKERS.save(deps.storage, &sender_address, &collection_list)?;
 
     let minter = unwrap_field(CONFIG.load(deps.storage)?.minter, "minter")?;
 
@@ -420,13 +419,13 @@ pub fn try_claim_staking_rewards(
             |(Funds { amount, currency }, emission)| -> StdResult<CosmosMsg> {
                 match emission {
                     EmissionType::Spending => {
-                        get_transfer_msg(&info.sender, amount, &currency.token)
+                        get_transfer_msg(&sender_address, amount, &currency.token)
                     }
                     EmissionType::Minting => {
                         let mint_msg = gopstake_base::minter::msg::ExecuteMsg::MintTokens {
                             denom: currency.token.try_get_native()?,
                             amount,
-                            mint_to_address: info.sender.to_string(),
+                            mint_to_address: sender_address.to_string(),
                         };
 
                         Ok(CosmosMsg::Wasm(WasmMsg::Execute {
@@ -452,19 +451,13 @@ pub fn try_update_config(
     owner: Option<String>,
     minter: Option<String>,
 ) -> Result<Response, ContractError> {
-    check_is_locked_flag(deps.as_ref())?;
-
-    // verify funds
-    nonpayable(&info)?;
+    check_lockout(deps.as_ref())?;
+    let (sender_address, ..) = check_funds(deps.as_ref(), &info, FundsType::Empty)?;
+    check_authorization(deps.as_ref(), &sender_address, AuthType::Admin)?;
 
     let mut attrs = Attrs::init("try_update_config");
 
     CONFIG.update(deps.storage, |mut config| -> StdResult<Config> {
-        // verify sender
-        if info.sender != config.admin {
-            Err(ContractError::Unauthorized)?;
-        }
-
         if let Some(x) = owner {
             config.owner = Some(deps.api.addr_validate(&x)?);
             attrs.push(("owner".to_string(), x));
@@ -482,11 +475,8 @@ pub fn try_update_config(
 }
 
 pub fn try_lock(deps: DepsMut, _env: Env, info: MessageInfo) -> Result<Response, ContractError> {
-    // verify funds
-    nonpayable(&info)?;
-
-    // verify sender
-    verify_admin_and_owner(deps.as_ref(), &info)?;
+    let (sender_address, ..) = check_funds(deps.as_ref(), &info, FundsType::Empty)?;
+    check_authorization(deps.as_ref(), &sender_address, AuthType::AdminOrOwner)?;
 
     IS_LOCKED.update(deps.storage, |_| -> StdResult<bool> { Ok(true) })?;
 
@@ -494,11 +484,8 @@ pub fn try_lock(deps: DepsMut, _env: Env, info: MessageInfo) -> Result<Response,
 }
 
 pub fn try_unlock(deps: DepsMut, _env: Env, info: MessageInfo) -> Result<Response, ContractError> {
-    // verify funds
-    nonpayable(&info)?;
-
-    // verify sender
-    verify_admin_and_owner(deps.as_ref(), &info)?;
+    let (sender_address, ..) = check_funds(deps.as_ref(), &info, FundsType::Empty)?;
+    check_authorization(deps.as_ref(), &sender_address, AuthType::AdminOrOwner)?;
 
     IS_LOCKED.update(deps.storage, |_| -> StdResult<bool> { Ok(false) })?;
 
@@ -511,13 +498,9 @@ pub fn try_distribute_funds(
     info: MessageInfo,
     address_and_weight_list: Vec<(String, Decimal)>,
 ) -> Result<Response, ContractError> {
-    check_is_locked_flag(deps.as_ref())?;
-
-    // verify funds
-    nonpayable(&info)?;
-
-    // verify sender
-    verify_admin_and_owner(deps.as_ref(), &info)?;
+    check_lockout(deps.as_ref())?;
+    let (sender_address, ..) = check_funds(deps.as_ref(), &info, FundsType::Empty)?;
+    check_authorization(deps.as_ref(), &sender_address, AuthType::AdminOrOwner)?;
 
     // verify weights
     // check if all weights are in range [0, 1]
@@ -576,13 +559,9 @@ pub fn try_remove_collection(
     info: MessageInfo,
     address: String,
 ) -> Result<Response, ContractError> {
-    check_is_locked_flag(deps.as_ref())?;
-
-    // verify funds
-    nonpayable(&info)?;
-
-    // verify sender
-    verify_admin_and_owner(deps.as_ref(), &info)?;
+    check_lockout(deps.as_ref())?;
+    let (sender_address, ..) = check_funds(deps.as_ref(), &info, FundsType::Empty)?;
+    check_authorization(deps.as_ref(), &sender_address, AuthType::AdminOrOwner)?;
 
     // update state
     let collection_address = &deps.api.addr_validate(&address)?;
@@ -597,13 +576,9 @@ pub fn try_create_proposal(
     info: MessageInfo,
     proposal: Proposal<String, TokenUnverified>,
 ) -> Result<Response, ContractError> {
-    check_is_locked_flag(deps.as_ref())?;
-
-    // verify funds
-    nonpayable(&info)?;
-
-    // verify sender
-    verify_admin_and_owner(deps.as_ref(), &info)?;
+    check_lockout(deps.as_ref())?;
+    let (sender_address, ..) = check_funds(deps.as_ref(), &info, FundsType::Empty)?;
+    check_authorization(deps.as_ref(), &sender_address, AuthType::AdminOrOwner)?;
 
     // verify proposal fields
     let Proposal {
@@ -773,13 +748,9 @@ pub fn try_reject_proposal(
     info: MessageInfo,
     id: Uint128,
 ) -> Result<Response, ContractError> {
-    check_is_locked_flag(deps.as_ref())?;
-
-    // verify funds
-    nonpayable(&info)?;
-
-    // verify sender
-    verify_admin_and_owner(deps.as_ref(), &info)?;
+    check_lockout(deps.as_ref())?;
+    let (sender_address, ..) = check_funds(deps.as_ref(), &info, FundsType::Empty)?;
+    check_authorization(deps.as_ref(), &sender_address, AuthType::AdminOrOwner)?;
 
     // update proposal status
     PROPOSALS.update(
@@ -809,10 +780,11 @@ pub fn try_accept_proposal(
     sender: Option<String>,
     amount: Option<Uint128>,
 ) -> Result<Response, ContractError> {
-    check_is_locked_flag(deps.as_ref())?;
+    check_lockout(deps.as_ref())?;
+    let (sender_address, asset_amount, asset_info) =
+        check_funds(deps.as_ref(), &info, FundsType::Single { sender, amount })?;
 
     let id = id.u128();
-    let (user_address, asset_amount, asset_info) = get_funds(deps.api, &info, &sender, &amount)?;
     let proposal = PROPOSALS.load(deps.storage, id)?;
 
     // verify funds
@@ -980,9 +952,13 @@ pub fn try_accept_proposal(
     };
 
     // verify sender
-    if user_address != collection.owner {
-        Err(ContractError::Unauthorized)?;
-    }
+    check_authorization(
+        deps.as_ref(),
+        &sender_address,
+        AuthType::Specified {
+            allowlist: vec![Some(collection.owner.clone())],
+        },
+    )?;
 
     // add/update collection
     match new_collection_address {
@@ -1064,9 +1040,10 @@ pub fn try_deposit_tokens(
     sender: Option<String>,
     amount: Option<Uint128>,
 ) -> Result<Response, ContractError> {
-    check_is_locked_flag(deps.as_ref())?;
+    check_lockout(deps.as_ref())?;
+    let (sender_address, asset_amount, asset_info) =
+        check_funds(deps.as_ref(), &info, FundsType::Single { sender, amount })?;
 
-    let (user_address, asset_amount, asset_info) = get_funds(deps.api, &info, &sender, &amount)?;
     let collection_address = &deps.api.addr_validate(&collection_address)?;
     let collection = COLLECTIONS.load(deps.storage, collection_address)?;
 
@@ -1076,9 +1053,13 @@ pub fn try_deposit_tokens(
     }
 
     // verify sender
-    if user_address != collection.owner {
-        Err(ContractError::Unauthorized)?;
-    }
+    check_authorization(
+        deps.as_ref(),
+        &sender_address,
+        AuthType::Specified {
+            allowlist: vec![Some(collection.owner)],
+        },
+    )?;
 
     // verify emmision type
     if collection.emission_type != EmissionType::Spending {
@@ -1108,15 +1089,20 @@ pub fn try_withdraw_tokens(
     collection_address: String,
     amount: Uint128,
 ) -> Result<Response, ContractError> {
-    check_is_locked_flag(deps.as_ref())?;
+    check_lockout(deps.as_ref())?;
+    let (sender_address, ..) = check_funds(deps.as_ref(), &info, FundsType::Empty)?;
 
     let collection_address = &deps.api.addr_validate(&collection_address)?;
     let collection = COLLECTIONS.load(deps.storage, collection_address)?;
 
     // verify sender
-    if info.sender != collection.owner {
-        Err(ContractError::Unauthorized)?;
-    }
+    check_authorization(
+        deps.as_ref(),
+        &sender_address,
+        AuthType::Specified {
+            allowlist: vec![Some(collection.owner)],
+        },
+    )?;
 
     // verify emmision type
     if collection.emission_type != EmissionType::Spending {
@@ -1134,14 +1120,14 @@ pub fn try_withdraw_tokens(
         },
     )?;
 
-    let msg = get_transfer_msg(&info.sender, amount, &collection.staking_currency.token)?;
+    let msg = get_transfer_msg(&sender_address, amount, &collection.staking_currency.token)?;
 
     Ok(Response::new()
         .add_message(msg)
         .add_attributes([("action", "try_withdraw_tokens")]))
 }
 
-fn check_is_locked_flag(deps: Deps) -> StdResult<()> {
+fn check_lockout(deps: Deps) -> StdResult<()> {
     if IS_LOCKED.load(deps.storage)? {
         Err(ContractError::ContractIsLocked)?;
     }
@@ -1162,37 +1148,26 @@ fn verify_proposal_status(
     Ok(())
 }
 
-fn verify_admin_and_owner(deps: Deps, info: &MessageInfo) -> StdResult<()> {
-    let Config { admin, owner, .. } = CONFIG.load(deps.storage)?;
-    let owner = unwrap_field(owner, "owner");
-
-    if (info.sender != admin) && (owner.is_err() || (owner.is_ok() && (info.sender != owner?))) {
-        Err(ContractError::Unauthorized)?;
-    }
-
-    Ok(())
-}
-
-fn check_authorization(deps: Deps, info: &MessageInfo, auth_type: AuthType) -> StdResult<()> {
+fn check_authorization(deps: Deps, sender: &Addr, auth_type: AuthType) -> StdResult<()> {
     let Config { admin, owner, .. } = CONFIG.load(deps.storage)?;
     let owner = unwrap_field(owner, "owner");
 
     match auth_type {
         AuthType::Any => {}
         AuthType::Admin => {
-            if info.sender != admin {
+            if sender != admin {
                 Err(ContractError::Unauthorized)?;
             }
         }
         AuthType::AdminOrOwner => {
-            if !((info.sender == admin) || (owner.is_ok() && info.sender == owner?)) {
+            if !((sender == admin) || (owner.is_ok() && sender == owner?)) {
                 Err(ContractError::Unauthorized)?;
             }
         }
         AuthType::Specified { allowlist } => {
             let is_included = allowlist.iter().any(|some_address| {
                 if let Some(x) = some_address {
-                    if info.sender == x {
+                    if sender == x {
                         return true;
                     }
                 }
@@ -1207,7 +1182,7 @@ fn check_authorization(deps: Deps, info: &MessageInfo, auth_type: AuthType) -> S
         AuthType::AdminOrOwnerOrSpecified { allowlist } => {
             let is_included = allowlist.iter().any(|some_address| {
                 if let Some(x) = some_address {
-                    if info.sender == x {
+                    if sender == x {
                         return true;
                     }
                 }
@@ -1215,15 +1190,14 @@ fn check_authorization(deps: Deps, info: &MessageInfo, auth_type: AuthType) -> S
                 false
             });
 
-            if !((info.sender == admin) || (owner.is_ok() && info.sender == owner?) || is_included)
-            {
+            if !((sender == admin) || (owner.is_ok() && sender == owner?) || is_included) {
                 Err(ContractError::Unauthorized)?;
             }
         }
         AuthType::AdminOrSpecified { allowlist } => {
             let is_included = allowlist.iter().any(|some_address| {
                 if let Some(x) = some_address {
-                    if info.sender == x {
+                    if sender == x {
                         return true;
                     }
                 }
@@ -1231,7 +1205,7 @@ fn check_authorization(deps: Deps, info: &MessageInfo, auth_type: AuthType) -> S
                 false
             });
 
-            if !((info.sender == admin) || is_included) {
+            if !((sender == admin) || is_included) {
                 Err(ContractError::Unauthorized)?;
             }
         }

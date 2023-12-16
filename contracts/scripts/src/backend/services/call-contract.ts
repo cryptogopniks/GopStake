@@ -41,9 +41,10 @@ async function main(network: NetworkName) {
 
     const testWallets: {
       SEED_ADMIN: string;
+      SEED_ALICE: string;
     } = JSON.parse(await readFile(PATH.TO_TEST_WALLETS, { encoding: "utf8" }));
 
-    const seed = await getSeed(testWallets.SEED_ADMIN);
+    const seed = await getSeed(testWallets.SEED_ALICE);
     if (!seed) throw new Error("Seed is not found!");
 
     const chain = chains.find((x) => x.chain_id == CHAIN_ID);
@@ -63,6 +64,7 @@ async function main(network: NetworkName) {
       cwQueryNftOwner,
       cwQueryBalanceInNft,
       cwQueryStakingRewardsPerCollection,
+      cwQueryDenomsByCreator,
     } = await getCwQueryHelpers(network, RPC);
 
     const {
@@ -77,7 +79,10 @@ async function main(network: NetworkName) {
     const denom = "upinj";
     const fullDenom = `factory/${MINTER_CONTRACT.DATA.ADDRESS}/${denom}`;
 
-    // await cwCreateDenom(denom, 10000000000, DENOM, gasPrice);
+    await cwQueryDenomsByCreator(alice);
+    return;
+    await cwCreateDenom(alice, "gop", 10000000000, DENOM, gasPrice);
+    return;
     // await cwMintTokens(fullDenom, 100, owner, gasPrice);
     // await cwBurnTokens(fullDenom, 100, gasPrice);
 
