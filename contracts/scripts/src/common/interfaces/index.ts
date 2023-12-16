@@ -2,10 +2,11 @@ import { Timestamp } from "cosmjs-types/google/protobuf/timestamp";
 
 interface UpdateConfigStruct {
   // minter
+  minterOwner?: string;
   stakingPlatform?: string;
 
   // staking platform
-  owner?: string;
+  stakingPlatformOwner?: string;
   minter?: string;
 }
 
@@ -120,6 +121,7 @@ type ContractsConfig = {
   WASM: string;
   LABEL: string;
   INIT_MSG: any;
+  MIGRATE_MSG: any;
   DATA: ContractData;
 };
 

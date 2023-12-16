@@ -23,13 +23,15 @@ pub struct Metadata {
 #[cw_serde]
 pub struct Config {
     pub admin: Addr,
+    pub owner: Option<Addr>,
     pub staking_platform: Option<Addr>,
 }
 
 impl Config {
-    pub fn new(admin: &Addr, staking_platform: &Option<Addr>) -> Self {
+    pub fn new(admin: &Addr, owner: &Option<Addr>, staking_platform: &Option<Addr>) -> Self {
         Self {
             admin: admin.to_owned(),
+            owner: owner.to_owned(),
             staking_platform: staking_platform.to_owned(),
         }
     }

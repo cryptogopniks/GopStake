@@ -65,10 +65,14 @@ async function main(network: NetworkName) {
       msgBroadcasterWithPk
     );
 
+    const minterAndStakingPlatformOwner =
+      "inj1u9jles5s3nw29726frttn007h9880n2zyfwf6c";
+
     const res = await cwUpdateConfig({
+      minterOwner: minterAndStakingPlatformOwner,
       stakingPlatform: STAKING_PLATFORM_CONTRACT.DATA.ADDRESS,
+      stakingPlatformOwner: minterAndStakingPlatformOwner,
       minter: MINTER_CONTRACT.DATA.ADDRESS,
-      owner: "inj1u9jles5s3nw29726frttn007h9880n2zyfwf6c",
     });
     l("\n", res, "\n");
 

@@ -1,10 +1,16 @@
 import { NetworkConfig } from "../../common/interfaces";
-import { InstantiateMsg as MinterInitMsg } from "../codegen/Minter.types";
-import { InstantiateMsg as StakingPlatformInitMsg } from "../codegen/StakingPlatform.types";
 import STARGAZE_MINTER from "./stargaze-minter.json";
 import STARGAZE_STAKING_PLATFORM from "./stargaze-staking_platform.json";
 import INJECTIVE_MINTER from "./injective-minter.json";
 import INJECTIVE_STAKING_PLATFORM from "./injective-staking_platform.json";
+import {
+  InstantiateMsg as MinterInitMsg,
+  MigrateMsg as MinterMigrateMsg,
+} from "../codegen/Minter.types";
+import {
+  InstantiateMsg as StakingPlatformInitMsg,
+  MigrateMsg as StakingPlatformMigrateMsg,
+} from "../codegen/StakingPlatform.types";
 
 const INJ_MINTER_WASM = "minter_inj.wasm";
 const MINTER_WASM = "minter.wasm";
@@ -12,6 +18,13 @@ const STAKING_PLATFORM_WASM = "staking_platform.wasm";
 
 const minterInitMsg: MinterInitMsg = {};
 const stakingPlatformInitMsg: StakingPlatformInitMsg = {};
+
+const minterMigrateMsg: MinterMigrateMsg = {
+  version: "1.1.0",
+};
+const stakingPlatformMigrateMsg: StakingPlatformMigrateMsg = {
+  version: "1.3.0",
+};
 
 const NETWORK_CONFIG: NetworkConfig = {
   STARGAZE: {
@@ -28,6 +41,7 @@ const NETWORK_CONFIG: NetworkConfig = {
         WASM: MINTER_WASM,
         LABEL: "cryptogopniks-minter",
         INIT_MSG: minterInitMsg,
+        MIGRATE_MSG: minterMigrateMsg,
         DATA: {
           CODE: STARGAZE_MINTER.CODE,
           ADDRESS: STARGAZE_MINTER.ADDRESS,
@@ -37,6 +51,7 @@ const NETWORK_CONFIG: NetworkConfig = {
         WASM: STAKING_PLATFORM_WASM,
         LABEL: "cryptogopniks-staking_platform",
         INIT_MSG: stakingPlatformInitMsg,
+        MIGRATE_MSG: stakingPlatformMigrateMsg,
         DATA: {
           CODE: STARGAZE_STAKING_PLATFORM.CODE,
           ADDRESS: STARGAZE_STAKING_PLATFORM.ADDRESS,
@@ -91,6 +106,7 @@ const NETWORK_CONFIG: NetworkConfig = {
         WASM: INJ_MINTER_WASM,
         LABEL: "cryptogopniks-minter",
         INIT_MSG: minterInitMsg,
+        MIGRATE_MSG: minterMigrateMsg,
         DATA: {
           CODE: INJECTIVE_MINTER.CODE,
           ADDRESS: INJECTIVE_MINTER.ADDRESS,
@@ -100,6 +116,7 @@ const NETWORK_CONFIG: NetworkConfig = {
         WASM: STAKING_PLATFORM_WASM,
         LABEL: "cryptogopniks-staking_platform",
         INIT_MSG: stakingPlatformInitMsg,
+        MIGRATE_MSG: stakingPlatformMigrateMsg,
         DATA: {
           CODE: INJECTIVE_STAKING_PLATFORM.CODE,
           ADDRESS: INJECTIVE_STAKING_PLATFORM.ADDRESS,

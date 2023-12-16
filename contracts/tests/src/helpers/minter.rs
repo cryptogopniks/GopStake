@@ -18,6 +18,7 @@ pub trait MinterExtension {
     fn minter_try_create_denom(
         &mut self,
         sender: ProjectAccount,
+        token_owner: ProjectAccount,
         subdenom: ProjectCoin,
         payment: (u128, ProjectCoin),
     ) -> StdResult<AppResponse>;
@@ -46,6 +47,7 @@ pub trait MinterExtension {
     fn minter_try_update_config(
         &mut self,
         sender: ProjectAccount,
+        owner: &Option<Addr>,
         staking_platform: &Option<Addr>,
     ) -> StdResult<AppResponse>;
 
@@ -62,6 +64,7 @@ impl MinterExtension for Project {
     fn minter_try_create_denom(
         &mut self,
         sender: ProjectAccount,
+        token_owner: ProjectAccount,
         subdenom: ProjectCoin,
         payment: (u128, ProjectCoin),
     ) -> StdResult<AppResponse> {
@@ -70,6 +73,7 @@ impl MinterExtension for Project {
                 sender.into(),
                 self.get_minter_address(),
                 &ExecuteMsg::CreateDenom {
+                    token_owner: token_owner.to_string(),
                     subdenom: subdenom.to_string(),
                 },
                 &[coin(payment.0, payment.1.to_string())],
@@ -136,6 +140,7 @@ impl MinterExtension for Project {
     fn minter_try_update_config(
         &mut self,
         sender: ProjectAccount,
+        owner: &Option<Addr>,
         staking_platform: &Option<Addr>,
     ) -> StdResult<AppResponse> {
         self.app
@@ -143,6 +148,7 @@ impl MinterExtension for Project {
                 sender.into(),
                 self.get_minter_address(),
                 &ExecuteMsg::UpdateConfig {
+                    owner: owner.as_ref().map(|x| x.to_string()),
                     staking_platform: staking_platform.as_ref().map(|x| x.to_string()),
                 },
                 &[],

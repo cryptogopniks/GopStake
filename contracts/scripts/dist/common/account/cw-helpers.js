@@ -189,8 +189,9 @@ async function getCwExecHelpers(network, rpc, owner, signer) {
 
   // minter
 
-  async function cwCreateDenom(subdenom, paymentAmount, paymentDenom, gasPrice) {
+  async function cwCreateDenom(tokenOwner, subdenom, paymentAmount, paymentDenom, gasPrice) {
     return await _msgWrapperWithGasPrice([addSingleTokenToComposerObj(minterMsgComposer.createDenom({
+      tokenOwner,
       subdenom
     }), paymentAmount, {
       native: {
@@ -226,18 +227,20 @@ async function getCwExecHelpers(network, rpc, owner, signer) {
     let msgList = [];
     const {
       stakingPlatform,
+      stakingPlatformOwner,
       minter,
-      owner
+      minterOwner
     } = updateConfigStruct;
-    if (stakingPlatform) {
+    if (minterOwner || stakingPlatform) {
       msgList.push(minterMsgComposer.updateConfig({
+        owner: minterOwner,
         stakingPlatform
       }));
     }
-    if (minter || owner) {
+    if (stakingPlatformOwner || minter) {
       msgList.push(stakingPlatformMsgComposer.updateConfig({
-        minter,
-        owner
+        owner: stakingPlatformOwner,
+        minter
       }));
     }
     if (!msgList.length) {

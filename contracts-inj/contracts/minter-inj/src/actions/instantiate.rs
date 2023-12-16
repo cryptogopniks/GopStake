@@ -28,6 +28,7 @@ pub fn try_instantiate(
         deps.storage,
         &Config::new(
             &info.sender,
+            &validate_attr(&mut attrs, api, "owner", &msg.owner)?,
             &validate_attr(&mut attrs, api, "staking_platform", &msg.staking_platform)?,
         ),
     )?;

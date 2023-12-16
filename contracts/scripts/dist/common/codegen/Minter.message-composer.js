@@ -17,7 +17,8 @@ export class MinterMsgComposer {
     this.updateConfig = this.updateConfig.bind(this);
   }
   createDenom = ({
-    subdenom
+    subdenom,
+    tokenOwner
   }, _funds) => {
     return {
       typeUrl: "/cosmwasm.wasm.v1.MsgExecuteContract",
@@ -26,7 +27,8 @@ export class MinterMsgComposer {
         contract: this.contractAddress,
         msg: toUtf8(JSON.stringify({
           create_denom: {
-            subdenom
+            subdenom,
+            token_owner: tokenOwner
           }
         })),
         funds: _funds
@@ -85,6 +87,7 @@ export class MinterMsgComposer {
     };
   };
   updateConfig = ({
+    owner,
     stakingPlatform
   }, _funds) => {
     return {
@@ -94,6 +97,7 @@ export class MinterMsgComposer {
         contract: this.contractAddress,
         msg: toUtf8(JSON.stringify({
           update_config: {
+            owner,
             staking_platform: stakingPlatform
           }
         })),

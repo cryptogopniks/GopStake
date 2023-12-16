@@ -4,11 +4,13 @@
 * and run the @cosmwasm/ts-codegen generate command to regenerate this file.
 */
 export interface InstantiateMsg {
+    owner?: string | null;
     staking_platform?: string | null;
 }
 export type ExecuteMsg = {
     create_denom: {
         subdenom: string;
+        token_owner: string;
     };
 } | {
     mint_tokens: {
@@ -24,6 +26,7 @@ export type ExecuteMsg = {
     };
 } | {
     update_config: {
+        owner?: string | null;
         staking_platform?: string | null;
     };
 };
@@ -59,5 +62,6 @@ export interface QueryDenomsFromCreatorResponse {
 export type Addr = string;
 export interface Config {
     admin: Addr;
+    owner?: Addr | null;
     staking_platform?: Addr | null;
 }

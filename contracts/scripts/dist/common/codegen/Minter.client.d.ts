@@ -25,8 +25,9 @@ export declare class MinterQueryClient implements MinterReadOnlyInterface {
 export interface MinterInterface extends MinterReadOnlyInterface {
     contractAddress: string;
     sender: string;
-    createDenom: ({ subdenom }: {
+    createDenom: ({ subdenom, tokenOwner }: {
         subdenom: string;
+        tokenOwner: string;
     }, fee?: number | StdFee | "auto", memo?: string, _funds?: Coin[]) => Promise<ExecuteResult>;
     mintTokens: ({ amount, denom, mintToAddress }: {
         amount: Uint128;
@@ -37,7 +38,8 @@ export interface MinterInterface extends MinterReadOnlyInterface {
     setMetadata: ({ metadata }: {
         metadata: Metadata;
     }, fee?: number | StdFee | "auto", memo?: string, _funds?: Coin[]) => Promise<ExecuteResult>;
-    updateConfig: ({ stakingPlatform }: {
+    updateConfig: ({ owner, stakingPlatform }: {
+        owner?: string;
         stakingPlatform?: string;
     }, fee?: number | StdFee | "auto", memo?: string, _funds?: Coin[]) => Promise<ExecuteResult>;
 }
@@ -46,8 +48,9 @@ export declare class MinterClient extends MinterQueryClient implements MinterInt
     sender: string;
     contractAddress: string;
     constructor(client: SigningCosmWasmClient, sender: string, contractAddress: string);
-    createDenom: ({ subdenom }: {
+    createDenom: ({ subdenom, tokenOwner }: {
         subdenom: string;
+        tokenOwner: string;
     }, fee?: number | StdFee | "auto", memo?: string, _funds?: Coin[]) => Promise<ExecuteResult>;
     mintTokens: ({ amount, denom, mintToAddress }: {
         amount: Uint128;
@@ -58,7 +61,8 @@ export declare class MinterClient extends MinterQueryClient implements MinterInt
     setMetadata: ({ metadata }: {
         metadata: Metadata;
     }, fee?: number | StdFee | "auto", memo?: string, _funds?: Coin[]) => Promise<ExecuteResult>;
-    updateConfig: ({ stakingPlatform }: {
+    updateConfig: ({ owner, stakingPlatform }: {
+        owner?: string | undefined;
         stakingPlatform?: string | undefined;
     }, fee?: number | StdFee | "auto", memo?: string, _funds?: Coin[]) => Promise<ExecuteResult>;
 }

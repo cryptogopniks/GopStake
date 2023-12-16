@@ -18,7 +18,7 @@ declare function getCwExecHelpers(network: NetworkName, owner: string, msgBroadc
     cwAcceptProposal: (id: number, amount: number, token: StakingPlatformTypes.TokenUnverified, _gasPrice?: string) => Promise<import("@injectivelabs/sdk-ts").TxResponse>;
     cwDepositTokens: (collectionAddress: string, amount: number, token: StakingPlatformTypes.TokenUnverified, _gasPrice?: string) => Promise<import("@injectivelabs/sdk-ts").TxResponse>;
     cwWithdrawTokens: (collectionAddress: string, amount: number, _gasPrice?: string) => Promise<import("@injectivelabs/sdk-ts").TxResponse>;
-    cwCreateDenom: (subdenom: string, paymentAmount: number, paymentDenom: string, _gasPrice?: string) => Promise<import("@injectivelabs/sdk-ts").TxResponse>;
+    cwCreateDenom: (tokenOwner: string, subdenom: string, paymentAmount: number, paymentDenom: string, _gasPrice?: string) => Promise<import("@injectivelabs/sdk-ts").TxResponse>;
     cwSetMetadata: (creatorAddress: string, symbol: string, description: string, uri?: string, uriHash?: string, _gasPrice?: string) => Promise<import("@injectivelabs/sdk-ts").TxResponse>;
     cwRevoke: (collectionAddress: string, tokenId: number, senderAddress: string, operator: string, _gasPrice?: string) => Promise<import("@injectivelabs/sdk-ts").TxResponse>;
     cwMintTokens: (denom: string, amount: number, mintToAddress: string, _gasPrice?: string) => Promise<import("@injectivelabs/sdk-ts").TxResponse>;

@@ -1,7 +1,8 @@
 import { Timestamp } from "cosmjs-types/google/protobuf/timestamp";
 interface UpdateConfigStruct {
+    minterOwner?: string;
     stakingPlatform?: string;
-    owner?: string;
+    stakingPlatformOwner?: string;
     minter?: string;
 }
 interface Cw20SendMsg {
@@ -105,6 +106,7 @@ type ContractsConfig = {
     WASM: string;
     LABEL: string;
     INIT_MSG: any;
+    MIGRATE_MSG: any;
     DATA: ContractData;
 };
 type ContractData = {

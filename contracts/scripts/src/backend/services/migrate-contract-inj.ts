@@ -4,17 +4,11 @@ import { l } from "../../common/utils";
 import { NetworkName } from "../../common/interfaces";
 import { readFile } from "fs/promises";
 import { PATH } from "../envs";
+import { Network } from "@injectivelabs/networks";
 import {
   MsgBroadcasterWithPk,
   MsgMigrateContract,
 } from "@injectivelabs/sdk-ts";
-import { Network } from "@injectivelabs/networks";
-import { ProposalForStringAndTokenUnverified } from "../../common/codegen/StakingPlatform.types";
-import { getSgQueryHelpers } from "../../common/account/sg-helpers-inj";
-import {
-  getCwExecHelpers,
-  getCwQueryHelpers,
-} from "../../common/account/cw-helpers-inj";
 import {
   NETWORK_CONFIG,
   MINTER_WASM,
@@ -22,22 +16,11 @@ import {
   STAKING_PLATFORM_WASM,
 } from "../../common/config";
 
-import { MigrateMsg } from "../../common/codegen/StakingPlatform.types";
-import { toUtf8 } from "@cosmjs/encoding";
-
 const networkType = Network.Testnet;
 
-async function main(network: NetworkName) {
+async function main(network: NetworkName, wasm: string) {
   try {
-    const {
-      BASE: {
-        DENOM,
-        CHAIN_ID,
-        RPC_LIST: [RPC],
-        PREFIX,
-      },
-      CONTRACTS,
-    } = NETWORK_CONFIG[network];
+    const { CONTRACTS } = NETWORK_CONFIG[network];
 
     const MINTER_CONTRACT = CONTRACTS.find(
       (x) =>
@@ -67,13 +50,16 @@ async function main(network: NetworkName) {
       simulateTx: true,
     });
 
-    const migrateMsg: MigrateMsg = { version: "1.3.0" };
+    const contract =
+      wasm === STAKING_PLATFORM_WASM
+        ? STAKING_PLATFORM_CONTRACT
+        : MINTER_CONTRACT;
 
     const msg = MsgMigrateContract.fromJSON({
       sender: injectiveAddress,
-      contract: STAKING_PLATFORM_CONTRACT.DATA.ADDRESS,
-      codeId: STAKING_PLATFORM_CONTRACT.DATA.CODE,
-      msg: migrateMsg,
+      contract: contract.DATA.ADDRESS,
+      codeId: contract.DATA.CODE,
+      msg: contract.MIGRATE_MSG,
     });
 
     l(msg);
@@ -86,4 +72,4 @@ async function main(network: NetworkName) {
   }
 }
 
-main("INJECTIVE");
+main("INJECTIVE", MINTER_WASM);

@@ -16,7 +16,7 @@ declare function getCwExecHelpers(network: NetworkName, rpc: string, owner: stri
     cwAcceptProposal: (id: number, amount: number, token: TokenUnverified, gasPrice: string) => Promise<import("@cosmjs/cosmwasm-stargate").DeliverTxResponse>;
     cwDepositTokens: (collectionAddress: string, amount: number, token: TokenUnverified, gasPrice: string) => Promise<import("@cosmjs/cosmwasm-stargate").DeliverTxResponse>;
     cwWithdrawTokens: (collectionAddress: string, amount: number, gasPrice: string) => Promise<import("@cosmjs/cosmwasm-stargate").DeliverTxResponse>;
-    cwCreateDenom: (subdenom: string, paymentAmount: number, paymentDenom: string, gasPrice: string) => Promise<import("@cosmjs/cosmwasm-stargate").DeliverTxResponse>;
+    cwCreateDenom: (tokenOwner: string, subdenom: string, paymentAmount: number, paymentDenom: string, gasPrice: string) => Promise<import("@cosmjs/cosmwasm-stargate").DeliverTxResponse>;
     cwSetMetadata: (creatorAddress: string, symbol: string, description: string, uri: string | undefined, uriHash: string | undefined, gasPrice: string) => Promise<import("@cosmjs/cosmwasm-stargate").DeliverTxResponse>;
     cwRevoke: (collectionAddress: string, tokenId: number, senderAddress: string, operator: string, gasPrice: string) => Promise<import("@cosmjs/cosmwasm-stargate").DeliverTxResponse>;
     cwMintTokens: (denom: string, amount: number, mintToAddress: string, gasPrice: string) => Promise<import("@cosmjs/cosmwasm-stargate").DeliverTxResponse>;

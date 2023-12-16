@@ -2,7 +2,11 @@ import { l } from "../../common/utils";
 import { PATH, rootPath } from "../envs";
 import { calculateFee } from "@cosmjs/stargate";
 import { toUtf8 } from "@cosmjs/encoding";
-import { NETWORK_CONFIG, MINTER_WASM } from "../../common/config";
+import {
+  NETWORK_CONFIG,
+  MINTER_WASM,
+  STAKING_PLATFORM_WASM,
+} from "../../common/config";
 import { gzip } from "pako";
 import { readFile, writeFile } from "fs/promises";
 import { getCwClient } from "../../common/account/clients";
@@ -200,4 +204,5 @@ async function main(
   }
 }
 
-main("STARGAZE", false, []);
+// main("STARGAZE", false, []);
+main("STARGAZE", true, [STAKING_PLATFORM_WASM]);

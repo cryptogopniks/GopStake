@@ -38,7 +38,10 @@ pub fn execute(
     msg: ExecuteMsg,
 ) -> Result<Response, ContractError> {
     match msg {
-        ExecuteMsg::CreateDenom { subdenom } => try_create_denom(deps, env, info, subdenom),
+        ExecuteMsg::CreateDenom {
+            token_owner,
+            subdenom,
+        } => try_create_denom(deps, env, info, token_owner, subdenom),
         ExecuteMsg::MintTokens {
             denom,
             amount,
@@ -46,9 +49,10 @@ pub fn execute(
         } => try_mint_tokens(deps, env, info, denom, amount, mint_to_address),
         ExecuteMsg::BurnTokens {} => try_burn_tokens(deps, env, info),
         ExecuteMsg::SetMetadata { metadata } => try_set_metadata(deps, env, info, metadata),
-        ExecuteMsg::UpdateConfig { staking_platform } => {
-            try_update_config(deps, env, info, staking_platform)
-        }
+        ExecuteMsg::UpdateConfig {
+            owner,
+            staking_platform,
+        } => try_update_config(deps, env, info, owner, staking_platform),
     }
 }
 

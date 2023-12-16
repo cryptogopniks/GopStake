@@ -2,9 +2,13 @@ import { l } from "../../common/utils";
 import { PATH, rootPath } from "../envs";
 import { readFile, writeFile } from "fs/promises";
 import { getSeed } from "./get-seed";
-import { NETWORK_CONFIG, INJ_MINTER_WASM } from "../../common/config";
 import { getPrivateKey } from "../account/signer-inj";
 import { Network } from "@injectivelabs/networks";
+import {
+  NETWORK_CONFIG,
+  INJ_MINTER_WASM,
+  STAKING_PLATFORM_WASM,
+} from "../../common/config";
 import {
   MsgBroadcasterWithPk,
   MsgInstantiateContract,
@@ -166,4 +170,5 @@ async function main(
   }
 }
 
-main("INJECTIVE", false, []);
+// main("INJECTIVE", false, []);
+main("INJECTIVE", true, [STAKING_PLATFORM_WASM]);

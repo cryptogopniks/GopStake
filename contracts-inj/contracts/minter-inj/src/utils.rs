@@ -96,3 +96,13 @@ pub fn filter_by_address_list<T: Clone>(
 
     Ok(list.to_owned())
 }
+
+#[cw_serde]
+pub enum AuthType {
+    Any,
+    Admin,
+    AdminOrOwner,
+    Specified { allowlist: Vec<Option<Addr>> },
+    AdminOrOwnerOrSpecified { allowlist: Vec<Option<Addr>> },
+    AdminOrSpecified { allowlist: Vec<Option<Addr>> },
+}

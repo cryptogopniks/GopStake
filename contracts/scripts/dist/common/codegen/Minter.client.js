@@ -39,11 +39,13 @@ export class MinterClient extends MinterQueryClient {
     this.updateConfig = this.updateConfig.bind(this);
   }
   createDenom = async ({
-    subdenom
+    subdenom,
+    tokenOwner
   }, fee = "auto", memo, _funds) => {
     return await this.client.execute(this.sender, this.contractAddress, {
       create_denom: {
-        subdenom
+        subdenom,
+        token_owner: tokenOwner
       }
     }, fee, memo, _funds);
   };
@@ -75,10 +77,12 @@ export class MinterClient extends MinterQueryClient {
     }, fee, memo, _funds);
   };
   updateConfig = async ({
+    owner,
     stakingPlatform
   }, fee = "auto", memo, _funds) => {
     return await this.client.execute(this.sender, this.contractAddress, {
       update_config: {
+        owner,
         staking_platform: stakingPlatform
       }
     }, fee, memo, _funds);

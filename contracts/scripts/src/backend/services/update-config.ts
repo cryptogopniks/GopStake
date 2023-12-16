@@ -61,11 +61,15 @@ async function main(network: NetworkName) {
       signer
     );
 
+    const minterAndStakingPlatformOwner =
+      "stars1hvp3q00ypzrurd46h7c7c3hu86tx9uf8sg5lm3";
+
     await cwUpdateConfig(
       {
+        minterOwner: minterAndStakingPlatformOwner,
         stakingPlatform: STAKING_PLATFORM_CONTRACT.DATA.ADDRESS,
+        stakingPlatformOwner: minterAndStakingPlatformOwner,
         minter: MINTER_CONTRACT.DATA.ADDRESS,
-        owner: "stars1hvp3q00ypzrurd46h7c7c3hu86tx9uf8sg5lm3",
       },
       gasPrice
     );

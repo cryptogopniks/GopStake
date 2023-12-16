@@ -6,7 +6,6 @@ import { NetworkName } from "../../common/interfaces";
 import { readFile } from "fs/promises";
 import { PATH } from "../envs";
 import { toUtf8 } from "@cosmjs/encoding";
-import { MigrateMsg } from "../../common/codegen/StakingPlatform.types";
 import { calculateFee } from "@cosmjs/stargate";
 import { MsgMigrateContract } from "cosmjs-types/cosmwasm/wasm/v1/tx";
 import {
@@ -23,11 +22,10 @@ import {
   STAKING_PLATFORM_WASM,
 } from "../../common/config";
 
-async function main(network: NetworkName) {
+async function main(network: NetworkName, wasm: string) {
   try {
     const {
       BASE: {
-        DENOM,
         CHAIN_ID,
         RPC_LIST: [RPC],
         PREFIX,
@@ -63,15 +61,18 @@ async function main(network: NetworkName) {
 
     const signingClient = cwClient.client as SigningCosmWasmClient;
 
-    const migrateMsg: MigrateMsg = { version: "1.3.0" };
+    const contract =
+      wasm === STAKING_PLATFORM_WASM
+        ? STAKING_PLATFORM_CONTRACT
+        : MINTER_CONTRACT;
 
     const msg: MsgMigrateContractEncodeObject = {
       typeUrl: "/cosmwasm.wasm.v1.MsgMigrateContract",
       value: MsgMigrateContract.fromPartial({
         sender: owner,
-        contract: STAKING_PLATFORM_CONTRACT.DATA.ADDRESS,
-        codeId: STAKING_PLATFORM_CONTRACT.DATA.CODE,
-        msg: toUtf8(JSON.stringify(migrateMsg)),
+        contract: contract.DATA.ADDRESS,
+        codeId: contract.DATA.CODE,
+        msg: toUtf8(JSON.stringify(contract.MIGRATE_MSG)),
       }),
     };
 
@@ -80,9 +81,9 @@ async function main(network: NetworkName) {
 
     const tx = await signingClient.migrate(
       owner,
-      STAKING_PLATFORM_CONTRACT.DATA.ADDRESS,
-      STAKING_PLATFORM_CONTRACT.DATA.CODE,
-      migrateMsg,
+      contract.DATA.ADDRESS,
+      contract.DATA.CODE,
+      contract.MIGRATE_MSG,
       calculateFee(gasWantedSim, gasPrice)
     );
 
@@ -92,4 +93,4 @@ async function main(network: NetworkName) {
   }
 }
 
-main("STARGAZE");
+main("STARGAZE", MINTER_WASM);

@@ -1,12 +1,18 @@
 {
   "contract_name": "minter",
-  "contract_version": "1.0.0",
+  "contract_version": "1.1.0",
   "idl_version": "1.0.0",
   "instantiate": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "InstantiateMsg",
     "type": "object",
     "properties": {
+      "owner": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
       "staking_platform": {
         "type": [
           "string",
@@ -29,10 +35,14 @@
           "create_denom": {
             "type": "object",
             "required": [
-              "subdenom"
+              "subdenom",
+              "token_owner"
             ],
             "properties": {
               "subdenom": {
+                "type": "string"
+              },
+              "token_owner": {
                 "type": "string"
               }
             },
@@ -113,6 +123,12 @@
           "update_config": {
             "type": "object",
             "properties": {
+              "owner": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
               "staking_platform": {
                 "type": [
                   "string",
@@ -288,6 +304,16 @@
       "properties": {
         "admin": {
           "$ref": "#/definitions/Addr"
+        },
+        "owner": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/Addr"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "staking_platform": {
           "anyOf": [

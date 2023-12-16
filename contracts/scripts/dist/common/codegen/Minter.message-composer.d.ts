@@ -9,8 +9,9 @@ import { Uint128, Metadata } from "./Minter.types";
 export interface MinterMsg {
     contractAddress: string;
     sender: string;
-    createDenom: ({ subdenom }: {
+    createDenom: ({ subdenom, tokenOwner }: {
         subdenom: string;
+        tokenOwner: string;
     }, _funds?: Coin[]) => MsgExecuteContractEncodeObject;
     mintTokens: ({ amount, denom, mintToAddress }: {
         amount: Uint128;
@@ -21,7 +22,8 @@ export interface MinterMsg {
     setMetadata: ({ metadata }: {
         metadata: Metadata;
     }, _funds?: Coin[]) => MsgExecuteContractEncodeObject;
-    updateConfig: ({ stakingPlatform }: {
+    updateConfig: ({ owner, stakingPlatform }: {
+        owner?: string;
         stakingPlatform?: string;
     }, _funds?: Coin[]) => MsgExecuteContractEncodeObject;
 }
@@ -29,8 +31,9 @@ export declare class MinterMsgComposer implements MinterMsg {
     sender: string;
     contractAddress: string;
     constructor(sender: string, contractAddress: string);
-    createDenom: ({ subdenom }: {
+    createDenom: ({ subdenom, tokenOwner }: {
         subdenom: string;
+        tokenOwner: string;
     }, _funds?: Coin[]) => MsgExecuteContractEncodeObject;
     mintTokens: ({ amount, denom, mintToAddress }: {
         amount: Uint128;
@@ -41,7 +44,8 @@ export declare class MinterMsgComposer implements MinterMsg {
     setMetadata: ({ metadata }: {
         metadata: Metadata;
     }, _funds?: Coin[]) => MsgExecuteContractEncodeObject;
-    updateConfig: ({ stakingPlatform }: {
+    updateConfig: ({ owner, stakingPlatform }: {
+        owner?: string | undefined;
         stakingPlatform?: string | undefined;
     }, _funds?: Coin[]) => MsgExecuteContractEncodeObject;
 }

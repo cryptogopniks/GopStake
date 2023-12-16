@@ -48,9 +48,11 @@ export interface MinterInterface extends MinterReadOnlyInterface {
   contractAddress: string;
   sender: string;
   createDenom: ({
-    subdenom
+    subdenom,
+    tokenOwner
   }: {
     subdenom: string;
+    tokenOwner: string;
   }, fee?: number | StdFee | "auto", memo?: string, _funds?: Coin[]) => Promise<ExecuteResult>;
   mintTokens: ({
     amount,
@@ -68,8 +70,10 @@ export interface MinterInterface extends MinterReadOnlyInterface {
     metadata: Metadata;
   }, fee?: number | StdFee | "auto", memo?: string, _funds?: Coin[]) => Promise<ExecuteResult>;
   updateConfig: ({
+    owner,
     stakingPlatform
   }: {
+    owner?: string;
     stakingPlatform?: string;
   }, fee?: number | StdFee | "auto", memo?: string, _funds?: Coin[]) => Promise<ExecuteResult>;
 }
@@ -91,13 +95,16 @@ export class MinterClient extends MinterQueryClient implements MinterInterface {
   }
 
   createDenom = async ({
-    subdenom
+    subdenom,
+    tokenOwner
   }: {
     subdenom: string;
+    tokenOwner: string;
   }, fee: number | StdFee | "auto" = "auto", memo?: string, _funds?: Coin[]): Promise<ExecuteResult> => {
     return await this.client.execute(this.sender, this.contractAddress, {
       create_denom: {
-        subdenom
+        subdenom,
+        token_owner: tokenOwner
       }
     }, fee, memo, _funds);
   };
@@ -135,12 +142,15 @@ export class MinterClient extends MinterQueryClient implements MinterInterface {
     }, fee, memo, _funds);
   };
   updateConfig = async ({
+    owner,
     stakingPlatform
   }: {
+    owner?: string;
     stakingPlatform?: string;
   }, fee: number | StdFee | "auto" = "auto", memo?: string, _funds?: Coin[]): Promise<ExecuteResult> => {
     return await this.client.execute(this.sender, this.contractAddress, {
       update_config: {
+        owner,
         staking_platform: stakingPlatform
       }
     }, fee, memo, _funds);

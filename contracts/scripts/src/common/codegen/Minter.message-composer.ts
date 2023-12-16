@@ -13,9 +13,11 @@ export interface MinterMsg {
   contractAddress: string;
   sender: string;
   createDenom: ({
-    subdenom
+    subdenom,
+    tokenOwner
   }: {
     subdenom: string;
+    tokenOwner: string;
   }, _funds?: Coin[]) => MsgExecuteContractEncodeObject;
   mintTokens: ({
     amount,
@@ -33,8 +35,10 @@ export interface MinterMsg {
     metadata: Metadata;
   }, _funds?: Coin[]) => MsgExecuteContractEncodeObject;
   updateConfig: ({
+    owner,
     stakingPlatform
   }: {
+    owner?: string;
     stakingPlatform?: string;
   }, _funds?: Coin[]) => MsgExecuteContractEncodeObject;
 }
@@ -53,9 +57,11 @@ export class MinterMsgComposer implements MinterMsg {
   }
 
   createDenom = ({
-    subdenom
+    subdenom,
+    tokenOwner
   }: {
     subdenom: string;
+    tokenOwner: string;
   }, _funds?: Coin[]): MsgExecuteContractEncodeObject => {
     return {
       typeUrl: "/cosmwasm.wasm.v1.MsgExecuteContract",
@@ -64,7 +70,8 @@ export class MinterMsgComposer implements MinterMsg {
         contract: this.contractAddress,
         msg: toUtf8(JSON.stringify({
           create_denom: {
-            subdenom
+            subdenom,
+            token_owner: tokenOwner
           }
         })),
         funds: _funds
@@ -129,8 +136,10 @@ export class MinterMsgComposer implements MinterMsg {
     };
   };
   updateConfig = ({
+    owner,
     stakingPlatform
   }: {
+    owner?: string;
     stakingPlatform?: string;
   }, _funds?: Coin[]): MsgExecuteContractEncodeObject => {
     return {
@@ -140,6 +149,7 @@ export class MinterMsgComposer implements MinterMsg {
         contract: this.contractAddress,
         msg: toUtf8(JSON.stringify({
           update_config: {
+            owner,
             staking_platform: stakingPlatform
           }
         })),

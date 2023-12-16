@@ -7,6 +7,7 @@ use gopstake_base::{
     constants::{MINS_PER_DAY, NANOS_PER_MIN},
     converters::str_to_dec,
     error::ContractError,
+    minter::types::{DenomUnit, Metadata},
     staking_platform::{
         msg::{
             QueryCollectionsBalancesResponseItem, QueryCollectionsResponseItem,
@@ -25,7 +26,7 @@ use crate::helpers::{
     suite::{
         codes::WithCodes,
         core::{assert_error, Project},
-        types::{ProjectAccount, ProjectCoin, ProjectNft, ProjectToken},
+        types::{GetDecimals, ProjectAccount, ProjectCoin, ProjectNft, ProjectToken},
     },
 };
 
@@ -206,6 +207,7 @@ fn create_proposal_update_collection_default() -> StdResult<()> {
     let mut project = Project::new();
 
     project.minter_try_create_denom(
+        ProjectAccount::Admin,
         ProjectAccount::Owner,
         ProjectCoin::Noria,
         (1, ProjectCoin::Denom),
@@ -499,6 +501,7 @@ fn create_proposal_unowned_minter_token() -> StdResult<()> {
     assert_error(&res, ContractError::UnownedStakingCurrency);
 
     project.minter_try_create_denom(
+        ProjectAccount::Admin,
         ProjectAccount::Admin,
         ProjectCoin::Denom,
         (1, ProjectCoin::Denom),
@@ -1279,6 +1282,7 @@ fn deposit_tokens_improper_emission_type() -> StdResult<()> {
     let mut project = Project::new();
 
     project.minter_try_create_denom(
+        ProjectAccount::Admin,
         ProjectAccount::Owner,
         ProjectCoin::Noria,
         (1, ProjectCoin::Denom),
@@ -2068,6 +2072,7 @@ fn claim_staking_rewards_with_minter_default() -> StdResult<()> {
     let mut project = Project::new();
 
     project.minter_try_create_denom(
+        ProjectAccount::Admin,
         ProjectAccount::Owner,
         ProjectCoin::Noria,
         (1, ProjectCoin::Denom),
@@ -2148,6 +2153,7 @@ fn claim_staking_rewards_with_minter_and_empty_spender() -> StdResult<()> {
     let mut project = Project::new();
 
     project.minter_try_create_denom(
+        ProjectAccount::Admin,
         ProjectAccount::Owner,
         ProjectCoin::Noria,
         (1, ProjectCoin::Denom),
@@ -2318,6 +2324,7 @@ fn unstake_with_minter_and_empty_spender() -> StdResult<()> {
     let mut project = Project::new();
 
     project.minter_try_create_denom(
+        ProjectAccount::Admin,
         ProjectAccount::Owner,
         ProjectCoin::Noria,
         (1, ProjectCoin::Denom),
@@ -2490,6 +2497,7 @@ fn claim_staking_rewards_and_unstake_all() -> StdResult<()> {
     let mut project = Project::new();
 
     project.minter_try_create_denom(
+        ProjectAccount::Admin,
         ProjectAccount::Owner,
         ProjectCoin::Noria,
         (1, ProjectCoin::Denom),
@@ -2693,6 +2701,7 @@ fn claim_staking_rewards_for_specified_collection() -> StdResult<()> {
     let mut project = Project::new();
 
     project.minter_try_create_denom(
+        ProjectAccount::Admin,
         ProjectAccount::Owner,
         ProjectCoin::Noria,
         (1, ProjectCoin::Denom),
@@ -2991,11 +3000,13 @@ fn accept_proposal_update_collection_change_staking_currency() -> StdResult<()> 
     let mut project = Project::new();
 
     project.minter_try_create_denom(
+        ProjectAccount::Admin,
         ProjectAccount::Owner,
         ProjectCoin::Noria,
         (1, ProjectCoin::Denom),
     )?;
     project.minter_try_create_denom(
+        ProjectAccount::Admin,
         ProjectAccount::Owner,
         ProjectCoin::Denom,
         (1, ProjectCoin::Denom),
@@ -3246,8 +3257,8 @@ fn accept_proposal_update_collection_change_staking_currency() -> StdResult<()> 
         .amount
         .u128();
 
-    // 1_000_000 - 2 - 400
-    assert_that(&owner_denom_balance).is_equal_to(999_598);
+    // 1_000_000 - 400
+    assert_that(&owner_denom_balance).is_equal_to(999_600);
     // 1000
     assert_that(&owner_noria_balance).is_equal_to(1_000_000);
 
@@ -3255,6 +3266,22 @@ fn accept_proposal_update_collection_change_staking_currency() -> StdResult<()> 
     assert_that(&owner_inj_balance).is_equal_to(999_999_999_999_750_000);
     // 1000 - 400
     assert_that(&owner_atom_balance).is_equal_to(600_000);
+
+    Ok(())
+}
+
+#[test]
+fn migrate_minter_default() -> StdResult<()> {
+    let mut project = Project::new();
+
+    project.migrate_contract(
+        ProjectAccount::Admin,
+        project.get_minter_address(),
+        project.get_minter_code_id(),
+        gopstake_base::minter::msg::MigrateMsg {
+            version: "1.1.0".to_string(),
+        },
+    )?;
 
     Ok(())
 }
@@ -3324,6 +3351,54 @@ fn migrate_staking_platform_default() -> StdResult<()> {
 
     let proposals = project.staking_platform_query_proposals(None)?;
     assert_that(&proposals).is_equal_to(&expected);
+
+    Ok(())
+}
+
+#[test]
+fn create_denom_and_set_metadata_unauth() -> StdResult<()> {
+    let mut project = Project::new();
+
+    let res = project
+        .minter_try_create_denom(
+            ProjectAccount::Alice,
+            ProjectAccount::Owner,
+            ProjectCoin::Noria,
+            (1, ProjectCoin::Denom),
+        )
+        .unwrap_err();
+
+    assert_error(&res, ContractError::Unauthorized);
+
+    project.minter_try_create_denom(
+        ProjectAccount::Admin,
+        ProjectAccount::Owner,
+        ProjectCoin::Noria,
+        (1, ProjectCoin::Denom),
+    )?;
+
+    let metadata = &Metadata {
+        description: "Noria token".to_string(),
+        denom_units: vec![DenomUnit {
+            denom: ProjectCoin::Noria.to_string(),
+            exponent: ProjectCoin::Noria.get_decimals() as u32,
+            aliases: vec![],
+        }],
+        base: ProjectCoin::Noria.to_string(),
+        display: "noria".to_string(),
+        name: "Noria token".to_string(),
+        symbol: "NORIA".to_string(),
+        uri: None,
+        uri_hash: None,
+    };
+
+    let res = project
+        .minter_try_set_metadata(ProjectAccount::Alice, metadata.to_owned())
+        .unwrap_err();
+
+    assert_error(&res, ContractError::Unauthorized);
+
+    project.minter_try_set_metadata(ProjectAccount::Owner, metadata.to_owned())?;
 
     Ok(())
 }

@@ -20,7 +20,7 @@ use gopstake_base::{
             StakedCollectionInfo, StakedTokenInfo,
         },
     },
-    utils::{get_funds, get_transfer_msg, nonpayable, unwrap_field, Attrs},
+    utils::{get_funds, get_transfer_msg, nonpayable, unwrap_field, Attrs, AuthType},
 };
 
 pub fn try_stake(
@@ -1169,6 +1169,73 @@ fn verify_admin_and_owner(deps: Deps, info: &MessageInfo) -> StdResult<()> {
     if (info.sender != admin) && (owner.is_err() || (owner.is_ok() && (info.sender != owner?))) {
         Err(ContractError::Unauthorized)?;
     }
+
+    Ok(())
+}
+
+fn check_authorization(deps: Deps, info: &MessageInfo, auth_type: AuthType) -> StdResult<()> {
+    let Config { admin, owner, .. } = CONFIG.load(deps.storage)?;
+    let owner = unwrap_field(owner, "owner");
+
+    match auth_type {
+        AuthType::Any => {}
+        AuthType::Admin => {
+            if info.sender != admin {
+                Err(ContractError::Unauthorized)?;
+            }
+        }
+        AuthType::AdminOrOwner => {
+            if !((info.sender == admin) || (owner.is_ok() && info.sender == owner?)) {
+                Err(ContractError::Unauthorized)?;
+            }
+        }
+        AuthType::Specified { allowlist } => {
+            let is_included = allowlist.iter().any(|some_address| {
+                if let Some(x) = some_address {
+                    if info.sender == x {
+                        return true;
+                    }
+                }
+
+                false
+            });
+
+            if !is_included {
+                Err(ContractError::Unauthorized)?;
+            }
+        }
+        AuthType::AdminOrOwnerOrSpecified { allowlist } => {
+            let is_included = allowlist.iter().any(|some_address| {
+                if let Some(x) = some_address {
+                    if info.sender == x {
+                        return true;
+                    }
+                }
+
+                false
+            });
+
+            if !((info.sender == admin) || (owner.is_ok() && info.sender == owner?) || is_included)
+            {
+                Err(ContractError::Unauthorized)?;
+            }
+        }
+        AuthType::AdminOrSpecified { allowlist } => {
+            let is_included = allowlist.iter().any(|some_address| {
+                if let Some(x) = some_address {
+                    if info.sender == x {
+                        return true;
+                    }
+                }
+
+                false
+            });
+
+            if !((info.sender == admin) || is_included) {
+                Err(ContractError::Unauthorized)?;
+            }
+        }
+    };
 
     Ok(())
 }

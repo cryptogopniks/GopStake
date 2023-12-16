@@ -5,6 +5,7 @@ use crate::minter::types::Metadata;
 
 #[cw_serde]
 pub struct InstantiateMsg {
+    pub owner: Option<String>,
     pub staking_platform: Option<String>,
 }
 
@@ -12,6 +13,7 @@ pub struct InstantiateMsg {
 pub enum ExecuteMsg {
     // staking-platform, user
     CreateDenom {
+        token_owner: String,
         subdenom: String,
     },
 
@@ -29,6 +31,7 @@ pub enum ExecuteMsg {
 
     // admin
     UpdateConfig {
+        owner: Option<String>,
         staking_platform: Option<String>,
     },
 }

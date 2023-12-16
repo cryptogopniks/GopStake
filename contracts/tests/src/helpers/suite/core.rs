@@ -107,7 +107,7 @@ impl Project {
             }
         }
 
-        let minter_address = project.instantiate_minter(minter_code_id, &None);
+        let minter_address = project.instantiate_minter(minter_code_id, &None, &None);
 
         // instantiate gopstake contracts
 
@@ -138,7 +138,11 @@ impl Project {
             .unwrap();
 
         project
-            .minter_try_update_config(ProjectAccount::Admin, &Some(staking_platform_address))
+            .minter_try_update_config(
+                ProjectAccount::Admin,
+                &None,
+                &Some(staking_platform_address),
+            )
             .unwrap();
 
         // add funds to minter

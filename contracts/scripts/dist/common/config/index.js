@@ -7,6 +7,12 @@ const MINTER_WASM = "minter.wasm";
 const STAKING_PLATFORM_WASM = "staking_platform.wasm";
 const minterInitMsg = {};
 const stakingPlatformInitMsg = {};
+const minterMigrateMsg = {
+  version: "1.1.0"
+};
+const stakingPlatformMigrateMsg = {
+  version: "1.3.0"
+};
 const NETWORK_CONFIG = {
   STARGAZE: {
     BASE: {
@@ -21,6 +27,7 @@ const NETWORK_CONFIG = {
       WASM: MINTER_WASM,
       LABEL: "cryptogopniks-minter",
       INIT_MSG: minterInitMsg,
+      MIGRATE_MSG: minterMigrateMsg,
       DATA: {
         CODE: STARGAZE_MINTER.CODE,
         ADDRESS: STARGAZE_MINTER.ADDRESS
@@ -29,6 +36,7 @@ const NETWORK_CONFIG = {
       WASM: STAKING_PLATFORM_WASM,
       LABEL: "cryptogopniks-staking_platform",
       INIT_MSG: stakingPlatformInitMsg,
+      MIGRATE_MSG: stakingPlatformMigrateMsg,
       DATA: {
         CODE: STARGAZE_STAKING_PLATFORM.CODE,
         ADDRESS: STARGAZE_STAKING_PLATFORM.ADDRESS
@@ -78,6 +86,7 @@ const NETWORK_CONFIG = {
       WASM: INJ_MINTER_WASM,
       LABEL: "cryptogopniks-minter",
       INIT_MSG: minterInitMsg,
+      MIGRATE_MSG: minterMigrateMsg,
       DATA: {
         CODE: INJECTIVE_MINTER.CODE,
         ADDRESS: INJECTIVE_MINTER.ADDRESS
@@ -86,6 +95,7 @@ const NETWORK_CONFIG = {
       WASM: STAKING_PLATFORM_WASM,
       LABEL: "cryptogopniks-staking_platform",
       INIT_MSG: stakingPlatformInitMsg,
+      MIGRATE_MSG: stakingPlatformMigrateMsg,
       DATA: {
         CODE: INJECTIVE_STAKING_PLATFORM.CODE,
         ADDRESS: INJECTIVE_STAKING_PLATFORM.ADDRESS

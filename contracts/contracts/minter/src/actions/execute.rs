@@ -1,6 +1,6 @@
 use cosmwasm_std::{
-    coin, Addr, BankMsg, Coin, CosmosMsg, DepsMut, Env, MessageInfo, Order, Response, StdResult,
-    Uint128,
+    coin, Addr, BankMsg, Coin, CosmosMsg, Deps, DepsMut, Env, MessageInfo, Order, Response,
+    StdResult, Uint128,
 };
 
 use osmosis_std::types::{
@@ -14,19 +14,22 @@ use gopstake_base::{
         state::{CONFIG, TOKENS},
         types::{Config, DenomUnit, Metadata},
     },
-    utils::{nonpayable, one_coin, unwrap_field, Attrs},
+    utils::{nonpayable, one_coin, unwrap_field, Attrs, AuthType},
 };
 
 pub fn try_create_denom(
     deps: DepsMut,
     env: Env,
     info: MessageInfo,
+    token_owner: String,
     subdenom: String,
 ) -> Result<Response, ContractError> {
+    check_authorization(deps.as_ref(), &info, AuthType::AdminOrOwner)?;
+
     // verify funds
     one_coin(&info)?;
 
-    let owner = info.sender;
+    let owner = deps.api.addr_validate(&token_owner)?;
     let creator = env.contract.address;
 
     let denoms = &TOKENS
@@ -169,9 +172,13 @@ pub fn try_set_metadata(
         Err(ContractError::AssetIsNotFound)?;
     }
 
-    if owner_and_denoms.is_ok() && (info.sender != owner_and_denoms?.0) {
-        Err(ContractError::Unauthorized)?;
-    }
+    check_authorization(
+        deps.as_ref(),
+        &info,
+        AuthType::AdminOrOwnerOrSpecified {
+            allowlist: vec![Some(owner_and_denoms?.0)],
+        },
+    )?;
 
     let sender = env.contract.address.to_string();
     let Metadata {
@@ -219,6 +226,7 @@ pub fn try_update_config(
     deps: DepsMut,
     _env: Env,
     info: MessageInfo,
+    owner: Option<String>,
     staking_platform: Option<String>,
 ) -> Result<Response, ContractError> {
     // verify funds
@@ -230,6 +238,11 @@ pub fn try_update_config(
         // verify sender
         if info.sender != config.admin {
             Err(ContractError::Unauthorized)?;
+        }
+
+        if let Some(x) = owner {
+            config.owner = Some(deps.api.addr_validate(&x)?);
+            attrs.push(("owner".to_string(), x));
         }
 
         if let Some(x) = staking_platform {
@@ -245,4 +258,71 @@ pub fn try_update_config(
 
 fn get_full_denom(creator: &Addr, subdenom: &str) -> String {
     format!("factory/{creator}/{subdenom}")
+}
+
+fn check_authorization(deps: Deps, info: &MessageInfo, auth_type: AuthType) -> StdResult<()> {
+    let Config { admin, owner, .. } = CONFIG.load(deps.storage)?;
+    let owner = unwrap_field(owner, "owner");
+
+    match auth_type {
+        AuthType::Any => {}
+        AuthType::Admin => {
+            if info.sender != admin {
+                Err(ContractError::Unauthorized)?;
+            }
+        }
+        AuthType::AdminOrOwner => {
+            if !((info.sender == admin) || (owner.is_ok() && info.sender == owner?)) {
+                Err(ContractError::Unauthorized)?;
+            }
+        }
+        AuthType::Specified { allowlist } => {
+            let is_included = allowlist.iter().any(|some_address| {
+                if let Some(x) = some_address {
+                    if info.sender == x {
+                        return true;
+                    }
+                }
+
+                false
+            });
+
+            if !is_included {
+                Err(ContractError::Unauthorized)?;
+            }
+        }
+        AuthType::AdminOrOwnerOrSpecified { allowlist } => {
+            let is_included = allowlist.iter().any(|some_address| {
+                if let Some(x) = some_address {
+                    if info.sender == x {
+                        return true;
+                    }
+                }
+
+                false
+            });
+
+            if !((info.sender == admin) || (owner.is_ok() && info.sender == owner?) || is_included)
+            {
+                Err(ContractError::Unauthorized)?;
+            }
+        }
+        AuthType::AdminOrSpecified { allowlist } => {
+            let is_included = allowlist.iter().any(|some_address| {
+                if let Some(x) = some_address {
+                    if info.sender == x {
+                        return true;
+                    }
+                }
+
+                false
+            });
+
+            if !((info.sender == admin) || is_included) {
+                Err(ContractError::Unauthorized)?;
+            }
+        }
+    };
+
+    Ok(())
 }
