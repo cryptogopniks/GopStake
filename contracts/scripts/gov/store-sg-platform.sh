@@ -1,0 +1,14 @@
+source ./config.sh
+
+
+$DAEMON_STARGAZE tx gov submit-proposal wasm-store $WASM_STARGAZE_STAKING_PLATFORM \
+  --title $TITLE_STARGAZE_STAKING_PLATFORM \
+  --description $DESCRIPTION_STARGAZE_STAKING_PLATFORM \
+  --code-source-url $WASM_SOURCE_STARGAZE_STAKING_PLATFORM \
+	--builder $BUILDER \
+	--code-hash $HASH_SUM_STARGAZE_STAKING_PLATFORM \
+  --deposit $DEPOSIT_STARGAZE \
+  --from $ADDRESS_OWNER_STARGAZE \
+  --run-as $ADDRESS_ADMIN_STARGAZE \
+  --instantiate-anyof-addresses "$ADDRESS_ADMIN_STARGAZE,$ADDRESS_OWNER_STARGAZE" \
+  $TXFLAG_STARGAZE
