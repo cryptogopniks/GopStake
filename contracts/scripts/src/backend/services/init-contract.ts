@@ -1,4 +1,4 @@
-import { l } from "../../common/utils";
+import { l, Request } from "../../common/utils";
 import { PATH, rootPath } from "../envs";
 import { calculateFee } from "@cosmjs/stargate";
 import { toUtf8 } from "@cosmjs/encoding";
@@ -20,6 +20,7 @@ import {
   NetworkName,
   ContractData,
   ContractsConfig,
+  QueryContractCodesResponse,
 } from "../../common/interfaces";
 import {
   SigningCosmWasmClient,
@@ -52,6 +53,7 @@ async function main(
 
     const GAS_PRICE_AMOUNT = 1;
     const RPC = "https://stargaze-rpc.reece.sh:443";
+    const REST = "https://stargaze-api.reece.sh:443";
 
     const testWallets: {
       SEED_ADMIN: string;
@@ -101,11 +103,18 @@ async function main(
     ][] = [];
     let addressList: string[] = [];
 
+    const { code_infos: codeList } =
+      await new Request().get<QueryContractCodesResponse>(
+        `${REST}/cosmwasm/wasm/v1/code?pagination.limit=5&pagination.reverse=true`
+      );
+    const code = codeList.find((x) => x.creator === owner);
+    if (!code) throw new Error("Code ID is not found!");
+
+    const codeId = +code.code_id;
+
     for (const i in contractConfigAndStoreCodeMsgList) {
       const [CONTRACT] = contractConfigAndStoreCodeMsgList[i];
       const { WASM, LABEL } = CONTRACT;
-      const codeId = CONTRACT.DATA.CODE;
-
       const contractName = WASM.replace(".wasm", "").toLowerCase();
 
       l(`\n"${contractName}" contract code is ${codeId}\n`);
@@ -147,8 +156,7 @@ async function main(
     }
 
     for (const i in contractConfigAndInitMsgList) {
-      const [{ WASM, DATA }] = contractConfigAndInitMsgList[i];
-      const codeId = DATA.CODE;
+      const [{ WASM }] = contractConfigAndInitMsgList[i];
       const contractAddress = addressList[i] || "";
 
       const networkName = network.toLowerCase();

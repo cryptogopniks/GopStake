@@ -18,7 +18,7 @@ class Request {
     this.req = axios.create(config);
   }
 
-  async get(url: string, config?: Object) {
+  async get<T>(url: string, config?: Object): Promise<T> {
     return (await this.req.get(url, config)).data;
   }
 

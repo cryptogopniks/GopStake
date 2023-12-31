@@ -10,6 +10,25 @@ interface UpdateConfigStruct {
   minter?: string;
 }
 
+interface Pagination {
+  next_key: string;
+  total: string;
+}
+
+interface QueryContractCodesResponse {
+  code_infos: {
+    code_id: string;
+    creator: string;
+    data_hash: string;
+    instantiate_permission: {
+      permission: string;
+      address: string;
+      addresses: string[];
+    };
+  }[];
+  pagination: Pagination;
+}
+
 interface Cw20SendMsg {
   send: {
     contract: string;
@@ -148,4 +167,5 @@ export {
   TokensResponseInj,
   QueryOwnerOf,
   OwnerOfResponse,
+  QueryContractCodesResponse,
 };
