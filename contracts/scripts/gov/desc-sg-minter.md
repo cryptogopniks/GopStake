@@ -24,18 +24,21 @@ The source code is available at https://github.com/cryptogopniks/GopStake/releas
 ## Compile Instructions
 
 ```sh
-cargo cw-optimizoor
+docker run --rm -v "$(pwd)":/code \
+  --mount type=volume,source="$(basename "$(pwd)")_cache",target=/target \
+  --mount type=volume,source=registry_cache,target=/usr/local/cargo/registry \
+  cosmwasm/workspace-optimizer:0.15.0
 ```
 
 This results in the following SHA256
 ```
-7591410a254f1a381b509c7740c2f25a2859a7802900b4eacc430ccbc2967108
+80cf323ef1460bbfc9cd1f1ffb49a4405f43dd9fcd46139049379530e67512ad
 ```
 
 ## Verify On-chain Contract
 
 ```sh
-starsd q gov proposal --output json| jq -r ‘.content.wasm_byte_code’| base64 -d| gzip -dc| sha256sum
+starsd q gov proposal $ID --output json| jq -r ‘.content.wasm_byte_code’| base64 -d| gzip -dc| sha256sum
 ```
 
 ## Verify Local Contract

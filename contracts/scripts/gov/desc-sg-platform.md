@@ -35,7 +35,7 @@ fdf63299a1abf865578dd6c74ac0c074c2d36d3cc05d356e16af7a7afc10a358
 ## Verify On-chain Contract
 
 ```sh
-starsd q gov proposal --output json| jq -r ‘.content.wasm_byte_code’| base64 -d| gzip -dc| sha256sum
+starsd q gov proposal $ID --output json| jq -r ‘.content.wasm_byte_code’| base64 -d| gzip -dc| sha256sum
 ```
 
 ## Verify Local Contract
