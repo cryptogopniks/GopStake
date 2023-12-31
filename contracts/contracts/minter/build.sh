@@ -24,7 +24,11 @@ cosmwasm-ts-codegen generate \
 
 # build optimized binary
 cd ../..
-cargo cw-optimizoor
+# cargo cw-optimizoor
+docker run --rm -v "$(pwd)":/code \
+  --mount type=volume,source="$(basename "$(pwd)")_cache",target=/target \
+  --mount type=volume,source=registry_cache,target=/usr/local/cargo/registry \
+  cosmwasm/workspace-optimizer:0.15.0
 
 # rename wasm files
 cd artifacts
