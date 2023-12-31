@@ -93,7 +93,7 @@ function getAddrByPrefix(address: string, prefix: string): string {
 function signAndBroadcastWrapper(
   client: SigningStargateClient | SigningCosmWasmClient,
   signerAddress: string,
-  margin: number = 1.2
+  margin: number = 1.3
 ) {
   return async (
     messages: readonly EncodeObject[],
