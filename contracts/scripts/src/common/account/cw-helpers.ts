@@ -34,6 +34,7 @@ import {
   ApprovalsResponse,
   Cw20SendMsg,
   NetworkName,
+  ApproveAllMsg,
   ApproveMsg,
   RevokeMsg,
   QueryTokens,
@@ -100,16 +101,14 @@ function getSingleTokenExecMsg(
   );
 }
 
-function getApproveNftMsg(
+function getApproveCollectionMsg(
   collectionAddress: string,
-  tokenId: number,
   senderAddress: string,
   operator: string
 ): MsgExecuteContractEncodeObject {
-  const approveMsg: ApproveMsg = {
-    approve: {
-      spender: operator,
-      token_id: `${tokenId}`,
+  const approveMsg: ApproveAllMsg = {
+    approve_all: {
+      operator,
     },
   };
 
@@ -248,20 +247,10 @@ async function getCwExecHelpers(
   ) {
     let msgList: MsgExecuteContractEncodeObject[] = [];
 
-    for (const {
-      collection_address,
-      staked_token_info_list,
-    } of collectionsToStake) {
-      for (const { token_id } of staked_token_info_list) {
-        msgList.push(
-          getApproveNftMsg(
-            collection_address,
-            +token_id,
-            senderAddress,
-            operator
-          )
-        );
-      }
+    for (const { collection_address } of collectionsToStake) {
+      msgList.push(
+        getApproveCollectionMsg(collection_address, senderAddress, operator)
+      );
     }
 
     msgList.push(stakingPlatformMsgComposer.stake({ collectionsToStake }));

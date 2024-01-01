@@ -5,6 +5,23 @@ interface UpdateConfigStruct {
     stakingPlatformOwner?: string;
     minter?: string;
 }
+interface Pagination {
+    next_key: string;
+    total: string;
+}
+interface QueryContractCodesResponse {
+    code_infos: {
+        code_id: string;
+        creator: string;
+        data_hash: string;
+        instantiate_permission: {
+            permission: string;
+            address: string;
+            addresses: string[];
+        };
+    }[];
+    pagination: Pagination;
+}
 interface Cw20SendMsg {
     send: {
         contract: string;
@@ -29,6 +46,12 @@ interface Metadata {
 interface SetMetadataMsg {
     set_metadata: {
         metadata: Metadata;
+    };
+}
+interface ApproveAllMsg {
+    approve_all: {
+        operator: string;
+        expires?: Expiration;
     };
 }
 interface ApproveMsg {
@@ -114,4 +137,4 @@ type ContractData = {
     ADDRESS: string;
 };
 export type { NetworkConfig, NetworkName, ContractsConfig };
-export { SetMetadataMsg, Metadata, UpdateConfigStruct, QueryApprovalsMsg, ApprovalsResponse, Cw20SendMsg, BaseNetworkConfig, ContractData, ApproveMsg, RevokeMsg, QueryTokens, TokensResponse, TokensResponseInj, QueryOwnerOf, OwnerOfResponse, };
+export { SetMetadataMsg, Metadata, UpdateConfigStruct, QueryApprovalsMsg, ApprovalsResponse, Cw20SendMsg, BaseNetworkConfig, ContractData, ApproveAllMsg, ApproveMsg, RevokeMsg, QueryTokens, TokensResponse, TokensResponseInj, QueryOwnerOf, OwnerOfResponse, QueryContractCodesResponse, };

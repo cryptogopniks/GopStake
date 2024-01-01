@@ -43,7 +43,7 @@ async function getCwClient(rpc, owner, signer) {
 function getAddrByPrefix(address, prefix) {
   return toBech32(prefix, fromBech32(address).data);
 }
-function signAndBroadcastWrapper(client, signerAddress, margin = 1.2) {
+function signAndBroadcastWrapper(client, signerAddress, margin = 1.3) {
   return async (messages, gasPrice, memo) => {
     const gasSimulated = await client.simulate(signerAddress, messages, memo);
     const gasWanted = Math.ceil(margin * gasSimulated);

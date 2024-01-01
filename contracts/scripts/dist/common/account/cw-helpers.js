@@ -41,11 +41,10 @@ function getSingleTokenExecMsg(contractAddress, senderAddress, msg, amount, toke
   };
   return getExecuteContractMsg(token.cw20.address, senderAddress, cw20SendMsg, []);
 }
-function getApproveNftMsg(collectionAddress, tokenId, senderAddress, operator) {
+function getApproveCollectionMsg(collectionAddress, senderAddress, operator) {
   const approveMsg = {
-    approve: {
-      spender: operator,
-      token_id: `${tokenId}`
+    approve_all: {
+      operator
     }
   };
   return getSingleTokenExecMsg(collectionAddress, senderAddress, approveMsg);
@@ -118,14 +117,9 @@ async function getCwExecHelpers(network, rpc, owner, signer) {
   async function cwApproveAndStake(senderAddress, operator, collectionsToStake, gasPrice) {
     let msgList = [];
     for (const {
-      collection_address,
-      staked_token_info_list
+      collection_address
     } of collectionsToStake) {
-      for (const {
-        token_id
-      } of staked_token_info_list) {
-        msgList.push(getApproveNftMsg(collection_address, +token_id, senderAddress, operator));
-      }
+      msgList.push(getApproveCollectionMsg(collection_address, senderAddress, operator));
     }
     msgList.push(stakingPlatformMsgComposer.stake({
       collectionsToStake

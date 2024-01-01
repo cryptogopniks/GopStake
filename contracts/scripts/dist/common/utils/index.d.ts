@@ -8,7 +8,7 @@ declare function getLast<T>(arr: T[]): T;
 declare class Request {
     private req;
     constructor(config?: CreateAxiosDefaults);
-    get(url: string, config?: Object): Promise<any>;
+    get<T>(url: string, config?: Object): Promise<T>;
     post(url: string, params: Object, config?: AxiosRequestConfig): Promise<any>;
 }
 declare function encrypt(data: string, key: string): string;

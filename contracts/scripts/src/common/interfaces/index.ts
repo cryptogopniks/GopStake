@@ -54,6 +54,13 @@ interface SetMetadataMsg {
   };
 }
 
+interface ApproveAllMsg {
+  approve_all: {
+    operator: string;
+    expires?: Expiration;
+  };
+}
+
 interface ApproveMsg {
   approve: {
     spender: string;
@@ -160,6 +167,7 @@ export {
   Cw20SendMsg,
   BaseNetworkConfig,
   ContractData,
+  ApproveAllMsg,
   ApproveMsg,
   RevokeMsg,
   QueryTokens,
