@@ -81,23 +81,21 @@ async function queryInjContract(chainGrpcWasmApi, contractAddress, queryMsg) {
   } = await chainGrpcWasmApi.fetchSmartContractState(contractAddress, toBase64(toUtf8(JSON.stringify(queryMsg))));
   return fromUtf8(data);
 }
-function getApproveNftMsg(collectionAddress, tokenId, senderAddress, operator) {
-  const approveMsg = {
-    approve: {
-      spender: operator,
-      token_id: `${tokenId}`
+function getApproveCollectionMsg(collectionAddress, senderAddress, operator) {
+  const approveAllMsg = {
+    approve_all: {
+      operator
     }
   };
-  return getSingleTokenExecMsg(getExecuteContractMsg(collectionAddress, senderAddress, approveMsg, []));
+  return getSingleTokenExecMsg(getExecuteContractMsg(collectionAddress, senderAddress, approveAllMsg, []));
 }
-function getRevokeNftMsg(collectionAddress, tokenId, senderAddress, operator) {
-  const revokeMsg = {
-    revoke: {
-      spender: operator,
-      token_id: `${tokenId}`
+function getRevokeCollectionMsg(collectionAddress, senderAddress, operator) {
+  const revokeAllMsg = {
+    revoke_all: {
+      operator
     }
   };
-  return getSingleTokenExecMsg(getExecuteContractMsg(collectionAddress, senderAddress, revokeMsg, []));
+  return getSingleTokenExecMsg(getExecuteContractMsg(collectionAddress, senderAddress, revokeAllMsg, []));
 }
 function getSetMetadataMsg(minterContractAddress, senderAddress, setMetadataMsg) {
   return getSingleTokenExecMsg(getExecuteContractMsg(minterContractAddress, senderAddress, setMetadataMsg, []));
@@ -140,8 +138,8 @@ async function getCwExecHelpers(network, owner, msgBroadcaster) {
   }
   const stakingPlatformMsgComposer = new StakingPlatformMsgComposer(owner, STAKING_PLATFORM_CONTRACT.DATA.ADDRESS);
   const minterMsgComposer = new MinterMsgComposer(owner, MINTER_CONTRACT.DATA.ADDRESS);
-  async function cwRevoke(collectionAddress, tokenId, senderAddress, operator, _gasPrice) {
-    const [msg, sender] = getRevokeNftMsg(collectionAddress, tokenId, senderAddress, operator);
+  async function cwRevoke(collectionAddress, senderAddress, operator, _gasPrice) {
+    const [msg, sender] = getRevokeCollectionMsg(collectionAddress, senderAddress, operator);
     return await msgBroadcaster.broadcast({
       msgs: [msg],
       injectiveAddress: sender
@@ -151,15 +149,23 @@ async function getCwExecHelpers(network, owner, msgBroadcaster) {
   // staking-platform
 
   async function cwApproveAndStake(senderAddress, operator, collectionsToStake, _gasPrice) {
+    const endpoints = getNetworkEndpoints(networkType);
+    const chainGrpcWasmApi = new ChainGrpcWasmApi(endpoints.grpc);
+    const queryAllOperatorsMsg = {
+      all_operators: {
+        owner: senderAddress
+      }
+    };
     let msgList = [];
     for (const {
-      collection_address,
-      staked_token_info_list
+      collection_address: collectionAddress
     } of collectionsToStake) {
-      for (const {
-        token_id
-      } of staked_token_info_list) {
-        msgList.push(getApproveNftMsg(collection_address, +token_id, senderAddress, operator)[0]);
+      const {
+        operators
+      } = JSON.parse(await queryInjContract(chainGrpcWasmApi, collectionAddress, queryAllOperatorsMsg));
+      const targetOperator = operators.find(x => x.spender === operator);
+      if (!targetOperator) {
+        msgList.push(getApproveCollectionMsg(collectionAddress, senderAddress, operator)[0]);
       }
     }
     const [msg, sender] = getInjExecMsgFromComposerObj(stakingPlatformMsgComposer.stake({
@@ -389,6 +395,16 @@ async function getCwQueryHelpers(network) {
 
   // staking platform
 
+  async function cwQueryOperators(collectionAddress, ownerAddress) {
+    const msg = {
+      all_operators: {
+        owner: ownerAddress
+      }
+    };
+    const res = JSON.parse(await queryInjContract(chainGrpcWasmApi, collectionAddress, msg));
+    l("\n", res, "\n");
+    return res;
+  }
   async function cwQueryApprovals(collectionAddress, tokenId) {
     const msg = {
       approvals: {
@@ -580,6 +596,7 @@ async function getCwQueryHelpers(network) {
     return res;
   }
   return {
+    cwQueryOperators,
     cwQueryApprovals,
     cwQueryBalanceInNft,
     cwQueryNftOwner,

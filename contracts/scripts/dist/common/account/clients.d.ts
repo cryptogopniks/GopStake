@@ -15,7 +15,7 @@ declare function getCwClient(rpc: string, owner?: string, signer?: (OfflineSigne
     client: CosmWasmClient;
 } | undefined>;
 declare function getAddrByPrefix(address: string, prefix: string): string;
-declare function signAndBroadcastWrapper(client: SigningStargateClient | SigningCosmWasmClient, signerAddress: string, margin?: number): (messages: readonly EncodeObject[], gasPrice: string | GasPrice, memo?: string) => Promise<DeliverTxResponse>;
+declare function signAndBroadcastWrapper(client: SigningStargateClient | SigningCosmWasmClient, signerAddress: string, gasAdjustment?: number): (messages: readonly EncodeObject[], gasPrice: string | GasPrice, gasAdjustment?: number, memo?: string) => Promise<DeliverTxResponse>;
 declare function getGasPriceFromChainRegistryItem(chain: Chain): string;
 declare function getExecuteContractMsg(contractAddress: string, senderAddress: string, msg: any, funds: Coin[]): MsgExecuteContractEncodeObject;
 export { getSgClient, getCwClient, getAddrByPrefix, signAndBroadcastWrapper, getGasPriceFromChainRegistryItem, getExecuteContractMsg, };

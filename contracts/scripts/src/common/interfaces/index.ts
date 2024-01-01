@@ -54,6 +54,19 @@ interface SetMetadataMsg {
   };
 }
 
+interface QueryAllOperatorsMsg {
+  all_operators: {
+    owner: string;
+    include_expired?: boolean;
+    start_after?: string;
+    limit?: number;
+  };
+}
+
+interface QueryAllOperatorsResponse {
+  operators: Approval[];
+}
+
 interface ApproveAllMsg {
   approve_all: {
     operator: string;
@@ -67,6 +80,10 @@ interface ApproveMsg {
     token_id: string;
     expires?: Expiration;
   };
+}
+
+interface RevokeAllMsg {
+  revoke_all: { operator: string };
 }
 
 interface RevokeMsg {
@@ -167,8 +184,11 @@ export {
   Cw20SendMsg,
   BaseNetworkConfig,
   ContractData,
+  QueryAllOperatorsMsg,
+  QueryAllOperatorsResponse,
   ApproveAllMsg,
   ApproveMsg,
+  RevokeAllMsg,
   RevokeMsg,
   QueryTokens,
   TokensResponse,

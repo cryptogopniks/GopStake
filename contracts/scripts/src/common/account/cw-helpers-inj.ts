@@ -27,8 +27,10 @@ import {
   ApprovalsResponse,
   Cw20SendMsg,
   NetworkName,
-  ApproveMsg,
-  RevokeMsg,
+  QueryAllOperatorsMsg,
+  QueryAllOperatorsResponse,
+  ApproveAllMsg,
+  RevokeAllMsg,
   QueryTokens,
   TokensResponse,
   TokensResponseInj,
@@ -132,39 +134,35 @@ async function queryInjContract(
   return fromUtf8(data);
 }
 
-function getApproveNftMsg(
+function getApproveCollectionMsg(
   collectionAddress: string,
-  tokenId: number,
   senderAddress: string,
   operator: string
 ): [MsgExecuteContract, string] {
-  const approveMsg: ApproveMsg = {
-    approve: {
-      spender: operator,
-      token_id: `${tokenId}`,
+  const approveAllMsg: ApproveAllMsg = {
+    approve_all: {
+      operator,
     },
   };
 
   return getSingleTokenExecMsg(
-    getExecuteContractMsg(collectionAddress, senderAddress, approveMsg, [])
+    getExecuteContractMsg(collectionAddress, senderAddress, approveAllMsg, [])
   );
 }
 
-function getRevokeNftMsg(
+function getRevokeCollectionMsg(
   collectionAddress: string,
-  tokenId: number,
   senderAddress: string,
   operator: string
 ): [MsgExecuteContract, string] {
-  const revokeMsg: RevokeMsg = {
-    revoke: {
-      spender: operator,
-      token_id: `${tokenId}`,
+  const revokeAllMsg: RevokeAllMsg = {
+    revoke_all: {
+      operator,
     },
   };
 
   return getSingleTokenExecMsg(
-    getExecuteContractMsg(collectionAddress, senderAddress, revokeMsg, [])
+    getExecuteContractMsg(collectionAddress, senderAddress, revokeAllMsg, [])
   );
 }
 
@@ -252,14 +250,12 @@ async function getCwExecHelpers(
 
   async function cwRevoke(
     collectionAddress: string,
-    tokenId: number,
     senderAddress: string,
     operator: string,
     _gasPrice?: string
   ) {
-    const [msg, sender] = getRevokeNftMsg(
+    const [msg, sender] = getRevokeCollectionMsg(
       collectionAddress,
-      tokenId,
       senderAddress,
       operator
     );
@@ -278,20 +274,32 @@ async function getCwExecHelpers(
     collectionsToStake: StakingPlatformTypes.StakedCollectionInfoForString[],
     _gasPrice?: string
   ) {
+    const endpoints = getNetworkEndpoints(networkType);
+    const chainGrpcWasmApi = new ChainGrpcWasmApi(endpoints.grpc);
+    const queryAllOperatorsMsg: QueryAllOperatorsMsg = {
+      all_operators: {
+        owner: senderAddress,
+      },
+    };
+
     let msgList: MsgExecuteContract[] = [];
 
     for (const {
-      collection_address,
-      staked_token_info_list,
+      collection_address: collectionAddress,
     } of collectionsToStake) {
-      for (const { token_id } of staked_token_info_list) {
+      const { operators }: QueryAllOperatorsResponse = JSON.parse(
+        await queryInjContract(
+          chainGrpcWasmApi,
+          collectionAddress,
+          queryAllOperatorsMsg
+        )
+      );
+
+      const targetOperator = operators.find((x) => x.spender === operator);
+
+      if (!targetOperator) {
         msgList.push(
-          getApproveNftMsg(
-            collection_address,
-            +token_id,
-            senderAddress,
-            operator
-          )[0]
+          getApproveCollectionMsg(collectionAddress, senderAddress, operator)[0]
         );
       }
     }
@@ -639,6 +647,24 @@ async function getCwQueryHelpers(network: NetworkName) {
 
   // staking platform
 
+  async function cwQueryOperators(
+    collectionAddress: string,
+    ownerAddress: string
+  ) {
+    const msg: QueryAllOperatorsMsg = {
+      all_operators: {
+        owner: ownerAddress,
+      },
+    };
+
+    const res: QueryAllOperatorsResponse = JSON.parse(
+      await queryInjContract(chainGrpcWasmApi, collectionAddress, msg)
+    );
+
+    l("\n", res, "\n");
+    return res;
+  }
+
   async function cwQueryApprovals(collectionAddress: string, tokenId: number) {
     const msg: QueryApprovalsMsg = {
       approvals: {
@@ -944,6 +970,7 @@ async function getCwQueryHelpers(network: NetworkName) {
   }
 
   return {
+    cwQueryOperators,
     cwQueryApprovals,
     cwQueryBalanceInNft,
     cwQueryNftOwner,

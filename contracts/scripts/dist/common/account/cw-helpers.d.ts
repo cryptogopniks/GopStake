@@ -1,6 +1,6 @@
 import { ProposalForStringAndTokenUnverified, StakedCollectionInfoForString, TokenUnverified } from "../codegen/StakingPlatform.types";
 import { DirectSecp256k1HdWallet, OfflineSigner, OfflineDirectSigner } from "@cosmjs/proto-signing";
-import { UpdateConfigStruct, ApprovalsResponse, NetworkName, TokensResponse, OwnerOfResponse } from "../interfaces";
+import { UpdateConfigStruct, ApprovalsResponse, NetworkName, QueryAllOperatorsResponse, TokensResponse, OwnerOfResponse } from "../interfaces";
 declare function getCwExecHelpers(network: NetworkName, rpc: string, owner: string, signer: (OfflineSigner & OfflineDirectSigner) | DirectSecp256k1HdWallet): Promise<{
     cwApproveAndStake: (senderAddress: string, operator: string, collectionsToStake: StakedCollectionInfoForString[], gasPrice: string) => Promise<import("@cosmjs/cosmwasm-stargate").DeliverTxResponse>;
     cwUnstake: (collectionsToUnstake: StakedCollectionInfoForString[], gasPrice: string) => Promise<import("@cosmjs/cosmwasm-stargate").DeliverTxResponse>;
@@ -18,12 +18,13 @@ declare function getCwExecHelpers(network: NetworkName, rpc: string, owner: stri
     cwWithdrawTokens: (collectionAddress: string, amount: number, gasPrice: string) => Promise<import("@cosmjs/cosmwasm-stargate").DeliverTxResponse>;
     cwCreateDenom: (tokenOwner: string, subdenom: string, paymentAmount: number, paymentDenom: string, gasPrice: string) => Promise<import("@cosmjs/cosmwasm-stargate").DeliverTxResponse>;
     cwSetMetadata: (creatorAddress: string, symbol: string, description: string, uri: string | undefined, uriHash: string | undefined, gasPrice: string) => Promise<import("@cosmjs/cosmwasm-stargate").DeliverTxResponse>;
-    cwRevoke: (collectionAddress: string, tokenId: number, senderAddress: string, operator: string, gasPrice: string) => Promise<import("@cosmjs/cosmwasm-stargate").DeliverTxResponse>;
+    cwRevoke: (collectionAddress: string, senderAddress: string, operator: string, gasPrice: string) => Promise<import("@cosmjs/cosmwasm-stargate").DeliverTxResponse>;
     cwMintTokens: (denom: string, amount: number, mintToAddress: string, gasPrice: string) => Promise<import("@cosmjs/cosmwasm-stargate").DeliverTxResponse>;
     cwBurnTokens: (denom: string, amount: number, gasPrice: string) => Promise<import("@cosmjs/cosmwasm-stargate").DeliverTxResponse>;
     cwUpdateConfig: (updateConfigStruct: UpdateConfigStruct, gasPrice: string) => Promise<import("@cosmjs/cosmwasm-stargate").DeliverTxResponse>;
 }>;
 declare function getCwQueryHelpers(network: NetworkName, rpc: string): Promise<{
+    cwQueryOperators: (collectionAddress: string, ownerAddress: string) => Promise<QueryAllOperatorsResponse>;
     cwQueryApprovals: (collectionAddress: string, tokenId: number) => Promise<ApprovalsResponse>;
     cwQueryBalanceInNft: (owner: string, collectionAddress: string) => Promise<TokensResponse>;
     cwQueryNftOwner: (collectionAddress: string, tokenId: number) => Promise<OwnerOfResponse>;

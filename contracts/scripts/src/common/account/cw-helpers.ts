@@ -34,9 +34,10 @@ import {
   ApprovalsResponse,
   Cw20SendMsg,
   NetworkName,
+  QueryAllOperatorsMsg,
+  QueryAllOperatorsResponse,
   ApproveAllMsg,
-  ApproveMsg,
-  RevokeMsg,
+  RevokeAllMsg,
   QueryTokens,
   TokensResponse,
   QueryOwnerOf,
@@ -106,29 +107,27 @@ function getApproveCollectionMsg(
   senderAddress: string,
   operator: string
 ): MsgExecuteContractEncodeObject {
-  const approveMsg: ApproveAllMsg = {
+  const approveAllMsg: ApproveAllMsg = {
     approve_all: {
       operator,
     },
   };
 
-  return getSingleTokenExecMsg(collectionAddress, senderAddress, approveMsg);
+  return getSingleTokenExecMsg(collectionAddress, senderAddress, approveAllMsg);
 }
 
-function getRevokeNftMsg(
+function getRevokeCollectionMsg(
   collectionAddress: string,
-  tokenId: number,
   senderAddress: string,
   operator: string
 ): MsgExecuteContractEncodeObject {
-  const revokeMsg: RevokeMsg = {
-    revoke: {
-      spender: operator,
-      token_id: `${tokenId}`,
+  const revokeAllMsg: RevokeAllMsg = {
+    revoke_all: {
+      operator,
     },
   };
 
-  return getSingleTokenExecMsg(collectionAddress, senderAddress, revokeMsg);
+  return getSingleTokenExecMsg(collectionAddress, senderAddress, revokeAllMsg);
 }
 
 function getSetMetadataMsg(
@@ -217,22 +216,23 @@ async function getCwExecHelpers(
 
   async function _msgWrapperWithGasPrice(
     msgs: MsgExecuteContractEncodeObject[],
-    gasPrice: string
+    gasPrice: string,
+    gasAdjustment: number = 1,
+    memo?: string
   ) {
-    const tx = await _signAndBroadcast(msgs, gasPrice);
+    const tx = await _signAndBroadcast(msgs, gasPrice, gasAdjustment, memo);
     l("\n", tx, "\n");
     return tx;
   }
 
   async function cwRevoke(
     collectionAddress: string,
-    tokenId: number,
     senderAddress: string,
     operator: string,
     gasPrice: string
   ) {
     return await _msgWrapperWithGasPrice(
-      [getRevokeNftMsg(collectionAddress, tokenId, senderAddress, operator)],
+      [getRevokeCollectionMsg(collectionAddress, senderAddress, operator)],
       gasPrice
     );
   }
@@ -245,12 +245,30 @@ async function getCwExecHelpers(
     collectionsToStake: StakedCollectionInfoForString[],
     gasPrice: string
   ) {
+    const queryAllOperatorsMsg: QueryAllOperatorsMsg = {
+      all_operators: {
+        owner: senderAddress,
+      },
+    };
+
     let msgList: MsgExecuteContractEncodeObject[] = [];
 
-    for (const { collection_address } of collectionsToStake) {
-      msgList.push(
-        getApproveCollectionMsg(collection_address, senderAddress, operator)
-      );
+    for (const {
+      collection_address: collectionAddress,
+    } of collectionsToStake) {
+      const { operators }: QueryAllOperatorsResponse =
+        await signingClient.queryContractSmart(
+          collectionAddress,
+          queryAllOperatorsMsg
+        );
+
+      const targetOperator = operators.find((x) => x.spender === operator);
+
+      if (!targetOperator) {
+        msgList.push(
+          getApproveCollectionMsg(collectionAddress, senderAddress, operator)
+        );
+      }
     }
 
     msgList.push(stakingPlatformMsgComposer.stake({ collectionsToStake }));
@@ -264,7 +282,8 @@ async function getCwExecHelpers(
   ) {
     return await _msgWrapperWithGasPrice(
       [stakingPlatformMsgComposer.unstake({ collectionsToUnstake })],
-      gasPrice
+      gasPrice,
+      1.05
     );
   }
 
@@ -543,6 +562,23 @@ async function getCwQueryHelpers(network: NetworkName, rpc: string) {
   );
 
   // staking platform
+  async function cwQueryOperators(
+    collectionAddress: string,
+    ownerAddress: string
+  ) {
+    const queryAllOperatorsMsg: QueryAllOperatorsMsg = {
+      all_operators: {
+        owner: ownerAddress,
+      },
+    };
+    const res: QueryAllOperatorsResponse =
+      await cosmwasmQueryClient.queryContractSmart(
+        collectionAddress,
+        queryAllOperatorsMsg
+      );
+    l("\n", res, "\n");
+    return res;
+  }
 
   async function cwQueryApprovals(collectionAddress: string, tokenId: number) {
     const queryApprovalsMsg: QueryApprovalsMsg = {
@@ -696,6 +732,7 @@ async function getCwQueryHelpers(network: NetworkName, rpc: string) {
   }
 
   return {
+    cwQueryOperators,
     cwQueryApprovals,
     cwQueryBalanceInNft,
     cwQueryNftOwner,

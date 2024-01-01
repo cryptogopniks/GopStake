@@ -44,7 +44,7 @@ async function main(network: NetworkName) {
       SEED_ALICE: string;
     } = JSON.parse(await readFile(PATH.TO_TEST_WALLETS, { encoding: "utf8" }));
 
-    const seed = await getSeed(testWallets.SEED_ALICE);
+    const seed = await getSeed(testWallets.SEED_ADMIN);
     if (!seed) throw new Error("Seed is not found!");
 
     const chain = chains.find((x) => x.chain_id == CHAIN_ID);
@@ -60,6 +60,7 @@ async function main(network: NetworkName) {
       cwQueryCollections,
       cwQueryProposals,
       cwQueryStakers,
+      cwQueryOperators,
       cwQueryApprovals,
       cwQueryNftOwner,
       cwQueryBalanceInNft,
@@ -73,16 +74,17 @@ async function main(network: NetworkName) {
       cwBurnTokens,
       cwApproveAndStake,
       cwUnstake,
+      cwRevoke,
     } = await getCwExecHelpers(network, RPC, owner, signer);
 
     const alice = "stars1gjqnuhv52pd2a7ets2vhw9w9qa9knyhyzrpx49";
     const denom = "upinj";
     const fullDenom = `factory/${MINTER_CONTRACT.DATA.ADDRESS}/${denom}`;
 
-    await cwQueryDenomsByCreator(alice);
-    return;
-    await cwCreateDenom(alice, "gop", 10000000000, DENOM, gasPrice);
-    return;
+    // await cwQueryDenomsByCreator(alice);
+    // return;
+    // await cwCreateDenom(alice, "gop", 10000000000, DENOM, gasPrice);
+    // return;
     // await cwMintTokens(fullDenom, 100, owner, gasPrice);
     // await cwBurnTokens(fullDenom, 100, gasPrice);
 
@@ -96,24 +98,65 @@ async function main(network: NetworkName) {
     const collection =
       "stars1qrghctped3a7jcklqxg92dn8lvw88adrduwx3h50pmmcgcwl82xsu84lnw";
 
-    const token1 = 526;
-    const token2 = 679;
-    const token3 = 851;
+    const tokens = [
+      "180",
+      "3",
+      "446",
+      "463",
+      "525",
+      "537",
+      "687",
+      "697",
+      "818",
+      "914",
+      "960",
+    ].map((x) => +x);
+    const [token1, token2, token3] = tokens;
 
-    // await cwApproveAndStake(
-    //   owner,
-    //   STAKING_PLATFORM_CONTRACT.DATA.ADDRESS,
-    //   [
-    //     {
-    //       collection_address: collection,
-    //       staked_token_info_list: [
-    //         { token_id: `${token1}` },
-    //         { token_id: `${token2}` },
-    //       ],
-    //     },
-    //   ],
-    //   gasPrice
-    // );
+    await cwQueryOperators(collection, owner);
+    await cwRevoke(
+      collection,
+      owner,
+      STAKING_PLATFORM_CONTRACT.DATA.ADDRESS,
+      gasPrice
+    );
+    await cwQueryOperators(collection, owner);
+
+    for (let i = 0; i < 1; i++) {
+      await cwQueryOperators(collection, owner);
+
+      await cwApproveAndStake(
+        owner,
+        STAKING_PLATFORM_CONTRACT.DATA.ADDRESS,
+        [
+          {
+            collection_address: collection,
+            staked_token_info_list: [
+              { token_id: `${token1}` },
+              { token_id: `${token2}` },
+            ],
+          },
+        ],
+        gasPrice
+      );
+
+      await cwQueryOperators(collection, owner);
+
+      await cwUnstake(
+        [
+          {
+            collection_address: collection,
+            staked_token_info_list: [
+              { token_id: `${token1}` },
+              { token_id: `${token2}` },
+            ],
+          },
+        ],
+        gasPrice
+      );
+    }
+
+    return;
 
     // await cwQueryApprovals(collection, token1);
     // await cwQueryNftOwner(collection, token1);
@@ -125,6 +168,7 @@ async function main(network: NetworkName) {
     //       staked_token_info_list: [
     //         { token_id: `${token1}` },
     //         { token_id: `${token2}` },
+    //         { token_id: `${token3}` },
     //       ],
     //     },
     //   ],

@@ -48,6 +48,17 @@ interface SetMetadataMsg {
         metadata: Metadata;
     };
 }
+interface QueryAllOperatorsMsg {
+    all_operators: {
+        owner: string;
+        include_expired?: boolean;
+        start_after?: string;
+        limit?: number;
+    };
+}
+interface QueryAllOperatorsResponse {
+    operators: Approval[];
+}
 interface ApproveAllMsg {
     approve_all: {
         operator: string;
@@ -59,6 +70,11 @@ interface ApproveMsg {
         spender: string;
         token_id: string;
         expires?: Expiration;
+    };
+}
+interface RevokeAllMsg {
+    revoke_all: {
+        operator: string;
     };
 }
 interface RevokeMsg {
@@ -137,4 +153,4 @@ type ContractData = {
     ADDRESS: string;
 };
 export type { NetworkConfig, NetworkName, ContractsConfig };
-export { SetMetadataMsg, Metadata, UpdateConfigStruct, QueryApprovalsMsg, ApprovalsResponse, Cw20SendMsg, BaseNetworkConfig, ContractData, ApproveAllMsg, ApproveMsg, RevokeMsg, QueryTokens, TokensResponse, TokensResponseInj, QueryOwnerOf, OwnerOfResponse, QueryContractCodesResponse, };
+export { SetMetadataMsg, Metadata, UpdateConfigStruct, QueryApprovalsMsg, ApprovalsResponse, Cw20SendMsg, BaseNetworkConfig, ContractData, QueryAllOperatorsMsg, QueryAllOperatorsResponse, ApproveAllMsg, ApproveMsg, RevokeAllMsg, RevokeMsg, QueryTokens, TokensResponse, TokensResponseInj, QueryOwnerOf, OwnerOfResponse, QueryContractCodesResponse, };

@@ -93,16 +93,22 @@ function getAddrByPrefix(address: string, prefix: string): string {
 function signAndBroadcastWrapper(
   client: SigningStargateClient | SigningCosmWasmClient,
   signerAddress: string,
-  margin: number = 1.3
+  gasAdjustment: number = 1.3
 ) {
+  const defaultGasAdjustment = gasAdjustment;
+
   return async (
     messages: readonly EncodeObject[],
     gasPrice: string | GasPrice,
+    gasAdjustment: number = 1,
     memo?: string
   ): Promise<DeliverTxResponse> => {
     const gasSimulated = await client.simulate(signerAddress, messages, memo);
-    const gasWanted = Math.ceil(margin * gasSimulated);
+    const gasWanted = Math.ceil(
+      defaultGasAdjustment * gasAdjustment * gasSimulated
+    );
     const fee = _calculateFee(gasWanted, gasPrice);
+
     return await client.signAndBroadcast(signerAddress, messages, fee, memo);
   };
 }

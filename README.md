@@ -40,7 +40,7 @@ To interact with both `staking-platform` and `minter` contracts following functi
 | `cwSetMetadata(creatorAddress: string, symbol: string, description: string, uri: string = "", uriHash: string = "", gasPrice: string): Promise<DeliverTxResponse>` | Collection creator, contract admin or owner | Set metadata for a token created with the `minter` contract |
 | `cwMintTokens(denom: string, amount: number, mintToAddress: string, gasPrice: string): Promise<DeliverTxResponse>` | `staking-platform` contract or collection creator | Mint new tokens using the `minter` contract. If `EmissionType` is `minting` it will be called by `staking-platform`. In case of `spending` `EmissionType` the collection creator can manually call the function and replenish collection balance |
 | `cwBurnTokens(denom: string, amount: number, gasPrice: string): Promise<DeliverTxResponse>` | User | Burn tokens using the `minter` contract. It is not required under normal conditions |
-| `cwRevoke(collectionAddress: string, tokenId: number, senderAddress: string, operator: string, gasPrice: string): Promise<DeliverTxResponse>` | Developer | Remove approval from NFT. For debugging |
+| `cwRevoke(collectionAddress: string, tokenId: number, senderAddress: string, operator: string, gasPrice: string): Promise<DeliverTxResponse>` | Developer | Remove approval from NFT collection. For debugging |
 | `cwUpdateConfig(updateConfigStruct: UpdateConfigStruct, gasPrice: string): Promise<DeliverTxResponse>` | Contract admin | Update configuration parameters for the contract |
 | `cwQueryFunds(): Promise<ArrayOfFundsForToken>` | - | Return the account balance for contributions when listing collections |
 | `cwQueryStakers(addresses?: string[]): Promise<ArrayOfQueryStakersResponseItem>` | - | Return the list of stakers for specified (or all) staking addresses |
@@ -53,6 +53,7 @@ To interact with both `staking-platform` and `minter` contracts following functi
 | `cwQueryDenomsByCreator(creator: string): Promise<QueryDenomsFromCreatorResponse>` | - | Return a list of denoms for tokens created by the specified address |
 | `cwQueryMinterConfig(): Promise<Minter.types.Config>` | - | Return the `minter` contract configuration |
 | `cwQueryStakingPlatformConfig(): Promise<StakingPlatform.types.Config>` | - | Return the `staking-platform` contract configuration |
+| `cwQueryOperators(collectionAddress: string, ownerAddress: string): Promise<QueryAllOperatorsResponse>` | - | Return all operators that can access all of the owner's NFTs  |
 | `cwQueryApprovals(collectionAddress: string, tokenId: number): Promise<ApprovalsResponse>` | - | Return approvals that a token has  |
 | `cwQueryBalanceInNft(owner: string, collectionAddress: string): Promise<TokensResponse>` | - | Return a list of tokens owned by the given address  |
 | `cwQueryNftOwner(collectionAddress: string, tokenId: number): Promise<OwnerOfResponse>` | - | Return the owner of the given token, error if token does not exist |
