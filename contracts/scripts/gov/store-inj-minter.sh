@@ -2,8 +2,8 @@ source ./config.sh
 
 
 $DAEMON_INJECTIVE tx gov submit-proposal wasm-store $WASM_INJECTIVE_MINTER \
-  --title $TITLE_INJECTIVE_MINTER \
-  --description $DESCRIPTION_INJECTIVE_MINTER \
+  --title "$TITLE_INJECTIVE_MINTER" \
+  --description "$DESCRIPTION_INJECTIVE_MINTER" \
   --code-source-url $WASM_SOURCE_INJECTIVE_MINTER \
 	--builder $BUILDER \
 	--code-hash $HASH_SUM_INJECTIVE_MINTER \
