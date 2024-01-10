@@ -29,6 +29,8 @@ import {
   NetworkName,
   QueryAllOperatorsMsg,
   QueryAllOperatorsResponse,
+  QueryAllOperatorsInjMsg,
+  QueryAllOperatorsInjResponse,
   ApproveAllMsg,
   RevokeAllMsg,
   QueryTokens,
@@ -38,7 +40,7 @@ import {
   OwnerOfResponse,
 } from "../interfaces";
 
-const networkType = Network.Testnet;
+const networkType = Network.Mainnet;
 
 function getInjExecMsgFromComposerObj(
   obj: MsgExecuteContractEncodeObject
@@ -276,8 +278,8 @@ async function getCwExecHelpers(
   ) {
     const endpoints = getNetworkEndpoints(networkType);
     const chainGrpcWasmApi = new ChainGrpcWasmApi(endpoints.grpc);
-    const queryAllOperatorsMsg: QueryAllOperatorsMsg = {
-      all_operators: {
+    const queryAllOperatorsMsg: QueryAllOperatorsInjMsg = {
+      approved_for_all: {
         owner: senderAddress,
       },
     };
@@ -287,7 +289,7 @@ async function getCwExecHelpers(
     for (const {
       collection_address: collectionAddress,
     } of collectionsToStake) {
-      const { operators }: QueryAllOperatorsResponse = JSON.parse(
+      const { approvals }: QueryAllOperatorsInjResponse = JSON.parse(
         await queryInjContract(
           chainGrpcWasmApi,
           collectionAddress,
@@ -295,7 +297,9 @@ async function getCwExecHelpers(
         )
       );
 
-      const targetOperator = operators.find((x) => x.spender === operator);
+      l({ approvals });
+
+      const targetOperator = approvals.find((x) => x.spender === operator);
 
       if (!targetOperator) {
         msgList.push(
@@ -651,8 +655,8 @@ async function getCwQueryHelpers(network: NetworkName) {
     collectionAddress: string,
     ownerAddress: string
   ) {
-    const msg: QueryAllOperatorsMsg = {
-      all_operators: {
+    const msg: QueryAllOperatorsInjMsg = {
+      approved_for_all: {
         owner: ownerAddress,
       },
     };

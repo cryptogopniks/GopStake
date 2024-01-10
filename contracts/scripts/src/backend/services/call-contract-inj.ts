@@ -16,9 +16,10 @@ import {
   NETWORK_CONFIG,
   MINTER_WASM,
   INJ_MINTER_WASM,
+  STAKING_PLATFORM_WASM,
 } from "../../common/config";
 
-const networkType = Network.Testnet;
+const networkType = Network.Mainnet;
 
 async function main(network: NetworkName) {
   try {
@@ -38,6 +39,13 @@ async function main(network: NetworkName) {
     );
     if (!MINTER_CONTRACT) throw new Error("MINTER_CONTRACT in not found!");
 
+    const STAKING_PLATFORM_CONTRACT = CONTRACTS.find(
+      (x) => x.WASM === STAKING_PLATFORM_WASM
+    );
+    if (!STAKING_PLATFORM_CONTRACT) {
+      throw new Error("MINTER_CONTRACT in not found!");
+    }
+
     const testWallets: {
       SEED_ADMIN: string;
     } = JSON.parse(await readFile(PATH.TO_TEST_WALLETS, { encoding: "utf8" }));
@@ -54,11 +62,66 @@ async function main(network: NetworkName) {
     });
 
     const { getAllBalances } = await getSgQueryHelpers();
-    const { cwQueryProposals, cwQueryBalanceInNft } = await getCwQueryHelpers(
-      network
+    const {
+      cwQueryProposals,
+      cwQueryBalanceInNft,
+      cwQueryStakingPlatformConfig,
+      cwQueryOperators,
+    } = await getCwQueryHelpers(network);
+    const {
+      cwCreateProposal,
+      cwMintTokens,
+      cwBurnTokens,
+      cwCreateDenom,
+      cwRevoke,
+      cwApproveAndStake,
+      cwUnstake,
+    } = await getCwExecHelpers(network, injectiveAddress, msgBroadcasterWithPk);
+
+    const collection = "inj1es8mtzzgap9z5wewwhg5w7e9yumek6m20w8790";
+
+    const tokens = ["648"].map((x) => +x);
+    const [token1] = tokens;
+
+    await cwQueryOperators(collection, injectiveAddress);
+    l(
+      await cwRevoke(
+        collection,
+        injectiveAddress,
+        STAKING_PLATFORM_CONTRACT.DATA.ADDRESS
+      )
     );
-    const { cwCreateProposal, cwMintTokens, cwBurnTokens, cwCreateDenom } =
-      await getCwExecHelpers(network, injectiveAddress, msgBroadcasterWithPk);
+    await cwQueryOperators(collection, injectiveAddress);
+
+    // for (let i = 0; i < 1; i++) {
+    //   await cwQueryOperators(collection, injectiveAddress);
+
+    //   l(
+    //     await cwApproveAndStake(
+    //       injectiveAddress,
+    //       STAKING_PLATFORM_CONTRACT.DATA.ADDRESS,
+    //       [
+    //         {
+    //           collection_address: collection,
+    //           staked_token_info_list: [{ token_id: `${token1}` }],
+    //         },
+    //       ]
+    //     )
+    //   );
+
+    //   await cwQueryOperators(collection, injectiveAddress);
+
+    //   l(
+    //     await cwUnstake([
+    //       {
+    //         collection_address: collection,
+    //         staked_token_info_list: [{ token_id: `${token1}` }],
+    //       },
+    //     ])
+    //   );
+    // }
+
+    return;
 
     const alice = "inj1prmtvxpvdcmp3dtn6qn4hyq9gytj5ry4u28nqz";
     const denom = "upinj";
@@ -94,7 +157,7 @@ function getProposalTemplate(
     network === stargazeNetworkName
       ? "stars1qrghctped3a7jcklqxg92dn8lvw88adrduwx3h50pmmcgcwl82xsu84lnw"
       : "inj1qvfylg5zvqar4q2sl6qxzhukdhr5av7qwxpl5p";
-  const owner =
+  const injectiveAddress =
     network === stargazeNetworkName
       ? "stars1gjqnuhv52pd2a7ets2vhw9w9qa9knyhyzrpx49"
       : "inj1prmtvxpvdcmp3dtn6qn4hyq9gytj5ry4u28nqz";
@@ -111,7 +174,7 @@ function getProposalTemplate(
         collection_address: collectionAddress,
         collection: {
           name: "Pinjeons",
-          owner,
+          injectiveAddress,
           emission_type: "minting",
           daily_rewards: "0.1",
           staking_currency: { token: { native: { denom } }, decimals },

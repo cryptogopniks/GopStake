@@ -8,7 +8,7 @@ import {
   ChainGrpcBankApi,
 } from "@injectivelabs/sdk-ts";
 
-const networkType = Network.Testnet;
+const networkType = Network.Mainnet;
 
 async function getSgExecHelpers(
   owner: string,

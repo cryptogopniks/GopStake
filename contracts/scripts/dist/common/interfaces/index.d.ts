@@ -56,8 +56,19 @@ interface QueryAllOperatorsMsg {
         limit?: number;
     };
 }
+interface QueryAllOperatorsInjMsg {
+    approved_for_all: {
+        owner: string;
+        include_expired?: boolean;
+        start_after?: string;
+        limit?: number;
+    };
+}
 interface QueryAllOperatorsResponse {
     operators: Approval[];
+}
+interface QueryAllOperatorsInjResponse {
+    approvals: Approval[];
 }
 interface ApproveAllMsg {
     approve_all: {
@@ -153,4 +164,4 @@ type ContractData = {
     ADDRESS: string;
 };
 export type { NetworkConfig, NetworkName, ContractsConfig };
-export { SetMetadataMsg, Metadata, UpdateConfigStruct, QueryApprovalsMsg, ApprovalsResponse, Cw20SendMsg, BaseNetworkConfig, ContractData, QueryAllOperatorsMsg, QueryAllOperatorsResponse, ApproveAllMsg, ApproveMsg, RevokeAllMsg, RevokeMsg, QueryTokens, TokensResponse, TokensResponseInj, QueryOwnerOf, OwnerOfResponse, QueryContractCodesResponse, };
+export { SetMetadataMsg, Metadata, UpdateConfigStruct, QueryApprovalsMsg, ApprovalsResponse, Cw20SendMsg, BaseNetworkConfig, ContractData, QueryAllOperatorsMsg, QueryAllOperatorsResponse, QueryAllOperatorsInjMsg, QueryAllOperatorsInjResponse, ApproveAllMsg, ApproveMsg, RevokeAllMsg, RevokeMsg, QueryTokens, TokensResponse, TokensResponseInj, QueryOwnerOf, OwnerOfResponse, QueryContractCodesResponse, };

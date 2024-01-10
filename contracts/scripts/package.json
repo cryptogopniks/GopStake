@@ -9,6 +9,7 @@
   },
   "scripts": {
     "init": "ts-node ./src/backend/services/init-contract.ts",
+    "init-inj": "ts-node ./src/backend/services/init-contract-inj.ts",
     "store": "ts-node ./src/backend/services/store-contract.ts",
     "store-inj": "ts-node ./src/backend/services/store-contract-inj.ts",
     "migrate": "ts-node ./src/backend/services/migrate-contract.ts",

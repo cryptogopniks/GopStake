@@ -1,7 +1,7 @@
 import { l } from "../utils";
 import { getNetworkEndpoints, Network } from "@injectivelabs/networks";
 import { MsgSend, ChainGrpcBankApi } from "@injectivelabs/sdk-ts";
-const networkType = Network.Testnet;
+const networkType = Network.Mainnet;
 async function getSgExecHelpers(owner, msgBroadcaster) {
   async function sgSend(recipient, amount, _gasPrice) {
     const msg = new MsgSend({

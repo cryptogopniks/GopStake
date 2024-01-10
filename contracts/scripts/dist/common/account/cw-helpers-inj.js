@@ -6,7 +6,7 @@ import { MinterMsgComposer } from "../codegen/Minter.message-composer";
 import { StakingPlatformMsgComposer } from "../codegen/StakingPlatform.message-composer";
 import { NETWORK_CONFIG, MINTER_WASM, STAKING_PLATFORM_WASM, INJ_MINTER_WASM } from "../config";
 import { ChainGrpcWasmApi, MsgExecuteContract } from "@injectivelabs/sdk-ts";
-const networkType = Network.Testnet;
+const networkType = Network.Mainnet;
 function getInjExecMsgFromComposerObj(obj) {
   const {
     value: {
@@ -152,7 +152,7 @@ async function getCwExecHelpers(network, owner, msgBroadcaster) {
     const endpoints = getNetworkEndpoints(networkType);
     const chainGrpcWasmApi = new ChainGrpcWasmApi(endpoints.grpc);
     const queryAllOperatorsMsg = {
-      all_operators: {
+      approved_for_all: {
         owner: senderAddress
       }
     };
@@ -161,9 +161,12 @@ async function getCwExecHelpers(network, owner, msgBroadcaster) {
       collection_address: collectionAddress
     } of collectionsToStake) {
       const {
-        operators
+        approvals
       } = JSON.parse(await queryInjContract(chainGrpcWasmApi, collectionAddress, queryAllOperatorsMsg));
-      const targetOperator = operators.find(x => x.spender === operator);
+      l({
+        approvals
+      });
+      const targetOperator = approvals.find(x => x.spender === operator);
       if (!targetOperator) {
         msgList.push(getApproveCollectionMsg(collectionAddress, senderAddress, operator)[0]);
       }
@@ -397,7 +400,7 @@ async function getCwQueryHelpers(network) {
 
   async function cwQueryOperators(collectionAddress, ownerAddress) {
     const msg = {
-      all_operators: {
+      approved_for_all: {
         owner: ownerAddress
       }
     };

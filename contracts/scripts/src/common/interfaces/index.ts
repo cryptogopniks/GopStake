@@ -63,8 +63,21 @@ interface QueryAllOperatorsMsg {
   };
 }
 
+interface QueryAllOperatorsInjMsg {
+  approved_for_all: {
+    owner: string;
+    include_expired?: boolean;
+    start_after?: string;
+    limit?: number;
+  };
+}
+
 interface QueryAllOperatorsResponse {
   operators: Approval[];
+}
+
+interface QueryAllOperatorsInjResponse {
+  approvals: Approval[];
 }
 
 interface ApproveAllMsg {
@@ -186,6 +199,8 @@ export {
   ContractData,
   QueryAllOperatorsMsg,
   QueryAllOperatorsResponse,
+  QueryAllOperatorsInjMsg,
+  QueryAllOperatorsInjResponse,
   ApproveAllMsg,
   ApproveMsg,
   RevokeAllMsg,
