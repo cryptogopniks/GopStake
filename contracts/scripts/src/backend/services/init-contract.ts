@@ -105,7 +105,7 @@ async function main(
 
     const { code_infos: codeList } =
       await new Request().get<QueryContractCodesResponse>(
-        `${REST}/cosmwasm/wasm/v1/code?pagination.limit=5&pagination.reverse=true`
+        `${REST}/cosmwasm/wasm/v1/code?pagination.limit=50&pagination.reverse=true`
       );
     const code = codeList.find((x) => x.creator === owner);
     if (!code) throw new Error("Code ID is not found!");
@@ -195,4 +195,4 @@ async function main(
   }
 }
 
-main("STARGAZE", false, [MINTER_WASM]);
+main("STARGAZE", false, [STAKING_PLATFORM_WASM]);

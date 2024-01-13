@@ -66,6 +66,8 @@ async function main(network: NetworkName) {
       cwQueryBalanceInNft,
       cwQueryStakingRewardsPerCollection,
       cwQueryDenomsByCreator,
+      cwQueryMinterConfig,
+      cwQueryStakingPlatformConfig,
     } = await getCwQueryHelpers(network, RPC);
 
     const {
@@ -75,8 +77,21 @@ async function main(network: NetworkName) {
       cwApproveAndStake,
       cwUnstake,
       cwRevoke,
+      cwUpdateConfig,
     } = await getCwExecHelpers(network, RPC, owner, signer);
 
+    await cwUpdateConfig(
+      {
+        minter: MINTER_CONTRACT.DATA.ADDRESS,
+        stakingPlatform: STAKING_PLATFORM_CONTRACT.DATA.ADDRESS,
+      },
+      gasPrice
+    );
+
+    await cwQueryStakingPlatformConfig();
+    await cwQueryMinterConfig();
+
+    return;
     const alice = "stars1gjqnuhv52pd2a7ets2vhw9w9qa9knyhyzrpx49";
     const denom = "upinj";
     const fullDenom = `factory/${MINTER_CONTRACT.DATA.ADDRESS}/${denom}`;
