@@ -66,6 +66,7 @@ async function main(network: NetworkName) {
       cwQueryProposals,
       cwQueryBalanceInNft,
       cwQueryStakingPlatformConfig,
+      cwQueryMinterConfig,
       cwQueryOperators,
     } = await getCwQueryHelpers(network);
     const {
@@ -76,7 +77,18 @@ async function main(network: NetworkName) {
       cwRevoke,
       cwApproveAndStake,
       cwUnstake,
+      cwUpdateConfig,
     } = await getCwExecHelpers(network, injectiveAddress, msgBroadcasterWithPk);
+
+    await cwQueryStakingPlatformConfig();
+    await cwQueryMinterConfig();
+
+    return;
+    l(
+      await cwUpdateConfig({
+        minter: "inj1eff58ps7p4v5jfxkg3ngj4zc42qlefpjuukrw6",
+      })
+    );
 
     const collection = "inj1es8mtzzgap9z5wewwhg5w7e9yumek6m20w8790";
 

@@ -99,8 +99,6 @@ async function main(
 
     // const codeId = +code.code_id;
 
-    const codeId = 330;
-
     //  for (const contractConfig in contractConfigList) {
     // const a = contractConfig;
     // const { WASM, LABEL } = CONTRACT;
@@ -108,16 +106,32 @@ async function main(
 
     // l(`\n"${contractName}" contract code is ${codeId}\n`);
 
+    const minterCodeId = 351;
+    const owner = "inj1u9jles5s3nw29726frttn007h9880n2zyfwf6c";
+    const stakingPlatform = "inj1gwsuksg40agjq8wsh5t9s7dx5kv6pyyye9hrmj";
+
     const instantiateContractMsg = MsgInstantiateContract.fromJSON({
       sender: injectiveAddress,
-      codeId,
-      label: "cryptogopniks-staking_platform",
+      codeId: minterCodeId,
+      label: "cryptogopniks-minter",
       msg: {
-        owner: "inj1u9jles5s3nw29726frttn007h9880n2zyfwf6c",
-        minter: injectiveAddress,
+        owner,
+        staking_platform: stakingPlatform,
       },
       admin: injectiveAddress,
     });
+
+    // const stakingPlatformCodeId = 330;
+    // const instantiateContractMsg = MsgInstantiateContract.fromJSON({
+    //   sender: injectiveAddress,
+    //   codeId: stakingPlatformCodeId,
+    //   label: "cryptogopniks-staking_platform",
+    //   msg: {
+    //     owner,
+    //     minter: injectiveAddress,
+    //   },
+    //   admin: injectiveAddress,
+    // });
 
     // {
     //   typeUrl: "/cosmwasm.wasm.v1.MsgInstantiateContract",
