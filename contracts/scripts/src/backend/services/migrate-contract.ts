@@ -93,4 +93,4 @@ async function main(network: NetworkName, wasm: string) {
   }
 }
 
-main("STARGAZE", MINTER_WASM);
+main("STARGAZE", STAKING_PLATFORM_WASM);

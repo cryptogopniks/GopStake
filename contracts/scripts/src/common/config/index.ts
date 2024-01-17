@@ -23,7 +23,7 @@ const minterMigrateMsg: MinterMigrateMsg = {
   version: "1.1.1",
 };
 const stakingPlatformMigrateMsg: StakingPlatformMigrateMsg = {
-  version: "1.3.1",
+  version: "1.4.0",
 };
 
 const NETWORK_CONFIG: NetworkConfig = {
